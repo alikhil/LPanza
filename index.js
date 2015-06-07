@@ -3,14 +3,14 @@
  * http://frontender.info/building-multiplayer-games-with-node-js-and-socket-io/
  */
 var app = require('express')();
+var express = require('express');
+var port = 1337;
 
-// Создаем HTTP-сервер с помощью модуля HTTP, входящего в Node.js. 
-// Связываем его с Express и отслеживаем подключения к порту 8080. 
-var server = require('http').createServer(app).listen(1337);
+var server = require('http').createServer(app).listen(port);
 
-// Инициализируем Socket.IO так, чтобы им обрабатывались подключения 
-// к серверу Express/HTTP
 var io = require('socket.io').listen(server);
+
+app.use(express.static(__dirname + '/public'));
 
 app.get('/', function(req,res){
 	res.sendFile(__dirname + '/index.html');
