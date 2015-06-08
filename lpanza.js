@@ -1,10 +1,9 @@
 var io;
 var gameSocket;
 
-var userIdNames = { };
-/*
-	constants
-*/
+
+#region Constants
+var serverMaxUser = 100;
 var tanksHP = 10;
 var damagePerShot = 1;
 
@@ -18,8 +17,11 @@ var tankLenght = 40;
 var tankTurretRadius = 12;
 var tankGunWidth = 4;
 var tankGunLenght = 25;
-
+#endregion
 var tanks = [ { } ];
+var userIdNames = { };
+
+
 exports.initGame = function(sio, socket){
     io = sio;
     gameSocket = socket;
@@ -27,7 +29,7 @@ exports.initGame = function(sio, socket){
 	var userId = socket.id.toString().substr(0,5);
 	
 	gameSocket.on('game.join', userJoin);
-	
+	gameSocket.on('game.input', gameInput);
 	
 	/*
     gameSocket.emit('connected', { message: "You are connected!" });
@@ -77,6 +79,12 @@ function userJoin(user) {
 	tanks[userId] = tank;
 }
 
+function gameInput(input){
+	
+	if(input.type == 'mouse'){
+		
+	}
+}
 #region HelperFunctions
 /**
 	Пока просто рандом, потом будем выбирать по менее заселенной местности
