@@ -1,0 +1,13 @@
+html, body, .fullWrap {
+	height: 100%;
+	width: 100%;
+	margin: 0px;
+	padding: 0px;
+	border: 0px;
+	box-sizing: border-box;
+}
+#gameCanvas {
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+}
