@@ -28,6 +28,7 @@ exports.initGame = function(sio, socket){
 	
 	gameSocket.on('game.join', userJoin);
 	
+	
 	/*
     gameSocket.emit('connected', { message: "You are connected!" });
 
@@ -75,7 +76,9 @@ function userJoin(user) {
 	
 	tanks[userId] = tank;
 }
-/*
+
+#region HelperFunctions
+/**
 	Пока просто рандом, потом будем выбирать по менее заселенной местности
 */
 function getRandomPosition(){
@@ -96,3 +99,4 @@ function getRandomColor(){
 function getUserId(socketId){
 	return socketId.toString().substr(0,5);
 }
+#endregion
