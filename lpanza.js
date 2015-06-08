@@ -1,9 +1,8 @@
 var io;
 var gameSocket;
 
-
-#region Constants
-var serverMaxUser = 100;
+// Constants
+var serverMaxUsersCount = 100;
 var tanksHP = 10;
 var damagePerShot = 1;
 
@@ -17,7 +16,7 @@ var tankLenght = 40;
 var tankTurretRadius = 12;
 var tankGunWidth = 4;
 var tankGunLenght = 25;
-#endregion
+//
 var tanks = [ { } ];
 var userIdNames = { };
 
@@ -50,6 +49,13 @@ exports.initGame = function(sio, socket){
 function userJoin(user) {
 	var sock = this;
 	var userId = getUserId(sock.id);
+	
+	
+	if(getOnline().lenght > serverMaxUsersCount){
+		sock.emit('game.join.fail', { reason : 'Достигнут лимит игроков. Подождите пока сервер освободится'});
+		return false;
+	}
+	
 	userIdNames[userId] = user.user;
 	//Инициализация танка
 	var label = {};
@@ -77,6 +83,8 @@ function userJoin(user) {
 	tank.label = label;
 	
 	tanks[userId] = tank;
+	
+	sock.emit('game.join.ok',{ reason : 'All is well!'});
 }
 
 function gameInput(input){
@@ -85,7 +93,7 @@ function gameInput(input){
 		
 	}
 }
-#region HelperFunctions
+// HelperFunctions
 /**
 	Пока просто рандом, потом будем выбирать по менее заселенной местности
 */
@@ -107,4 +115,11 @@ function getRandomColor(){
 function getUserId(socketId){
 	return socketId.toString().substr(0,5);
 }
-#endregion
+
+function getOnline(){
+	var onlineList = [];
+	for(var us in userIdNames)
+		onlineList.push(userIdNames[us]);
+	return onlineList;
+}
+//
