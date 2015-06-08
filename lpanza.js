@@ -62,6 +62,9 @@ function userJoin(user) {
 	label.hp = tanksHP;
 	label.userName = user.user;
 	
+	var tank = { };
+	tank.rotation = getRandom(0,360);
+	
 	var gun = { };
 	gun.width = tankGunWidth;
 	gun.lenght = tankGunLenght;
@@ -72,9 +75,8 @@ function userJoin(user) {
 	turret.radius = tankTurretRadius;
 	turret.gun = gun;
 	
-	var tank = { };
+	
 	tank.position = getRandomPosition();
-	tank.rotation = getRandom(0,360);
 	tank.color = getRandomColor();
 	tank.width = tankWidth;
 	tank.lenght = tankLenght;

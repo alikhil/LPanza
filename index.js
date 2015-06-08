@@ -18,3 +18,6 @@ app.use(express.static(__dirname + '/public'));
 io.on('connection', function(socket){
 	lpanza.initGame(io, socket);
 });
+
+
+console.log('listening on *:' + port);
