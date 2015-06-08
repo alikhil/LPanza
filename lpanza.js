@@ -59,7 +59,7 @@ function userJoin(user) {
 	userIdNames[userId] = user.user;
 	//Инициализация танка
 	var label = {};
-	label.hp = tankHP;
+	label.hp = tanksHP;
 	label.userName = user.user;
 	
 	var gun = { };
