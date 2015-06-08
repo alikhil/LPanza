@@ -26,7 +26,7 @@ exports.initGame = function(sio, socket){
 	
 	var userId = socket.id.toString().substr(0,5);
 	
-	gameSocket.on('user.register', userRegister);
+	gameSocket.on('game.join', userJoin);
 	
 	/*
     gameSocket.emit('connected', { message: "You are connected!" });
@@ -44,7 +44,7 @@ exports.initGame = function(sio, socket){
 	*/
 }
 
-function userRegister(user) {
+function userJoin(user) {
 	var sock = this;
 	var userId = getUserId(sock.id);
 	userIdNames[userId] = user.user;
@@ -92,6 +92,7 @@ function getRandom(min, max){
 function getRandomColor(){
 	return [ getRandom(0,255), getRandom(0,255), getRandom(0,255) ];
 }
+
 function getUserId(socketId){
 	return socketId.toString().substr(0,5);
 }
