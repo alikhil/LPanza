@@ -2,7 +2,8 @@ var io;
 var gameSocket;
 
 // Constants
-var serverMaxUsersCount = 100;
+var debugMode = true;
+var serverMaxUsersCount = 7;
 var tanksHP = 10;
 var damagePerShot = 1;
 
@@ -12,10 +13,10 @@ var mapHeight = 3000;
 var distanceFromWall = 30;
 
 var tankWidth = 40;
-var tankLenght = 40;
+var tankLength = 40;
 var tankTurretRadius = 12;
 var tankGunWidth = 4;
-var tankGunLenght = 25;
+var tankGunLength = 25;
 //
 var tanks = [ { } ];
 var userIdNames = { };
@@ -51,23 +52,25 @@ function userJoin(user) {
 	var userId = getUserId(sock.id);
 	
 	
-	if(getOnline().lenght > serverMaxUsersCount){
+	if(getOnline().length > serverMaxUsersCount){
 		sock.emit('game.join.fail', { reason : 'Достигнут лимит игроков. Подождите пока сервер освободится'});
+		if(debugMode)
+			console.log(user.userName + ' не смог подключиться');
 		return false;
 	}
 	
-	userIdNames[userId] = user.user;
+	userIdNames[userId] = user.userName;
 	//Инициализация танка
 	var label = {};
 	label.hp = tanksHP;
-	label.userName = user.user;
+	label.userName = user.userName;
 	
 	var tank = { };
 	tank.rotation = getRandom(0,360);
 	
 	var gun = { };
 	gun.width = tankGunWidth;
-	gun.lenght = tankGunLenght;
+	gun.length = tankGunLength;
 	gun.color = getRandomColor();
 	
 	var turret = { };
@@ -79,7 +82,7 @@ function userJoin(user) {
 	tank.position = getRandomPosition();
 	tank.color = getRandomColor();
 	tank.width = tankWidth;
-	tank.lenght = tankLenght;
+	tank.length = tankLength;
 	
 	tank.turret = turret;
 	tank.label = label;
@@ -87,6 +90,8 @@ function userJoin(user) {
 	tanks[userId] = tank;
 	
 	sock.emit('game.join.ok',{ reason : 'All is well!'});
+	if(debugMode)
+			console.log(user.userName + ' подключился к серверу');
 }
 
 function gameInput(input){
@@ -122,6 +127,7 @@ function getOnline(){
 	var onlineList = [];
 	for(var us in userIdNames)
 		onlineList.push(userIdNames[us]);
+	
 	return onlineList;
 }
 //
