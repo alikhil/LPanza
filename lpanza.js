@@ -33,7 +33,6 @@ var bullets = [ ]
 var userIdNames = { };
 
 var userNames = [ ];
-var userPressedKeys = [  ]
 
 exports.initGame = function(sio, socket){
     io = sio;
@@ -42,23 +41,6 @@ exports.initGame = function(sio, socket){
 	var userId = getUserId(socket.id);
 	
 	gameSocket.on('game.join', userJoin);
-	
-	
-	
-	/*
-    gameSocket.emit('connected', { message: "You are connected!" });
-
-    // Host Events
-    gameSocket.on('hostCreateNewGame', hostCreateNewGame);
-    gameSocket.on('hostRoomFull', hostPrepareGame);
-    gameSocket.on('hostCountdownFinished', hostStartGame);
-    gameSocket.on('hostNextRound', hostNextRound);
-
-    // Player Events
-    gameSocket.on('playerJoinGame', playerJoinGame);
-    gameSocket.on('playerAnswer', playerAnswer);
-    gameSocket.on('playerRestart', playerRestart);
-	*/
 }
 
 function userJoin(user) {
@@ -73,11 +55,10 @@ function userJoin(user) {
 		return false;
 	}
 	
-	gameSocket.on('game.input', gameInput);
+	gameSocket.on('game.control', gameControl);
     gameSocket.on('disconnect', userLeave);
 	userIdNames[userId] = user.userName;
 	userNames.push(user.userName);
-	userPressedKeys[userId] = [];
 	
 	//Инициализация танка
 	var label = {};
@@ -112,7 +93,6 @@ function userJoin(user) {
 		console.log('userIdNames: ', userIdNames);
 		console.log('userNames: ', userNames);
 		console.log('tanks: ', tanks);
-        console.log('userPressedKeys: ', userPressedKeys);
         
 	}
 	sock.emit('game.join.ok',{ paintRect: { width : showAreaWidth, height : showAreaHeight } });
@@ -126,34 +106,34 @@ function userLeave(){
 	if(userIdNames.hasOwnProperty(userId)){
 		var uname = userIdNames[userId];
 		if(debugMode)
-			console.log(uname + ' покинул сервер');
-		userNames.slice(userNames.indexOf(uname), 1);
-		delete(uname);
+            console.log(uname + ' покинул сервер');
+        removeFromArray(userNames, uname);
+        delete (userIdNames[userId]);
+        delete (tanks[userId]);
 		
 	}
 }
 
-function gameInput(input){
-	var sock = this;
+function gameControl(control){
+    var sock = this;
 	var userId = getUserId(sock.id);
-	var tank = tanks[userId];
+    if (!userIdNames.hasOwnProperty(userId)) {
+        console.log('Попытка получить данные от юзера которого нет');
+        return false;
+    }
+    var tank = tanks[userId];
 	
-	if(input.type == 'mouse.move'){
-			tank.turret.rotation = input.rotation;
-	}
-	if(input.type == 'mouse.click'){
-		tank.turret.rotation = input.rotation;
-		doShot(tank);
-	}
-	if(input.type == 'keyboard.up'){
-		userPressedKeys[userId].erase(input.key);
-		if(userPressedKeys[userId].length == 0)
-			tank.speed = 0;
-	}
-	if(input.type == 'keyboard.down'){
-		userPressedKeys[userId].push(input.key);
-		tank.speed = tankSpeed;
-	}
+	if(control.type === 'shot')
+        doShot(tank);
+	
+	if(control.type === 'rotate')
+        tank.turret.rotation = control.rotation;
+
+    if (control.type === 'accelerate') {
+        tank.rotation = control.rotation;
+        tank.speed = control.power * tankSpeed;
+    }
+	
 }
 /**
  * Стреляем танком
@@ -202,5 +182,13 @@ function getOnline(){
 		onlineList.push(userIdNames[us]);
 	
 	return onlineList;
+}
+function removeFromArray(array, val) {
+    for (var i = array.length - 1; i >= 0; i--) {
+        if (array[i] === val) {
+            array.splice(i, 1);
+            return false;
+        }
+    }
 }
 //
