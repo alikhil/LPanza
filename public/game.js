@@ -47,12 +47,15 @@ $(document).ready(function () {
 		},
 		bindGameEvents: function () {
 			canvas.element
-				.on('mousedown', function (event) {
+				.on('mousemove', function (event) {
 					var offset = $(this).offset();
-					app.gameEventClick(
+					app.gameEventMouseMove(
 						event.pageX - offset.left,
 						event.pageY - offset.top
 						);
+				})
+				.on('mousedown', function () {
+					app.gameEventClick();
 				});
 			$(window).on('keydown', function (event) {
 					app.gameEventKeyDown(String.fromCharCode(event.which));
@@ -66,7 +69,17 @@ $(document).ready(function () {
 	};
 	var app = {
 		userName: '',
-		defaultUserName: 'Anonymous', 
+		defaultUserName: 'Anonymous',
+		game: {
+			paintRect: {
+				width: 0,
+				height: 0
+			},
+			userPosition: {
+				x: 0,
+				y: 0
+			}
+		},
 		initUI: function () {
 			$('#userNameTextInput').val(app.defaultUserName);
 			this.showMenuView();
@@ -81,23 +94,49 @@ $(document).ready(function () {
 				return false;
 			});
 		},
-		gameEventClick: function (x, y) {
-			socket.emit('game.input', {type: "mouse", });
+		gameEventClick: function () {
+			socket.emit('game.input', {
+				type: "mouse.click"
+			});
+		},
+		gameEventMouseMove: function (x, y) {
+			socket.emit('game.input', {
+				type: "mouse.move",
+				rotation: app.gameGetMapRotation(
+					x - app.game.userPosition.x,
+					y - app.game.userPosition.y
+				)
+			});
+		},
+		gameGetMapRotation: function (xDelta, yDelta) {
+			var xMapDelta = app.game.paintRect.width*xDelta / canvas.xSize,
+				yMapDelta = app.game.paintRect.height*yDelta / canvas.ySize,
+				radians = Math.atan(yMapDelta / xMapDelta),
+				degrees;
+			if(xMapDelta < 0) {
+				radians += Math.PI;
+			}
+			degrees = 180*(radians/Math.PI);
+			return degrees;
 		},
 		gameEventKeyDown: function (key) {
 			socket.emit('game.input', {
-				type: "keyboard", 
-				key: String.fromCharCode(event.which),
-				state: "down"});
+				type: "keyboard.down",
+				key: key
+			});
 		},
 		gameEventKeyUp: function (key) {
 			socket.emit('game.input', {
-				type: "keyboard", 
-				key: String.fromCharCode(event.which),
-				state: "up"});
+				type: "keyboard.up",
+				key: key
+			});
 		},
 		bindSocketEvents: function () {
 			socket.on('game.join.ok', function (packet) {
+				app.game.paintRect.width = packet.paintRect.width;
+				app.game.paintRect.height = packet.paintRect.height;
+				app.game.userPosition.x = app.game.paintRect.width/2;
+				app.game.userPosition.y = app.game.paintRect.height/2;
 				app.hideMenuView();
 				canvas.bindGameEvents();
 			});
