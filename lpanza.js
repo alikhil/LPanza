@@ -22,6 +22,11 @@ var tankTurretRadius = 12;
 var tankGunWidth = 4;
 var tankGunLength = 25;
 var tankSpeed = 1;
+
+var bulletDistanceFromGun = 5;
+var bulletWidth = 2;
+var bulletLength = 8;
+var bulletSpeed = 3;
 //
 var tanks = [ ];
 var bullets = [ ]
@@ -38,7 +43,7 @@ exports.initGame = function(sio, socket){
 	
 	gameSocket.on('game.join', userJoin);
 	
-	sio.on('disconnect', userLeave);
+	
 	
 	/*
     gameSocket.emit('connected', { message: "You are connected!" });
@@ -69,7 +74,7 @@ function userJoin(user) {
 	}
 	
 	gameSocket.on('game.input', gameInput);
-	
+    gameSocket.on('disconnect', userLeave);
 	userIdNames[userId] = user.userName;
 	userNames.push(user.userName);
 	userPressedKeys[userId] = [];
@@ -114,7 +119,8 @@ function userJoin(user) {
 	if(debugMode)
 			console.log(user.userName + ' подключился к серверу');
 }
-function userLeave(socket){
+function userLeave(){
+    var socket = this;
 	var userId = getUserId(socket.id);
 	
 	if(userIdNames.hasOwnProperty(userId)){
@@ -149,9 +155,22 @@ function gameInput(input){
 		tank.speed = tankSpeed;
 	}
 }
+/**
+ * Стреляем танком
+ * */
 function doShot(tank){
 	var bullet = {};
-	bullet.rotation = tank.turret.rotation;
+    bullet.rotation = tank.turret.rotation;
+    bullet.length = bulletLength;
+    bullet.width = bulletWidth;
+    var angle = (Math.PI / 180) * bullet.rotation;
+    var distFromTurretCenter = tank.turret.distance + tank.turret.gun.length + bulletDistanceFromGun + (bullet.length / 2);
+    var y = Math.sin(angle) * distFromTurretCenter;
+    var x = Math.cos(angle) * distFromTurretCenter;
+    bullet.color = getRandomColor();
+    bullet.position = { x : x + tank.position.x, y : y + tank.position.y };
+    
+    bullets.push(bullet);
 }
 // HelperFunctions
 /**
