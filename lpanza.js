@@ -3,9 +3,13 @@ var gameSocket;
 
 // Constants
 var debugMode = true;
-var serverMaxUsersCount = 7;
+var serverMaxUsersCount = 100;
+
 var tanksHP = 10;
 var damagePerShot = 1;
+
+var showAreaWidth = 700;
+var showAreaHeight = 400;
 
 var mapWidth = 3000;
 var mapHeight = 3000;
@@ -21,15 +25,17 @@ var tankGunLength = 25;
 var tanks = [ { } ];
 var userIdNames = { };
 
+var userNames = [];
 
 exports.initGame = function(sio, socket){
     io = sio;
     gameSocket = socket;
 	
-	var userId = socket.id.toString().substr(0,5);
+	var userId = getUserId(socket.id);
 	
 	gameSocket.on('game.join', userJoin);
-	gameSocket.on('game.input', gameInput);
+	
+	sio.on('disconnect', userLeave);
 	
 	/*
     gameSocket.emit('connected', { message: "You are connected!" });
@@ -52,14 +58,18 @@ function userJoin(user) {
 	var userId = getUserId(sock.id);
 	
 	
-	if(getOnline().length > serverMaxUsersCount){
+	if(userNames.length >= serverMaxUsersCount){
 		sock.emit('game.join.fail', { reason : 'Достигнут лимит игроков. Подождите пока сервер освободится'});
 		if(debugMode)
 			console.log(user.userName + ' не смог подключиться');
 		return false;
 	}
 	
+	gameSocket.on('game.input', gameInput);
+	
 	userIdNames[userId] = user.userName;
+	userNames.push(user.userName);
+	
 	//Инициализация танка
 	var label = {};
 	label.hp = tanksHP;
@@ -89,9 +99,21 @@ function userJoin(user) {
 	
 	tanks[userId] = tank;
 	
-	sock.emit('game.join.ok',{ reason : 'All is well!'});
+	sock.emit('game.join.ok',{ paintRect: { width : showAreaWidth, height : showAreaHeight } });
 	if(debugMode)
 			console.log(user.userName + ' подключился к серверу');
+}
+function userLeave(socket){
+	var userId = getUserId(socket.id);
+	
+	if(userIdNames.hasOwnProperty(userId)){
+		var uname = userIdNames[userId];
+		if(debugMode)
+			console.log(uname + ' покинул сервер');
+		userNames.erase(uname);
+		delete(uname);
+		
+	}
 }
 
 function gameInput(input){

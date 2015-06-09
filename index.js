@@ -2,8 +2,8 @@
  * Взято отсюда
  * http://frontender.info/building-multiplayer-games-with-node-js-and-socket-io/
  */
-var app = require('express')();
 var express = require('express');
+var app = express();
 
 var lpanza = require('./lpanza');
 
@@ -18,6 +18,7 @@ app.use(express.static(__dirname + '/public'));
 io.on('connection', function(socket){
 	lpanza.initGame(io, socket);
 });
+
 
 
 console.log('listening on *:' + port);
