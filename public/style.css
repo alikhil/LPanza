@@ -6,6 +6,9 @@ html, body, .fullWrap {
 	border: 0px;
 	box-sizing: border-box;
 }
+.fullWrap {
+	overflow: hidden;
+}
 #gameCanvas {
 	display: block;
 	margin-left: auto;
