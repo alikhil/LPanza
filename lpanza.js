@@ -21,11 +21,14 @@ var tankLength = 40;
 var tankTurretRadius = 12;
 var tankGunWidth = 4;
 var tankGunLength = 25;
+var tankSpeed = 1;
 //
 var tanks = [ { } ];
+var bullets = [ ]
 var userIdNames = { };
 
-var userNames = [];
+var userNames = [ ];
+var userPressedKeys [ { } ]
 
 exports.initGame = function(sio, socket){
     io = sio;
@@ -69,6 +72,7 @@ function userJoin(user) {
 	
 	userIdNames[userId] = user.userName;
 	userNames.push(user.userName);
+	userPressedKeys[userId] = [];
 	
 	//Инициализация танка
 	var label = {};
@@ -93,7 +97,7 @@ function userJoin(user) {
 	tank.color = getRandomColor();
 	tank.width = tankWidth;
 	tank.length = tankLength;
-	
+	tank.speed = 0;
 	tank.turret = turret;
 	tank.label = label;
 	
@@ -117,15 +121,34 @@ function userLeave(socket){
 }
 
 function gameInput(input){
+	var sock = this;
+	var userId = getUserId(sock.id);
+	var tank = tanks[userId];
 	
-	if(input.type == 'mouse'){
-		
+	if(input.type == 'mouse.move'){
+			tank.turret.rotation = input.rotation;
+	}
+	if(input.type == 'mouse.click'){
+		tank.turret.rotation = input.rotation;
+		doShot(tank);
+	}
+	if(input.type == 'keyboard.up'){
+		userPressedKeys[userId].erase(input.key);
+		if(userPressedKeys[userId].length == 0)
+			tank.speed = 0;
+	}
+	if(input.type == 'keyboard.down'){
+		userPressedKeys[userId].push(input.key);
+		tank.speed = tankSpeed;
 	}
 }
-// HelperFunctions
+function doShot(tank){
+
+}// HelperFunctions
 /**
 	Пока просто рандом, потом будем выбирать по менее заселенной местности
 */
+
 function getRandomPosition(){
 	var pos = { };
 	pos.x = getRandom(distanceFromWall,mapWidth - distanceFromWall);
