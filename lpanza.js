@@ -127,7 +127,7 @@ function userLeave(){
 		var uname = userIdNames[userId];
 		if(debugMode)
 			console.log(uname + ' покинул сервер');
-		userNames.erase(uname);
+		userNames.slice(userNames.indexOf(uname), 1);
 		delete(uname);
 		
 	}
