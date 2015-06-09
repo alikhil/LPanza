@@ -23,12 +23,12 @@ var tankGunWidth = 4;
 var tankGunLength = 25;
 var tankSpeed = 1;
 //
-var tanks = [ { } ];
+var tanks = [ ];
 var bullets = [ ]
 var userIdNames = { };
 
 var userNames = [ ];
-var userPressedKeys [ { } ]
+var userPressedKeys = [  ]
 
 exports.initGame = function(sio, socket){
     io = sio;
@@ -92,6 +92,7 @@ function userJoin(user) {
 	turret.radius = tankTurretRadius;
 	turret.gun = gun;
 	
+	turret.gun.distance = turret.radius;
 	
 	tank.position = getRandomPosition();
 	tank.color = getRandomColor();
@@ -102,7 +103,13 @@ function userJoin(user) {
 	tank.label = label;
 	
 	tanks[userId] = tank;
-	
+	if(debugMode){
+		console.log('userIdNames: ', userIdNames);
+		console.log('userNames: ', userNames);
+		console.log('tanks: ', tanks);
+        console.log('userPressedKeys: ', userPressedKeys);
+        
+	}
 	sock.emit('game.join.ok',{ paintRect: { width : showAreaWidth, height : showAreaHeight } });
 	if(debugMode)
 			console.log(user.userName + ' подключился к серверу');
@@ -143,8 +150,10 @@ function gameInput(input){
 	}
 }
 function doShot(tank){
-
-}// HelperFunctions
+	var bullet = {};
+	bullet.rotation = tank.turret.rotation;
+}
+// HelperFunctions
 /**
 	Пока просто рандом, потом будем выбирать по менее заселенной местности
 */
@@ -156,8 +165,8 @@ function getRandomPosition(){
 	return pos;
 }
 
-function getRandom(min, max){
-  return Math.random() * (max - min) + min;
+function getRandom(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 function getRandomColor(){
