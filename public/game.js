@@ -5,11 +5,13 @@ $(document).ready(function () {
 		context: undefined,
 		width: NaN,
 		height: NaN,
-		heightParentPercent: 90,
-		widthParentPercent: 90,
-		RGBToCSS: function (R, G, B) {
-			var letters = '0123456789ABCDEF'.split('');
-			var color = '#';
+		sizeParentPercent: 100,
+		RGBToCSS: function (rgb) {
+			var letters = '0123456789ABCDEF'.split(''),
+				color = '#',
+				R = rgb[0],
+				G = rgb[1],
+				B = rgb[2];
 			color += letters[Math.floor(R/16)];
 			color += letters[R%16];
 			color += letters[Math.floor(G/16)];
@@ -37,21 +39,31 @@ $(document).ready(function () {
 					canvas.width,
 					canvas.height);
 			canvas.width = parent.offsetWidth*(
-				canvas.widthParentPercent/100
+				canvas.sizeParentPercent/100
 			);
-			canvas.height = parent.offsetHeight*(
-				canvas.heightParentPercent/100
+			canvas.height = canvas.width*(
+				app.game.paintRect.height/
+				app.game.paintRect.width
 			);
+			if(canvas.height > parent.offsetHeight) {
+				canvas.height = parent.offsetHeight*(
+					canvas.sizeParentPercent/100
+				);
+				canvas.width = canvas.height*(
+					app.game.paintRect.width/
+					app.game.paintRect.height
+				);
+			}
 			canvas.context.save();
 			canvas.element
 				.attr('width', canvas.width)
 				.attr('height', canvas.height);
 			canvas.context.restore();
 			canvas.context.putImageData(tempImageData, 0, 0);
-			canvas.element.css("margin-top", ((canvas.height/canvas.width)*(100-canvas.heightParentPercent)/2)+"%");
-
-			app.game.screenUserPosition =
-				app.positionMapToScreen(app.game.mapUserPosition);
+			canvas.element.css(
+				"margin-top",
+				(parent.offsetHeight-canvas.height)/2+"px"
+			);
 		},
 		bindGameEvents: function () {
 			canvas.element
@@ -83,17 +95,14 @@ $(document).ready(function () {
 		defaultUserName: 'Anonymous',
 		game: {
 			paintRect: {
-				width: NaN,
-				height: NaN
+				width: 1,
+				height: 1
 			},
-			mapUserPosition: {
+			userPosition: {
 				x: NaN,
 				y: NaN
 			},
-			screenUserPosition: {
-				x: NaN,
-				y: NaN
-			}
+			backgroundColor: [NaN, NaN, NaN]
 		},
 		controls: {
 			keyAcceleration: {
@@ -126,8 +135,8 @@ $(document).ready(function () {
 				var mapPosition = app.positionScreenToMap(position),
 					newRotation = app.angleRadToDeg(
 						app.getAngle(
-							mapPosition.x - app.game.mapUserPosition.x,
-							mapPosition.y - app.game.mapUserPosition.y
+							mapPosition.x - app.game.userPosition.x,
+							mapPosition.y - app.game.userPosition.y
 						)
 					);
 				if(app.controls.rotation != newRotation) {
@@ -217,27 +226,10 @@ $(document).ready(function () {
 			});
 		},
 		positionScreenToMap: function (position) {
+			var ratio = app.game.paintRect.width/canvas.width;
 			return {
-				x: app.game.paintRect.width*(
-					position.x/
-					canvas.width
-				),
-				y: app.game.paintRect.height*(
-					position.y/
-					canvas.height
-				)
-			};
-		},
-		positionMapToScreen: function (position) {
-			return {
-				x: canvas.width*(
-					position.x/
-					app.game.paintRect.width
-				),
-				y: canvas.height*(
-					position.y/
-					app.game.paintRect.height
-				)
+				x: position.x * ratio,
+				y: position.y * ratio
 			};
 		},
 		getAngle: function (xDelta, yDelta) {
@@ -253,11 +245,15 @@ $(document).ready(function () {
 		angleRadToDeg: function (angle) {
 			return 180*(angle/Math.PI);
 		},
+		angleDegToRad: function (angle) {
+			return Math.PI*(angle/180);
+		},
 		bindSocketEvents: function () {
 			socket.on('game.join.ok', function (packet) {
 				app.game.paintRect = packet.paintRect;
-				app.game.mapUserPosition.x = app.game.paintRect.width/2;
-				app.game.mapUserPosition.y = app.game.paintRect.height/2;
+				app.game.userPosition.x = app.game.paintRect.width/2;
+				app.game.userPosition.y = app.game.paintRect.height/2;
+				app.game.backgroundColor = packet.backgroundColor;
 				app.hideMenuView();
 				canvas.resize();
 				canvas.bindGameEvents();
@@ -280,6 +276,9 @@ $(document).ready(function () {
 		},
 		init: function () {
 			app.initUI();
+			canvas.init();
+			gamePaint.app = app;
+			gamePaint.canvas = canvas;
 		},
 		showMenuView: function () {
 			$('#menuModal').modal('show');
@@ -293,7 +292,4 @@ $(document).ready(function () {
 		}
 	};
 	app.init();
-	canvas.init();
-	gamePaint.app = app;
-	gamePaint.canvas = canvas;
 });
