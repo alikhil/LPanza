@@ -44,6 +44,9 @@ var timer;
 var test = 0;
 
 var _und = require("./underscore-min");
+var groups = require('./group.js');
+
+groups.init(mapWidth, mapHeight);
 
 exports.initGame = function(sio, socket){
     io = sio;
@@ -175,16 +178,13 @@ function serverTick(){
     if (userNames.length > 0) {
         var objects = tanks.concat(bullets);
         objects.sort(positionComparator);
-        var groups = getGroups(objects, checkColisionAreaWidth, checkColisionAreaHeight);
+        var objectGroups = groups.getGroups(objects, checkColisionAreaWidth, checkColisionAreaHeight);
     }
 }
 
 
 // HelperFunctions
 
-function getGroups(array, width, height){
-    var groups = [];
-}
 
 function positionComparator(a, b) {
     if (a.position.y == b.position.y) {
