@@ -3,7 +3,7 @@ var gameSocket;
 
 // Constants
 var debugMode = true;
-var serverMaxUsersCount = 100;
+var serverMaxUsersCount = 10;
 var serverTickDelay = 50;
 
 var backgroundColor = [144, 238, 144];
@@ -11,11 +11,11 @@ var backgroundColor = [144, 238, 144];
 var tanksHP = 10;
 var damagePerShot = 1;
 
-var showAreaWidth = 700;
-var showAreaHeight = 400;
+var showAreaWidth = 360;
+var showAreaHeight = 280;
 
-var mapWidth = 3000;
-var mapHeight = 3000;
+var mapWidth = 1000;
+var mapHeight = 1000;
 
 var distanceFromWall = 30;
 
@@ -31,8 +31,8 @@ var bulletWidth = 2;
 var bulletLength = 8;
 var bulletSpeed = 3;
 
-var checkColisionAreaWidth = 200;
-var checkColisionAreaHeight = 200;
+var checkColisionAreaWidth = 100;
+var checkColisionAreaHeight = 100;
 //
 var tanks = [ ];
 var bullets = [ ]
@@ -44,6 +44,7 @@ var timer;
 var test = 0;
 
 var _und = require("./underscore-min");
+
 exports.initGame = function(sio, socket){
     io = sio;
     gameSocket = socket;
@@ -217,13 +218,7 @@ function getUserId(socketId){
 	return socketId.toString().substr(0,5);
 }
 
-function getOnline(){
-	var onlineList = [];
-	for(var us in userIdNames)
-		onlineList.push(userIdNames[us]);
-	
-	return onlineList;
-}
+
 function removeFromArray(array, val) {
     for (var i = array.length - 1; i >= 0; i--) {
         if (array[i] === val) {
