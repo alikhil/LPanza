@@ -6,6 +6,8 @@ var debugMode = true;
 var serverMaxUsersCount = 100;
 var serverTickDelay = 50;
 
+var backgroundColor = [144, 238, 144];
+
 var tanksHP = 10;
 var damagePerShot = 1;
 
@@ -101,7 +103,7 @@ function userJoin(user) {
 		console.log('tanks: ', tanks);
         console.log('bullets: ', bullets);
 	}
-	sock.emit('game.join.ok',{ paintRect: { width : showAreaWidth, height : showAreaHeight } });
+	sock.emit('game.join.ok',{ paintRect: { width : showAreaWidth, height : showAreaHeight }, backgroundColor : backgroundColor });
 	if(debugMode)
 			console.log(user.userName + ' подключился к серверу');
 }
