@@ -13,4 +13,8 @@ html, body, .fullWrap {
 	display: block;
 	margin-left: auto;
 	margin-right: auto;
+
+	/* debug */
+	outline: 3px dashed red;
+	/* debug */
 }
