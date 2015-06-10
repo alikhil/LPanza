@@ -15,6 +15,7 @@ var io = require('socket.io').listen(server);
 
 app.use(express.static(__dirname + '/public'));
 
+lpanza.startServer();
 
 io.on('connection', function(socket){
 	lpanza.initGame(io, socket);

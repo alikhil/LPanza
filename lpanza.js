@@ -4,6 +4,7 @@ var gameSocket;
 // Constants
 var debugMode = true;
 var serverMaxUsersCount = 100;
+var serverTickDelay = 50;
 
 var tanksHP = 10;
 var damagePerShot = 1;
@@ -27,6 +28,9 @@ var bulletDistanceFromGun = 5;
 var bulletWidth = 2;
 var bulletLength = 8;
 var bulletSpeed = 3;
+
+var checkColisionAreaWidth = 200;
+var checkColisionAreaHeight = 200;
 //
 var tanks = [ ];
 var bullets = [ ]
@@ -34,6 +38,7 @@ var userIdNames = { };
 
 var userNames = [ ];
 
+var timer;
 exports.initGame = function(sio, socket){
     io = sio;
     gameSocket = socket;
@@ -44,6 +49,9 @@ exports.initGame = function(sio, socket){
     gameSocket.on('game.test', gameTest);
 }
 
+exports.startServer = function (){
+    timer = setInterval(serverTick, serverTickDelay);
+}
 function userJoin(user) {
 	var sock = this;
 	var userId = getUserId(sock.id);
@@ -68,9 +76,8 @@ function userJoin(user) {
 	var tank = { };
 	tank.rotation = getRandom(0,360);
 	
-	var gun = { };
-	gun.width = tankGunWidth;
-	gun.length = tankGunLength;
+    var gun = {};
+    gun.size = { width : tankGunWidth, length : tankGunLength };
 	gun.color = getRandomColor();
 	
 	var turret = { };
@@ -82,8 +89,7 @@ function userJoin(user) {
 	
 	tank.position = getRandomPosition();
 	tank.color = getRandomColor();
-	tank.width = tankWidth;
-	tank.length = tankLength;
+    tank.size = { width : tankWidth, length : tankLength };
 	tank.speed = 0;
 	tank.turret = turret;
 	tank.label = label;
@@ -148,8 +154,7 @@ function gameTest(){
 function doShot(tank){
 	var bullet = {};
     bullet.rotation = tank.turret.rotation;
-    bullet.length = bulletLength;
-    bullet.width = bulletWidth;
+    bullet.size = { length : bulletLength, width : bulletWidth };
     var angle = (Math.PI / 180) * bullet.rotation;
     var distFromTurretCenter = tank.turret.distance + tank.turret.gun.length + bulletDistanceFromGun + (bullet.length / 2);
     var y = Math.sin(angle) * distFromTurretCenter;
@@ -159,7 +164,31 @@ function doShot(tank){
     
     bullets.push(bullet);
 }
+
+function serverTick(){
+    if (userNames.length > 0) {
+        var objects = tanks.concat(bullets);
+        objects.sort(positionComparator);
+        var groups = getGroups(objects, checkColisionAreaWidth, checkColisionAreaHeight);
+    }
+}
+
+
 // HelperFunctions
+
+function getGroups(array, width, height){
+    var groups = [];
+}
+
+function positionComparator(a, b) {
+    if (a.position.y == b.position.y) {
+        if (a.position.x == b.position.x)
+            return 0;
+        return a.position.x < b.position.x ? -1 : 1;
+    }
+    return a.position.y < b.position.y ? -1 : 1;
+
+}
 /**
 	Пока просто рандом, потом будем выбирать по менее заселенной местности
 */
