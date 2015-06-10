@@ -41,10 +41,13 @@ var userIdNames = { };
 var userNames = [ ];
 
 var timer;
+var test = 0;
+
+var _und = require("./underscore-min");
 exports.initGame = function(sio, socket){
     io = sio;
     gameSocket = socket;
-	
+    console.log(test);
 	var userId = getUserId(socket.id);
 	
     gameSocket.on('game.join', userJoin);
