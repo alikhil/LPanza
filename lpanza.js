@@ -40,14 +40,14 @@ exports.initGame = function(sio, socket){
 	
 	var userId = getUserId(socket.id);
 	
-	gameSocket.on('game.join', userJoin);
+    gameSocket.on('game.join', userJoin);
+    gameSocket.on('game.test', gameTest);
 }
 
 function userJoin(user) {
 	var sock = this;
 	var userId = getUserId(sock.id);
-	
-	
+    
 	if(userNames.length >= serverMaxUsersCount){
 		sock.emit('game.join.fail', { reason : 'Достигнут лимит игроков. Подождите пока сервер освободится'});
 		if(debugMode)
@@ -93,7 +93,7 @@ function userJoin(user) {
 		console.log('userIdNames: ', userIdNames);
 		console.log('userNames: ', userNames);
 		console.log('tanks: ', tanks);
-        
+        console.log('bullets: ', bullets);
 	}
 	sock.emit('game.join.ok',{ paintRect: { width : showAreaWidth, height : showAreaHeight } });
 	if(debugMode)
@@ -135,6 +135,13 @@ function gameControl(control){
     }
 	
 }
+
+function gameTest(){
+    if (debugMode) {
+        sock.emit('game.test', { tanks : tanks, bullets : bullets, userNames : userNames, userIdNames : userIdNames });
+    }
+}
+
 /**
  * Стреляем танком
  * */
