@@ -77,7 +77,7 @@ function userJoin(user) {
 	
 	var tank = { };
 	tank.rotation = getRandom(0,360);
-	
+    tank.type = 'tank';
     var gun = {};
     gun.size = { width : tankGunWidth, length : tankGunLength };
 	gun.color = getRandomColor();
@@ -163,7 +163,7 @@ function doShot(tank){
     var x = Math.cos(angle) * distFromTurretCenter;
     bullet.color = getRandomColor();
     bullet.position = { x : x + tank.position.x, y : y + tank.position.y };
-    
+    bullet.type = 'bullet';
     bullets.push(bullet);
 }
 
