@@ -24,8 +24,8 @@ $(document).ready(function () {
 			canvas.width = 1;
 			canvas.height = 1;
 			canvas.element
-				.width(canvas.width)
-				.height(canvas.height);
+				.attr('width', canvas.width)
+				.attr('height', canvas.height);
 			canvas.resize();
 			$(window).resize(function () {
 				canvas.resize();
@@ -43,8 +43,9 @@ $(document).ready(function () {
 				canvas.heightParentPercent/100
 			);
 			canvas.context.save();
-			canvas.element.width(canvas.width);
-			canvas.element.height(canvas.height);
+			canvas.element
+				.attr('width', canvas.width)
+				.attr('height', canvas.height);
 			canvas.context.restore();
 			canvas.context.putImageData(tempImageData, 0, 0);
 			canvas.element.css("margin-top", ((canvas.height/canvas.width)*(100-canvas.heightParentPercent)/2)+"%");
@@ -215,7 +216,7 @@ $(document).ready(function () {
 				return false;
 			});
 		},
-		positionMapToScreen: function (position) {
+		positionScreenToMap: function (position) {
 			return {
 				x: app.game.paintRect.width*(
 					position.x/
@@ -227,7 +228,7 @@ $(document).ready(function () {
 				)
 			};
 		},
-		positionScreenToMap: function (position) {
+		positionMapToScreen: function (position) {
 			return {
 				x: canvas.width*(
 					position.x/
@@ -258,6 +259,7 @@ $(document).ready(function () {
 				app.game.mapUserPosition.x = app.game.paintRect.width/2;
 				app.game.mapUserPosition.y = app.game.paintRect.height/2;
 				app.hideMenuView();
+				canvas.resize();
 				canvas.bindGameEvents();
 			});
 			socket.on('game.join.fail', function (packet) {
