@@ -89,6 +89,7 @@ $(document).ready(function () {
 				});
 		},
 		unbindGameEvents: function () {
+			// for future use
 		}
 	};
 	var app = {
@@ -103,7 +104,8 @@ $(document).ready(function () {
 				x: NaN,
 				y: NaN
 			},
-			backgroundColor: [NaN, NaN, NaN]
+			backgroundColor: [NaN, NaN, NaN],
+			userId: undefined
 		},
 		controls: {
 			keyAcceleration: {
@@ -202,7 +204,7 @@ $(document).ready(function () {
 				});
 			},
 			gameControlRotate: function () {
-/* log */ console.log('socket.emit(\''+'game.control'+'\', '+JSON.stringify({type: "rotate",rotation: app.controls.rotation})+')');
+// /* log */ console.log('socket.emit(\''+'game.control'+'\', '+JSON.stringify({type: "rotate",rotation: app.controls.rotation})+')');
 				socket.emit('game.control', {
 					type: "rotate",
 					rotation: app.controls.rotation
@@ -262,14 +264,18 @@ $(document).ready(function () {
 				app.hideMenuView();
 				canvas.resize();
 				canvas.bindGameEvents();
+				app.bindSocketGameEvents();
+				app.game.userId = socket.id.toString().substr(0, 5); // copy-paste from server source
 			});
 			socket.on('game.join.fail', function (packet) {
 /* log */ console.log('socket.on(\''+'game.join.fail'+'\', '+JSON.stringify(packet)+')');
 				$("#gameJoinFailReason").text(packet.reason);
 				app.showErrorView();
 			});
+		},
+		bindSocketGameEvents: function () {
 			socket.on('game.paint', function (packet) {
-/* log */ console.log('socket.on(\''+'game.paint'+'\', '+JSON.stringify(packet)+')');
+// * log */ console.log('socket.on(\''+'game.paint'+'\', '+JSON.stringify(packet)+')');
 				gamePaint.paint(packet);
 			});
 		},

@@ -3,25 +3,58 @@ var gamePaint = {
 	canvas: undefined,
 	tanks: [],
 	bullets: [],
-	borderColor: "#000000",
+	borderColor: '#000000',
+	labelFont: '12px Arial',
+	labelColor2: '#404040',
+	labelColor: '#BFBFBF',
 	paint: function (packet) {
-		var tanks, bullets;
+		var tanks,
+			bullets,
+			offset = {
+				x: 0,
+				y: 0
+			},
+			index;
 		gamePaint.tanks.splice(0, gamePaint.tanks.length);
 		tanks = packet.tanks;
-		for(var index = 0; index < tanks.length; index ++) {
+		for(index = 0; index < tanks.length; index ++) {
+			if(tanks[index].label.userId == gamePaint.app.game.userId) {
+				offset.x = tanks[index].position.x -
+					gamePaint.app.game.paintRect.width/2;
+				offset.y = tanks[index].position.y -
+					gamePaint.app.game.paintRect.height/2;
+				break;
+			}
+		}
+		if(index >= tanks.length) {
+			console.log('Current player`s tank not found');
+		}
+		for(index = 0; index < tanks.length; index ++) {
 			tanks[index].color =
 				gamePaint.canvas.RGBToCSS(
 					tanks[index].color
 				);
+			tanks[index].turret.color =
+				gamePaint.canvas.RGBToCSS(
+					tanks[index].turret.color
+				);
+			tanks[index].turret.gun.color =
+				gamePaint.canvas.RGBToCSS(
+					tanks[index].turret.gun.color
+				);
+			tanks[index].position.x -= offset.x;
+			tanks[index].position.y -= offset.y;
 		}
 		gamePaint.tanks = tanks;
 		gamePaint.bullets.splice(0, gamePaint.bullets.length);
 		bullets = packet.bullets;
-		for(var index = 0; index < bullets.length; index ++) {
+		for(index = 0; index < bullets.length; index ++) {
 			bullets[index].color =
 				gamePaint.canvas.RGBToCSS(
 					bullets[index].color
 				);
+			bullets[index].position.x -= offset.x;
+			bullets[index].position.y -= offset.y;
 		}
 		gamePaint.bullets = bullets;
 		gamePaint.repaint();
@@ -32,10 +65,19 @@ var gamePaint = {
 		gamePaint.drawBackground();
 		scaleRatio = gamePaint.scaleAsMap();
 		for(var index = 0; index < gamePaint.tanks.length; index ++) {
-			gamePaint.drawTank(gamePaint.tanks[index]);
+			gamePaint.drawTankBody(gamePaint.tanks[index]);
+		}
+		for(var index = 0; index < gamePaint.tanks.length; index ++) {
+			gamePaint.drawTurret(gamePaint.tanks[index]);
+		}
+		for(var index = 0; index < gamePaint.tanks.length; index ++) {
+			gamePaint.drawGun(gamePaint.tanks[index]);
 		}
 		for(var index = 0; index < gamePaint.bullets.length; index ++) {
 			gamePaint.drawBullet(gamePaint.bullets[index]);
+		}
+		for(var index = 0; index < gamePaint.tanks.length; index ++) {
+			gamePaint.drawLabel(gamePaint.tanks[index]);
 		}
 		gamePaint.scaleAsScreen(scaleRatio);
 	},
@@ -63,11 +105,6 @@ var gamePaint = {
 			gamePaint.canvas.width,
 			gamePaint.canvas.height
 		);
-	},
-	drawTank: function (tank) {
-		gamePaint.drawTankBody(tank);
-		gamePaint.drawTurret(tank);
-		gamePaint.drawGun(tank);
 	},
 	drawTankBody: function (tank) {
 		gamePaint.drawRectObject(
@@ -97,6 +134,24 @@ var gamePaint = {
 			gun.distance
 		);
 	},
+	drawLabel: function (tank) {
+		var context = gamePaint.canvas.context,
+			text = tank.label.userName + ' [' + tank.label.hp + ' \u2764]';
+		context.textAlign = 'center';
+		context.font = gamePaint.labelFont;
+		context.fillStyle = gamePaint.labelColor;
+		context.fillText(
+			text,
+			tank.position.x,
+			tank.position.y - tank.size.length
+		);
+		context.fillStyle = gamePaint.labelColor2;
+		context.fillText(
+			text,
+			tank.position.x+1,
+			tank.position.y - tank.size.length + 1
+		);
+	},
 	drawBullet: function (bullet) {
 		gamePaint.drawRectObject(
 			bullet.position,
@@ -120,8 +175,8 @@ var gamePaint = {
 			size.width,
 			size.length
 		);
-		context.fill();
 		context.stroke();
+		context.fill();
 
 		context.rotate(-gamePaint.app.angleDegToRad(rotation-90));
 		context.translate(-position.x, -position.y);
