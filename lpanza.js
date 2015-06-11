@@ -222,12 +222,13 @@ function serverTick(){
                 }
             }
         }
-        console.log(repaintGroups);
+        //console.log(repaintGroups);
         var clients = Object.keys(io.engine.clients);
         for (var i = 0; i < clients.length; i++) {
             var uid = clients[i];
             if (repaintGroups[uid.substr(0,5)] !== undefined) {
-                io.engine.clients[uid].emit('game.paint', repaintGroups[uid]);
+                io.engine.clients[uid].emit('game.paint', repaintGroups[uid.substr(0, 5)]);
+                console.log(repaintGroups[uid.substr(0, 5)]);
             }
         }
     }

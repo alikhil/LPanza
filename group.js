@@ -103,6 +103,10 @@ function getPoints(x, y) {
  * Получаем id всех объектов которые лежат на заданом прямогуольнике с точками (x ; y) и (xx ; yy)
  * */
 function getPointsInRect(x, y, xx, yy) {
+    xx = Math.floor(xx);
+    x = Math.floor(x);
+    yy = Math.floor(yy);
+    y = Math.floor(y);
     var bigRect = getPoints(xx, yy);
     var downRect = getPoints(xx, y);
     var leftRect = getPoints(x, yy);
