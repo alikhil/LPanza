@@ -34,6 +34,7 @@ $(document).ready(function () {
 			});
 		},
 		resize: function () {
+/* log */ console.log('window.resize');
 			var parent = canvas.element.parent()[0],
 				tempImageData = canvas.context.getImageData(0, 0, 
 					canvas.width,
@@ -193,6 +194,7 @@ $(document).ready(function () {
 				}
 			},
 			gameControlAccelerate: function () {
+/* log */ console.log('socket.emit(\''+'game.control'+'\', '+JSON.stringify({type: "accelerate",rotation: app.controls.acceleration.rotation,power: app.controls.acceleration.power})+')');
 				socket.emit('game.control', {
 					type: "accelerate",
 					rotation: app.controls.acceleration.rotation,
@@ -200,12 +202,14 @@ $(document).ready(function () {
 				});
 			},
 			gameControlRotate: function () {
+/* log */ console.log('socket.emit(\''+'game.control'+'\', '+JSON.stringify({type: "rotate",rotation: app.controls.rotation})+')');
 				socket.emit('game.control', {
 					type: "rotate",
 					rotation: app.controls.rotation
 				});
 			},
 			gameControlShot: function () {
+/* log */ console.log('socket.emit(\''+'game.control'+'\', '+JSON.stringify({type: "shot"})+')');
 				socket.emit('game.control', {
 					type: "shot"
 				});
@@ -250,17 +254,23 @@ $(document).ready(function () {
 		},
 		bindSocketEvents: function () {
 			socket.on('game.join.ok', function (packet) {
+/* log */ console.log('socket.on(\''+'game.join.ok'+'\', '+JSON.stringify(packet)+')');
 				app.game.paintRect = packet.paintRect;
 				app.game.userPosition.x = app.game.paintRect.width/2;
 				app.game.userPosition.y = app.game.paintRect.height/2;
-				app.game.backgroundColor = packet.backgroundColor;
+				app.game.backgroundColor = canvas.RGBToCSS(packet.backgroundColor);
 				app.hideMenuView();
 				canvas.resize();
 				canvas.bindGameEvents();
 			});
 			socket.on('game.join.fail', function (packet) {
+/* log */ console.log('socket.on(\''+'game.join.fail'+'\', '+JSON.stringify(packet)+')');
 				$("#gameJoinFailReason").text(packet.reason);
 				app.showErrorView();
+			});
+			socket.on('game.paint', function (packet) {
+/* log */ console.log('socket.on(\''+'game.paint'+'\', '+JSON.stringify(packet)+')');
+				gamePaint.paint(packet);
 			});
 		},
 		connect: function () {

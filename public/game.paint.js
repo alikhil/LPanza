@@ -13,26 +13,26 @@ var gamePaint = {
 				gamePaint.canvas.RGBToCSS(
 					tanks[index].color
 				);
-			// prepare paint data to draw
 		}
 		gamePaint.tanks = tanks;
 		gamePaint.bullets.splice(0, gamePaint.bullets.length);
 		bullets = packet.bullets;
 		for(var index = 0; index < bullets.length; index ++) {
-			// prepare paint data to draw
+			bullets[index].color =
+				gamePaint.canvas.RGBToCSS(
+					bullets[index].color
+				);
 		}
 		gamePaint.bullets = bullets;
 		gamePaint.repaint();
 	},
 	repaint: function () {
 		var scaleRatio;
-		gamePaint.clear();
+		//gamePaint.clear();
 		gamePaint.drawBackground();
 		scaleRatio = gamePaint.scaleAsMap();
 		for(var index = 0; index < gamePaint.tanks.length; index ++) {
 			gamePaint.drawTank(gamePaint.tanks[index]);
-			gamePaint.drawTurret(gamePaint.tanks[index]);
-			gamePaint.drawGun(gamePaint.tanks[index]);
 		}
 		for(var index = 0; index < gamePaint.bullets.length; index ++) {
 			gamePaint.drawBullet(gamePaint.bullets[index]);
@@ -65,6 +65,11 @@ var gamePaint = {
 		);
 	},
 	drawTank: function (tank) {
+		gamePaint.drawTankBody(tank);
+		gamePaint.drawTurret(tank);
+		gamePaint.drawGun(tank);
+	},
+	drawTankBody: function (tank) {
 		gamePaint.drawRectObject(
 			tank.position,
 			tank.size,
