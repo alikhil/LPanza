@@ -81,7 +81,8 @@ function userJoin(user) {
 	var label = {};
 	label.hp = tanksHP;
 	label.userName = user.userName;
-	
+    label.userId = userId;
+
 	var tank = { };
 	tank.rotation = getRandom(0,360);
     tank.type = 'tank';
@@ -164,21 +165,66 @@ function doShot(tank){
 	var bullet = {};
     bullet.rotation = tank.turret.rotation;
     bullet.size = { length : bulletLength, width : bulletWidth };
-    var angle = (Math.PI / 180) * bullet.rotation;
     var distFromTurretCenter = tank.turret.distance + tank.turret.gun.length + bulletDistanceFromGun + (bullet.length / 2);
-    var y = Math.sin(angle) * distFromTurretCenter;
-    var x = Math.cos(angle) * distFromTurretCenter;
+   
+    var vector = moveVector(bullet.rotation, distFromTurretCenter);
     bullet.color = getRandomColor();
-    bullet.position = { x : x + tank.position.x, y : y + tank.position.y };
+    bullet.position = { x : vector.x + tank.position.x, y : vector.y + tank.position.y };
     bullet.type = 'bullet';
     bullets.push(bullet);
 }
 
-function serverTick(){
+Object.values = function (obj) {
+    var vals = [];
+    for (var key in obj) {
+        if (obj.hasOwnProperty(key)) {
+            vals.push(obj[key]);
+        }
+    }
+    return vals;
+}
+//пока не буду отслеживать колизии танков и снарядов
+function serverTick(){ 
     if (userNames.length > 0) {
-        var objects = tanks.concat(bullets);
-        objects.sort(positionComparator);
-        var objectGroups = groups.getGroups(objects, checkColisionAreaWidth, checkColisionAreaHeight);
+        var objects = Object.values(tanks).concat(bullets);
+
+        var objectGroups = groups.getGroups(objects, showAreaWidth, showAreaHeight);
+        var repaintGroups = [];
+        var moved = Array(objects.length);
+
+        for (var i = 0; i < objects.length; i++) {
+            var group = objectGroups[i];
+            var groupNewPos = [];
+            var id = 0;
+            if (objects[i].type == 'tank') {
+                id = objects[i].label.userId;
+            }
+            repaintGroups[id] = { bullets : [], tanks : [] };
+
+            for (var j = 0; j < group.length; j++) {
+                var curObject = objects[group[j]];
+                if (moved[group[j]] !== 'moved') {
+                    var vector = moveVector(curObject.rotation, curObject.speed);
+                    curObject.position = { x : vector.x + curObject.position.x, y : vector.y + curObject.position.y };
+                    objects[group[j]] = curObject;
+                    moved[group[j]] = 'moved';
+                } 
+                if (curObject.type === 'bullet') {
+                    repaintGroups[id].bullets.push(curObject);
+                }
+                if (curObject.type === 'tank') {
+                    repaintGroups[id].tanks.push(curObject);
+                }
+            }
+        }
+        console.log(repaintGroups);
+        var clients = Object.keys(io.engine.clients);
+        for (var i = 0; i < clients.length; i++) {
+            var uid = clients[i];
+            if (repaintGroups[uid.substr(0,5)] !== undefined) {
+                io.engine.clients[uid].emit('game.paint', repaintGroups[uid]);
+            }
+        }
     }
 }
 
@@ -204,6 +250,13 @@ function getRandomPosition(){
 	pos.x = getRandom(distanceFromWall,mapWidth - distanceFromWall);
 	pos.y = getRandom(distanceFromWall,mapHeight - distanceFromWall);
 	return pos;
+}
+
+function moveVector(rotation, dist){
+    var angle = (Math.PI / 180) * rotation;
+    var y = Math.sin(angle) * dist;
+    var x = Math.cos(angle) * dist;
+    return { x : x, y : y };
 }
 
 function getRandom(min, max) {
