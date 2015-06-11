@@ -11,8 +11,8 @@ var backgroundColor = [144, 238, 144];
 var tanksHP = 10;
 var damagePerShot = 1;
 
-var showAreaWidth = 360;
-var showAreaHeight = 280;
+var showAreaWidth = 1000;
+var showAreaHeight = 1000;
 
 var mapWidth = 1000;
 var mapHeight = 1000;
@@ -24,7 +24,7 @@ var tankLength = 40;
 var tankTurretRadius = 12;
 var tankGunWidth = 4;
 var tankGunLength = 25;
-var tankSpeed = 1;
+var tankSpeed = 2;
 
 var bulletDistanceFromGun = 5;
 var bulletWidth = 2;
@@ -42,6 +42,8 @@ var userNames = [ ];
 
 var timer;
 var test = 0;
+
+var clients = {};
 
 var _und = require("./underscore-min");
 var groups = require('./group.js');
@@ -64,7 +66,7 @@ exports.startServer = function (){
 function userJoin(user) {
 	var sock = this;
 	var userId = getUserId(sock.id);
-    
+    clients[userId] = sock;
 	if(userNames.length >= serverMaxUsersCount){
 		sock.emit('game.join.fail', { reason : 'Достигнут лимит игроков. Подождите пока сервер освободится'});
 		if(debugMode)
@@ -119,7 +121,6 @@ function userJoin(user) {
 function userLeave(){
     var socket = this;
 	var userId = getUserId(socket.id);
-	
 	if(userIdNames.hasOwnProperty(userId)){
 		var uname = userIdNames[userId];
 		if(debugMode)
@@ -127,6 +128,7 @@ function userLeave(){
         removeFromArray(userNames, uname);
         delete (userIdNames[userId]);
         delete (tanks[userId]);
+        delete (clients[userId]);
 		
 	}
 }
@@ -170,7 +172,7 @@ function doShot(tank){
 		tank.turret.gun.distance + 
 		tank.turret.gun.size.length + 
 		bulletDistanceFromGun + 
-		(bullet.length / 2);
+		(bullet.size.length / 2);
    
     var vector = moveVector(bullet.rotation, distFromTurretCenter);
     bullet.color = getRandomColor();
@@ -223,11 +225,11 @@ function serverTick(){
             }
         }
         //console.log(repaintGroups);
-        var clients = Object.keys(io.engine.clients);
-        for (var i = 0; i < clients.length; i++) {
-            var uid = clients[i];
-            if (repaintGroups[uid.substr(0,5)] !== undefined) {
-                io.engine.clients[uid].emit('game.paint', repaintGroups[uid.substr(0, 5)]);
+        var clientsIds = Object.keys(io.engine.clients);
+        for (var i = 0; i < clientsIds.length; i++) {
+            var uid = clientsIds[i].substr(0, 5);
+            if (repaintGroups[uid] !== undefined) {
+                clients[uid].emit('game.paint', repaintGroups[uid]);
                 console.log(repaintGroups[uid.substr(0, 5)]);
             }
         }
