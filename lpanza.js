@@ -94,6 +94,7 @@ function userJoin(user) {
 	turret.rotation = tank.rotation;
 	turret.radius = tankTurretRadius;
 	turret.gun = gun;
+	turret.color = getRandomColor();
 	
 	turret.gun.distance = turret.radius;
 	
@@ -165,7 +166,11 @@ function doShot(tank){
 	var bullet = {};
     bullet.rotation = tank.turret.rotation;
     bullet.size = { length : bulletLength, width : bulletWidth };
-    var distFromTurretCenter = tank.turret.distance + tank.turret.gun.length + bulletDistanceFromGun + (bullet.length / 2);
+    var distFromTurretCenter = 
+		tank.turret.gun.distance + 
+		tank.turret.gun.size.length + 
+		bulletDistanceFromGun + 
+		(bullet.length / 2);
    
     var vector = moveVector(bullet.rotation, distFromTurretCenter);
     bullet.color = getRandomColor();
