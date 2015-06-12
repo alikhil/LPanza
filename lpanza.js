@@ -24,12 +24,12 @@ var tankLength = 40;
 var tankTurretRadius = 12;
 var tankGunWidth = 4;
 var tankGunLength = 25;
-var tankSpeed = 2;
+var tankSpeed = 5;
 
 var bulletDistanceFromGun = 5;
 var bulletWidth = 2;
 var bulletLength = 8;
-var bulletSpeed = 3;
+var bulletSpeed = 15;
 
 var checkColisionAreaWidth = 100;
 var checkColisionAreaHeight = 100;
@@ -178,6 +178,7 @@ function doShot(tank){
     bullet.color = getRandomColor();
     bullet.position = { x : vector.x + tank.position.x, y : vector.y + tank.position.y };
     bullet.type = 'bullet';
+    bullet.speed = bulletSpeed;
     bullets.push(bullet);
 }
 
@@ -191,8 +192,16 @@ Object.values = function (obj) {
     return vals;
 }
 //пока не буду отслеживать колизии танков и снарядов
-function serverTick(){ 
+function serverTick(){
     if (userNames.length > 0) {
+        for (var i = bullets.length - 1; i >= 0; i--) {
+            if (bullets[i].position.x > mapWidth || 
+                bullets[i].position.y > mapHeight || 
+                bullets[i].position.x < 0 ||
+                bullets[i].position.y < 0) {
+                bullets.splice(i, 1);
+            }
+        }
         var objects = Object.values(tanks).concat(bullets);
 
         var objectGroups = groups.getGroups(objects, showAreaWidth, showAreaHeight);
