@@ -36,7 +36,7 @@ $(document).ready(function () {
 		resize: function () {
 /* log */ console.log('window.resize');
 			var parent = canvas.element.parent()[0],
-				tempImageData = canvas.context.getImageData(0, 0, 
+				tempImageData = canvas.context.getImageData(0, 0,
 					canvas.width,
 					canvas.height);
 			canvas.width = parent.offsetWidth*(
@@ -130,6 +130,7 @@ $(document).ready(function () {
 				for(var index in app.controls.keyState) {
 					app.controls.keyState[index] = false;
 				}
+				app.controls.gameKeyboardEvent();
 			},
 			gameEventClick: function () {
 				app.controls.gameControlShot();

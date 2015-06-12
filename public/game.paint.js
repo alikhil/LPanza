@@ -7,6 +7,9 @@ var gamePaint = {
 	labelFont: '12px Arial',
 	labelColor2: '#404040',
 	labelColor: '#BFBFBF',
+	paintRectPosition: undefined,
+	gridStep: 20,
+	gridColor: '#a0a0a0',
 	paint: function (packet) {
 		var tanks,
 			bullets,
@@ -26,6 +29,7 @@ var gamePaint = {
 				break;
 			}
 		}
+		gamePaint.paintRectPosition = offset;
 		if(index >= tanks.length) {
 			console.log('Current player`s tank not found');
 		}
@@ -62,8 +66,9 @@ var gamePaint = {
 	repaint: function () {
 		var scaleRatio;
 		//gamePaint.clear();
-		gamePaint.drawBackground();
 		scaleRatio = gamePaint.scaleAsMap();
+		gamePaint.drawBackground();
+		gamePaint.drawGrid();
 		for(var index = 0; index < gamePaint.tanks.length; index ++) {
 			gamePaint.drawTankBody(gamePaint.tanks[index]);
 		}
@@ -86,9 +91,50 @@ var gamePaint = {
 		context.fillStyle = gamePaint.app.game.backgroundColor;
 		context.fillRect(
 			0, 0,
-			gamePaint.canvas.width,
-			gamePaint.canvas.height
+			gamePaint.app.game.paintRect.width,
+			gamePaint.app.game.paintRect.height
 		);
+	},
+	drawGrid: function () {
+		var context = gamePaint.canvas.context;
+		context.beginPath();
+		context.fillStyle = gamePaint.gridColor;
+		for(var positionX = -
+				gamePaint.paintRectPosition.x %
+				gamePaint.gridStep;
+			positionX < gamePaint.app.game.paintRect.width;
+			positionX += gamePaint.gridStep) {
+			context.moveTo(
+				positionX,
+				0
+			);
+			context.lineTo(
+				positionX,
+				gamePaint.app.game.paintRect.height
+			);
+		}
+		for(var positionY = -
+				gamePaint.paintRectPosition.y %
+				gamePaint.gridStep;
+			positionY < gamePaint.app.game.paintRect.height;
+			positionY += gamePaint.gridStep) {
+			context.moveTo(
+				0,
+				positionY
+			);
+			context.lineTo(
+				gamePaint.app.game.paintRect.width,
+				positionY
+			);
+		}
+		context.stroke();
+		debug0(
+			'('+gamePaint.paintRectPosition.x + ',' +
+			gamePaint.paintRectPosition.y+')'+'\n'+
+			'('+(gamePaint.paintRectPosition.x %
+				gamePaint.gridStep)+','+
+				(gamePaint.paintRectPosition.y %
+				gamePaint.gridStep)+')');
 	},
 	scaleAsMap: function () {
 		var ratio = gamePaint.canvas.width/gamePaint.app.game.paintRect.width;
