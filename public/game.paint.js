@@ -4,10 +4,12 @@ var gamePaint = {
 	tanks: [],
 	bullets: [],
 	borderColor: '#000000',
+	voidColor: '#000000',
 	labelFont: '12px Arial',
 	labelColor2: '#404040',
 	labelColor: '#BFBFBF',
 	paintRectPosition: undefined,
+	drawRect: undefined,
 	gridStep: 20,
 	gridColor: '#a0a0a0',
 	paint: function (packet) {
@@ -18,6 +20,41 @@ var gamePaint = {
 				y: 0
 			},
 			index;
+		gamePaint.paintRectPosition = offset;
+		gamePaint.drawRect = {
+			left: (gamePaint.paintRectPosition.x < 0
+				?
+					-gamePaint.paintRectPosition.x
+				:
+					0
+				),
+			top: (gamePaint.paintRectPosition.y < 0
+				?
+					-gamePaint.paintRectPosition.y
+				:
+					0
+				),
+			right: (gamePaint.paintRectPosition.x +
+				gamePaint.app.game.paintRect.width >
+				gamePaint.app.game.mapSize.width
+				?
+					gamePaint.paintRectPosition.x +
+					gamePaint.app.game.paintRect.width -
+					gamePaint.app.game.mapSize.width
+				:
+					gamePaint.app.game.paintRect.width
+				),
+			bottom: (gamePaint.paintRectPosition.y +
+				gamePaint.app.game.paintRect.height >
+				gamePaint.app.game.mapSize.height
+				?
+					gamePaint.paintRectPosition.y +
+					gamePaint.app.game.paintRect.height -
+					gamePaint.app.game.mapSize.height
+				:
+					gamePaint.app.game.paintRect.height
+				)
+		};
 		gamePaint.tanks.splice(0, gamePaint.tanks.length);
 		tanks = packet.tanks;
 		for(index = 0; index < tanks.length; index ++) {
@@ -29,7 +66,6 @@ var gamePaint = {
 				break;
 			}
 		}
-		gamePaint.paintRectPosition = offset;
 		if(index >= tanks.length) {
 			console.log('Current player`s tank not found');
 		}
@@ -67,6 +103,7 @@ var gamePaint = {
 		var scaleRatio;
 		//gamePaint.clear();
 		scaleRatio = gamePaint.scaleAsMap();
+		gamePaint.drawVoid();
 		gamePaint.drawBackground();
 		gamePaint.drawGrid();
 		for(var index = 0; index < gamePaint.tanks.length; index ++) {
@@ -86,44 +123,62 @@ var gamePaint = {
 		}
 		gamePaint.scaleAsScreen(scaleRatio);
 	},
-	drawBackground: function () {
+	drawVoid: function () {
 		var context = gamePaint.canvas.context;
-		context.fillStyle = gamePaint.app.game.backgroundColor;
+		context.fillStyle = gamePaint.voidColor;
 		context.fillRect(
 			0, 0,
 			gamePaint.app.game.paintRect.width,
 			gamePaint.app.game.paintRect.height
 		);
 	},
+	drawBackground: function () {
+		var context = gamePaint.canvas.context;
+		context.fillStyle = gamePaint.app.game.backgroundColor;
+		if(gamePaint.paintRectPosition.y < 0) {
+		}
+		context.fillRect(
+			gamePaint.drawRect.left,
+			gamePaint.drawRect.top,
+			gamePaint.drawRect.bottom -
+				gamePaint.drawRect.top,
+			gamePaint.drawRect.right -
+				gamePaint.drawRect.left
+		);
+	},
 	drawGrid: function () {
 		var context = gamePaint.canvas.context;
 		context.beginPath();
 		context.fillStyle = gamePaint.gridColor;
-		for(var positionX = -
-				gamePaint.paintRectPosition.x %
+		for(var positionX = gamePaint.drawRect.left +
+				gamePaint.gridStep -
+				(gamePaint.drawRect.left +
+				gamePaint.paintRectPosition.x) %
 				gamePaint.gridStep;
-			positionX < gamePaint.app.game.paintRect.width;
+			positionX < gamePaint.drawRect.right;
 			positionX += gamePaint.gridStep) {
 			context.moveTo(
 				positionX,
-				0
+				gamePaint.drawRect.top
 			);
 			context.lineTo(
 				positionX,
-				gamePaint.app.game.paintRect.height
+				gamePaint.drawRect.bottom
 			);
 		}
-		for(var positionY = -
-				gamePaint.paintRectPosition.y %
+		for(var positionY = gamePaint.drawRect.top +
+				gamePaint.gridStep -
+				(gamePaint.drawRect.top +
+				gamePaint.paintRectPosition.y) %
 				gamePaint.gridStep;
-			positionY < gamePaint.app.game.paintRect.height;
+			positionY < gamePaint.drawRect.bottom;
 			positionY += gamePaint.gridStep) {
 			context.moveTo(
-				0,
+				gamePaint.drawRect.left,
 				positionY
 			);
 			context.lineTo(
-				gamePaint.app.game.paintRect.width,
+				gamePaint.drawRect.right,
 				positionY
 			);
 		}

@@ -104,6 +104,10 @@ $(document).ready(function () {
 				x: NaN,
 				y: NaN
 			},
+			mapSize: {
+				width: NaN,
+				height: NaN
+			}
 			backgroundColor: [NaN, NaN, NaN],
 			userId: undefined
 		},
@@ -262,6 +266,7 @@ $(document).ready(function () {
 				app.game.userPosition.x = app.game.paintRect.width/2;
 				app.game.userPosition.y = app.game.paintRect.height/2;
 				app.game.backgroundColor = canvas.RGBToCSS(packet.backgroundColor);
+				app.game.mapSize = packet.mapSize;
 				app.hideMenuView();
 				canvas.resize();
 				canvas.bindGameEvents();
