@@ -26,6 +26,8 @@ var tankGunWidth = 4;
 var tankGunLength = 25;
 var tankSpeed = 5;
 
+var tankReloadTime = 2000;
+
 var bulletDistanceFromGun = 5;
 var bulletWidth = 2;
 var bulletLength = 8;
@@ -91,7 +93,8 @@ function userJoin(user) {
     var gun = {};
     gun.size = { width : tankGunWidth, length : tankGunLength };
 	gun.color = getRandomColor();
-	
+    gun.state = 'reloaded';
+
 	var turret = { };
 	turret.rotation = tank.rotation;
 	turret.radius = tankTurretRadius;
@@ -176,7 +179,10 @@ function gameTest () {
  * Стреляем танком
  * */
 function doShot(tank){
-	var bullet = {};
+    var bullet = {};
+    if (tank.turret.gun.state !== 'reloaded') {
+        return false;
+    }
     bullet.rotation = tank.turret.rotation;
     bullet.size = { length : bulletLength, width : bulletWidth };
     var distFromTurretCenter = 
@@ -191,6 +197,12 @@ function doShot(tank){
     bullet.type = 'bullet';
     bullet.speed = bulletSpeed;
     bullets.push(bullet);
+    tank.turret.gun.state = 'reloading';
+    setTimeout(function () { reloadTank(tank); }, tankReloadTime);
+}
+
+function reloadTank(tank){
+    tank.turret.gun.state = 'reloaded';
 }
 
 Object.values = function (obj) {
@@ -204,6 +216,7 @@ Object.values = function (obj) {
 }
 //пока не буду отслеживать колизии танков и снарядов
 function serverTick(){
+    console.time('serverTick');
     if (userNames.length > 0) {
         for (var i = bullets.length - 1; i >= 0; i--) {
             if (bullets[i].position.x > mapWidth || 
@@ -244,16 +257,15 @@ function serverTick(){
                 }
             }
         }
-        //console.log(repaintGroups);
         var clientsIds = Object.keys(io.engine.clients);
         for (var i = 0; i < clientsIds.length; i++) {
             var uid = getUserId(clientsIds[i]);
             if (repaintGroups[uid] !== undefined) {
                 clients[uid].emit('game.paint', repaintGroups[uid]);
-                console.log(repaintGroups[uid]);
             }
         }
     }
+    console.timeEnd('serverTick');
 }
 
 
