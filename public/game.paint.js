@@ -193,7 +193,7 @@ var gamePaint = {
 			radius,
 			0, 2*Math.PI
 		);
-		context.fill();
 		context.stroke();
+		context.fill();
 	}
 };
