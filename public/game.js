@@ -277,6 +277,7 @@ $(document).ready(function () {
 			socket.on('game.paint', function (packet) {
 // * log */ console.log('socket.on(\''+'game.paint'+'\', '+JSON.stringify(packet)+')');
                 gamePaint.paint(packet);
+                console.log(packet);
 			});
 		},
 		connect: function () {
