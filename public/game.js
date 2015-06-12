@@ -34,7 +34,7 @@ $(document).ready(function () {
 			});
 		},
 		resize: function () {
-/* log */ console.log('window.resize');
+// /* log */ console.log('window.resize');
 			var parent = canvas.element.parent()[0],
 				tempImageData = canvas.context.getImageData(0, 0,
 					canvas.width,
@@ -107,7 +107,7 @@ $(document).ready(function () {
 			mapSize: {
 				width: NaN,
 				height: NaN
-			}
+			},
 			backgroundColor: [NaN, NaN, NaN],
 			userId: undefined
 		},
@@ -201,7 +201,7 @@ $(document).ready(function () {
 				}
 			},
 			gameControlAccelerate: function () {
-/* log */ console.log('socket.emit(\''+'game.control'+'\', '+JSON.stringify({type: "accelerate",rotation: app.controls.acceleration.rotation,power: app.controls.acceleration.power})+')');
+// /* log */ console.log('socket.emit(\''+'game.control'+'\', '+JSON.stringify({type: "accelerate",rotation: app.controls.acceleration.rotation,power: app.controls.acceleration.power})+')');
 				socket.emit('game.control', {
 					type: "accelerate",
 					rotation: app.controls.acceleration.rotation,
@@ -216,7 +216,7 @@ $(document).ready(function () {
 				});
 			},
 			gameControlShot: function () {
-/* log */ console.log('socket.emit(\''+'game.control'+'\', '+JSON.stringify({type: "shot"})+')');
+// /* log */ console.log('socket.emit(\''+'game.control'+'\', '+JSON.stringify({type: "shot"})+')');
 				socket.emit('game.control', {
 					type: "shot"
 				});

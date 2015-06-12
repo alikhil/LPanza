@@ -114,7 +114,17 @@ function userJoin(user) {
 		console.log('tanks: ', tanks);
         console.log('bullets: ', bullets);
 	}
-	sock.emit('game.join.ok',{ paintRect: { width : showAreaWidth, height : showAreaHeight }, backgroundColor : backgroundColor });
+	sock.emit('game.join.ok', {
+		paintRect : {
+			width : showAreaWidth,
+			height : showAreaHeight
+		},
+		backgroundColor : backgroundColor,
+		mapSize : {
+			width : mapWidth,
+			height : mapHeight
+		}
+	});
 	if(debugMode)
 			console.log(user.userName + ' подключился к серверу');
 }

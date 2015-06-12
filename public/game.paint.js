@@ -11,7 +11,7 @@ var gamePaint = {
 	paintRectPosition: undefined,
 	drawRect: undefined,
 	gridStep: 20,
-	gridColor: '#a0a0a0',
+	gridColor: '#A0A0A0',
 	paint: function (packet) {
 		var tanks,
 			bullets,
@@ -20,6 +20,20 @@ var gamePaint = {
 				y: 0
 			},
 			index;
+		gamePaint.tanks.splice(0, gamePaint.tanks.length);
+		tanks = packet.tanks;
+		for(index = 0; index < tanks.length; index ++) {
+			if(tanks[index].label.userId == gamePaint.app.game.userId) {
+				offset.x = tanks[index].position.x -
+					gamePaint.app.game.paintRect.width/2;
+				offset.y = tanks[index].position.y -
+					gamePaint.app.game.paintRect.height/2;
+				break;
+			}
+		}
+		if(index >= tanks.length) {
+			console.log('Current player`s tank not found');
+		}
 		gamePaint.paintRectPosition = offset;
 		gamePaint.drawRect = {
 			left: (gamePaint.paintRectPosition.x < 0
@@ -38,9 +52,8 @@ var gamePaint = {
 				gamePaint.app.game.paintRect.width >
 				gamePaint.app.game.mapSize.width
 				?
-					gamePaint.paintRectPosition.x +
-					gamePaint.app.game.paintRect.width -
-					gamePaint.app.game.mapSize.width
+					gamePaint.app.game.mapSize.width -
+					gamePaint.paintRectPosition.x
 				:
 					gamePaint.app.game.paintRect.width
 				),
@@ -48,27 +61,12 @@ var gamePaint = {
 				gamePaint.app.game.paintRect.height >
 				gamePaint.app.game.mapSize.height
 				?
-					gamePaint.paintRectPosition.y +
-					gamePaint.app.game.paintRect.height -
-					gamePaint.app.game.mapSize.height
+					gamePaint.app.game.mapSize.height -
+					gamePaint.paintRectPosition.y
 				:
 					gamePaint.app.game.paintRect.height
 				)
 		};
-		gamePaint.tanks.splice(0, gamePaint.tanks.length);
-		tanks = packet.tanks;
-		for(index = 0; index < tanks.length; index ++) {
-			if(tanks[index].label.userId == gamePaint.app.game.userId) {
-				offset.x = tanks[index].position.x -
-					gamePaint.app.game.paintRect.width/2;
-				offset.y = tanks[index].position.y -
-					gamePaint.app.game.paintRect.height/2;
-				break;
-			}
-		}
-		if(index >= tanks.length) {
-			console.log('Current player`s tank not found');
-		}
 		for(index = 0; index < tanks.length; index ++) {
 			tanks[index].color =
 				gamePaint.canvas.RGBToCSS(
@@ -135,21 +133,19 @@ var gamePaint = {
 	drawBackground: function () {
 		var context = gamePaint.canvas.context;
 		context.fillStyle = gamePaint.app.game.backgroundColor;
-		if(gamePaint.paintRectPosition.y < 0) {
-		}
 		context.fillRect(
 			gamePaint.drawRect.left,
 			gamePaint.drawRect.top,
-			gamePaint.drawRect.bottom -
-				gamePaint.drawRect.top,
 			gamePaint.drawRect.right -
-				gamePaint.drawRect.left
+				gamePaint.drawRect.left,
+			gamePaint.drawRect.bottom -
+				gamePaint.drawRect.top
 		);
 	},
 	drawGrid: function () {
 		var context = gamePaint.canvas.context;
 		context.beginPath();
-		context.fillStyle = gamePaint.gridColor;
+		context.strokeStyle = gamePaint.gridColor;
 		for(var positionX = gamePaint.drawRect.left +
 				gamePaint.gridStep -
 				(gamePaint.drawRect.left +
