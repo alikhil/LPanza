@@ -128,13 +128,6 @@ var gamePaint = {
 			);
 		}
 		context.stroke();
-		debug0(
-			'('+gamePaint.paintRectPosition.x + ',' +
-			gamePaint.paintRectPosition.y+')'+'\n'+
-			'('+(gamePaint.paintRectPosition.x %
-				gamePaint.gridStep)+','+
-				(gamePaint.paintRectPosition.y %
-				gamePaint.gridStep)+')');
 	},
 	scaleAsMap: function () {
 		var ratio = gamePaint.canvas.width/gamePaint.app.game.paintRect.width;
