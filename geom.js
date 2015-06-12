@@ -1,15 +1,25 @@
 ﻿
+
+exports.rectanglesIntersect = rectanglesIntersect;
+exports.rectangleContainsPoint = rectangleContainsPoint;
+exports.pointInLeft = pointInLeft;
+exports.vectorMult = vectorMult;
+exports.makeVector = makeVector;
+exports.getRect = getRect;
+exports.addToPos = addToPos;
+exports.moveVector = moveVector;
+
 /**
  * Пересекаются ли два данных прямоугольника
  * */
-exports.rectanglesIntersect = function(a, b) {
+function rectanglesIntersect(a, b) {
     return rectangleContainsPoint(a, b.topLeft) || 
     rectangleContainsPoint(a, b.topRight) || 
-    rectangleContainsPoint(a, bottomLeft) ||
-    rectangleContainsPoint(a, bottomRight);
+    rectangleContainsPoint(a, b.bottomLeft) ||
+    rectangleContainsPoint(a, b.bottomRight);
 }
 
-exports.rectangleContainsPoint = function (rect, point) {
+function rectangleContainsPoint(rect, point) {
     return pointInLeft(point, rect.bottomLeft, rect.bottomRight) &&
     pointInLeft(point, rect.bottomRight, rect.topRight) &&
     pointInLeft(point, rect.topRight, rect.topLeft) &&
@@ -19,7 +29,7 @@ exports.rectangleContainsPoint = function (rect, point) {
 /**
  * Точка находится левее вектора?
  * */
-exports.pointInLeft = function(point, a, b) {
+function pointInLeft(point, a, b) {
     return vectorMult(makeVector(a, point), makeVector(a, b)) < 0;
 }
 
@@ -27,20 +37,20 @@ exports.pointInLeft = function(point, a, b) {
 /**
  * Векторное произведение
  * */
-exports.vectorMult = function (a, b) {
+function vectorMult(a, b) {
     return a.x * b.y - a.y * b.x;
 }
 /**
  * Получаем вектор из двух точек
  * */
-exports.makeVector = function(a, b) {
+function makeVector(a, b) {
     return addToPos(b, a, -1);
 }
 
 /**
  * Получаем массив точек прямоугольника в центром данной точке
  * */
-exports.getRect = function(center, size, rotation) {
+function getRect(center, size, rotation) {
     
     var forward = moveVector(rotation, size.width / 2);
     var right = moveVector(rotation - 90, size.height / 2);
@@ -55,13 +65,15 @@ exports.getRect = function(center, size, rotation) {
 /**
  * Добавляем вектор к данной точке
  * */
-exports.addToPos = function(position, add, mult) {
-    position.x += add.x * mult;
-    position.y += add.y * mult;
-    return position;
+function addToPos(position, add, mult) {
+    var pos = {
+        x : position.x + add.x * mult,
+        y : position.y + add.y * mult
+    };
+    return pos;
 }
 
-exports.moveVector = function(rotation, dist) {
+function moveVector(rotation, dist) {
     var angle = (Math.PI / 180) * rotation;
     var y = Math.sin(angle) * dist;
     var x = Math.cos(angle) * dist;
