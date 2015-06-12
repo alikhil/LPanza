@@ -1,1 +1,28 @@
-﻿
+﻿<!doctype html>
+<html>
+	<head>
+		<meta charset='utf-8'>
+		<meta name='viewport' content='width=device-width, initial-scale=1'>
+		<link rel='stylesheet' href='http://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css'>
+		<script src='https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js'></script>
+		<script src='http://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js'></script>
+
+		<title>Debug test page - Last Panzer</title>
+		<script src='/socket.io/socket.io.js'></script>
+		<script>
+$(document).ready(function () {
+	var socket = io();
+	socket.on('game.test', function(packet) {
+		$('#output').val(JSON.stringify(packet));
+	});
+	$('#output').val('Loading data');
+	socket.emit('game.test');
+});
+		</script>
+	</head>
+	<body>
+		<div>
+			<textarea id='output' style='width: 90%;'></textarea>
+		</div>
+	</body>
+</html>

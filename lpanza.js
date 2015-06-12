@@ -114,7 +114,17 @@ function userJoin(user) {
 		console.log('tanks: ', tanks);
         console.log('bullets: ', bullets);
 	}
-	sock.emit('game.join.ok',{ paintRect: { width : showAreaWidth, height : showAreaHeight }, backgroundColor : backgroundColor });
+	sock.emit('game.join.ok', {
+		paintRect : {
+			width : showAreaWidth,
+			height : showAreaHeight
+		},
+		backgroundColor : backgroundColor,
+		mapSize : {
+			width : mapWidth,
+			height : mapHeight
+		}
+	});
 	if(debugMode)
 			console.log(user.userName + ' подключился к серверу');
 }
@@ -155,10 +165,11 @@ function gameControl(control){
 	
 }
 
-function gameTest(){
-    if (debugMode) {
-        sock.emit('game.test', { tanks : tanks, bullets : bullets, userNames : userNames, userIdNames : userIdNames });
-    }
+function gameTest () {
+	var sock = this;
+	if (debugMode) {
+		sock.emit('game.test', { tanks : tanks, bullets : bullets, userNames : userNames, userIdNames : userIdNames });
+	}
 }
 
 /**
@@ -236,10 +247,10 @@ function serverTick(){
         //console.log(repaintGroups);
         var clientsIds = Object.keys(io.engine.clients);
         for (var i = 0; i < clientsIds.length; i++) {
-            var uid = clientsIds[i].substr(0, 5);
+            var uid = getUserId(clientsIds[i]);
             if (repaintGroups[uid] !== undefined) {
                 clients[uid].emit('game.paint', repaintGroups[uid]);
-                console.log(repaintGroups[uid.substr(0, 5)]);
+                console.log(repaintGroups[uid]);
             }
         }
     }

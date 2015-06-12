@@ -4,9 +4,14 @@ var gamePaint = {
 	tanks: [],
 	bullets: [],
 	borderColor: '#000000',
+	voidColor: '#000000',
 	labelFont: '12px Arial',
 	labelColor2: '#404040',
 	labelColor: '#BFBFBF',
+	paintRectPosition: undefined,
+	drawRect: undefined,
+	gridStep: 20,
+	gridColor: '#A0A0A0',
 	paint: function (packet) {
 		var tanks,
 			bullets,
@@ -29,6 +34,39 @@ var gamePaint = {
 		if(index >= tanks.length) {
 			console.log('Current player`s tank not found');
 		}
+		gamePaint.paintRectPosition = offset;
+		gamePaint.drawRect = {
+			left: (gamePaint.paintRectPosition.x < 0
+				?
+					-gamePaint.paintRectPosition.x
+				:
+					0
+				),
+			top: (gamePaint.paintRectPosition.y < 0
+				?
+					-gamePaint.paintRectPosition.y
+				:
+					0
+				),
+			right: (gamePaint.paintRectPosition.x +
+				gamePaint.app.game.paintRect.width >
+				gamePaint.app.game.mapSize.width
+				?
+					gamePaint.app.game.mapSize.width -
+					gamePaint.paintRectPosition.x
+				:
+					gamePaint.app.game.paintRect.width
+				),
+			bottom: (gamePaint.paintRectPosition.y +
+				gamePaint.app.game.paintRect.height >
+				gamePaint.app.game.mapSize.height
+				?
+					gamePaint.app.game.mapSize.height -
+					gamePaint.paintRectPosition.y
+				:
+					gamePaint.app.game.paintRect.height
+				)
+		};
 		for(index = 0; index < tanks.length; index ++) {
 			tanks[index].color =
 				gamePaint.canvas.RGBToCSS(
@@ -62,8 +100,10 @@ var gamePaint = {
 	repaint: function () {
 		var scaleRatio;
 		//gamePaint.clear();
-		gamePaint.drawBackground();
 		scaleRatio = gamePaint.scaleAsMap();
+		gamePaint.drawVoid();
+		gamePaint.drawBackground();
+		gamePaint.drawGrid();
 		for(var index = 0; index < gamePaint.tanks.length; index ++) {
 			gamePaint.drawTankBody(gamePaint.tanks[index]);
 		}
@@ -81,14 +121,64 @@ var gamePaint = {
 		}
 		gamePaint.scaleAsScreen(scaleRatio);
 	},
+	drawVoid: function () {
+		var context = gamePaint.canvas.context;
+		context.fillStyle = gamePaint.voidColor;
+		context.fillRect(
+			0, 0,
+			gamePaint.app.game.paintRect.width,
+			gamePaint.app.game.paintRect.height
+		);
+	},
 	drawBackground: function () {
 		var context = gamePaint.canvas.context;
 		context.fillStyle = gamePaint.app.game.backgroundColor;
 		context.fillRect(
-			0, 0,
-			gamePaint.canvas.width,
-			gamePaint.canvas.height
+			gamePaint.drawRect.left,
+			gamePaint.drawRect.top,
+			gamePaint.drawRect.right -
+				gamePaint.drawRect.left,
+			gamePaint.drawRect.bottom -
+				gamePaint.drawRect.top
 		);
+	},
+	drawGrid: function () {
+		var context = gamePaint.canvas.context;
+		context.beginPath();
+		context.strokeStyle = gamePaint.gridColor;
+		for(var positionX = gamePaint.drawRect.left +
+				gamePaint.gridStep -
+				(gamePaint.drawRect.left +
+				gamePaint.paintRectPosition.x) %
+				gamePaint.gridStep;
+			positionX < gamePaint.drawRect.right;
+			positionX += gamePaint.gridStep) {
+			context.moveTo(
+				positionX,
+				gamePaint.drawRect.top
+			);
+			context.lineTo(
+				positionX,
+				gamePaint.drawRect.bottom
+			);
+		}
+		for(var positionY = gamePaint.drawRect.top +
+				gamePaint.gridStep -
+				(gamePaint.drawRect.top +
+				gamePaint.paintRectPosition.y) %
+				gamePaint.gridStep;
+			positionY < gamePaint.drawRect.bottom;
+			positionY += gamePaint.gridStep) {
+			context.moveTo(
+				gamePaint.drawRect.left,
+				positionY
+			);
+			context.lineTo(
+				gamePaint.drawRect.right,
+				positionY
+			);
+		}
+		context.stroke();
 	},
 	scaleAsMap: function () {
 		var ratio = gamePaint.canvas.width/gamePaint.app.game.paintRect.width;
@@ -113,6 +203,19 @@ var gamePaint = {
 			tank.rotation,
 			tank.color,
 			-tank.size.length/2
+		);
+		// front bumper
+		gamePaint.drawRectObject(
+			tank.position,
+			{
+				width: tank.size.width,
+				length: tank.size.length/4 -
+					tank.turret.radius/2
+			},
+			tank.rotation,
+			tank.turret.color,
+			tank.size.length/4 +
+				tank.turret.radius/2
 		);
 	},
 	drawTurret: function (tank) {
@@ -193,7 +296,7 @@ var gamePaint = {
 			radius,
 			0, 2*Math.PI
 		);
-		context.fill();
 		context.stroke();
+		context.fill();
 	}
 };

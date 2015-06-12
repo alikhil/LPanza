@@ -34,9 +34,9 @@ $(document).ready(function () {
 			});
 		},
 		resize: function () {
-/* log */ console.log('window.resize');
+// /* log */ console.log('window.resize');
 			var parent = canvas.element.parent()[0],
-				tempImageData = canvas.context.getImageData(0, 0, 
+				tempImageData = canvas.context.getImageData(0, 0,
 					canvas.width,
 					canvas.height);
 			canvas.width = parent.offsetWidth*(
@@ -104,6 +104,10 @@ $(document).ready(function () {
 				x: NaN,
 				y: NaN
 			},
+			mapSize: {
+				width: NaN,
+				height: NaN
+			},
 			backgroundColor: [NaN, NaN, NaN],
 			userId: undefined
 		},
@@ -130,6 +134,7 @@ $(document).ready(function () {
 				for(var index in app.controls.keyState) {
 					app.controls.keyState[index] = false;
 				}
+				app.controls.gameKeyboardEvent();
 			},
 			gameEventClick: function () {
 				app.controls.gameControlShot();
@@ -196,7 +201,7 @@ $(document).ready(function () {
 				}
 			},
 			gameControlAccelerate: function () {
-/* log */ console.log('socket.emit(\''+'game.control'+'\', '+JSON.stringify({type: "accelerate",rotation: app.controls.acceleration.rotation,power: app.controls.acceleration.power})+')');
+// /* log */ console.log('socket.emit(\''+'game.control'+'\', '+JSON.stringify({type: "accelerate",rotation: app.controls.acceleration.rotation,power: app.controls.acceleration.power})+')');
 				socket.emit('game.control', {
 					type: "accelerate",
 					rotation: app.controls.acceleration.rotation,
@@ -211,7 +216,7 @@ $(document).ready(function () {
 				});
 			},
 			gameControlShot: function () {
-/* log */ console.log('socket.emit(\''+'game.control'+'\', '+JSON.stringify({type: "shot"})+')');
+// /* log */ console.log('socket.emit(\''+'game.control'+'\', '+JSON.stringify({type: "shot"})+')');
 				socket.emit('game.control', {
 					type: "shot"
 				});
@@ -261,6 +266,7 @@ $(document).ready(function () {
 				app.game.userPosition.x = app.game.paintRect.width/2;
 				app.game.userPosition.y = app.game.paintRect.height/2;
 				app.game.backgroundColor = canvas.RGBToCSS(packet.backgroundColor);
+				app.game.mapSize = packet.mapSize;
 				app.hideMenuView();
 				canvas.resize();
 				canvas.bindGameEvents();
