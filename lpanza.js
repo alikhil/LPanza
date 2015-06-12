@@ -11,19 +11,19 @@ var backgroundColor = [144, 238, 144];
 var tanksHP = 10;
 var damagePerShot = 1;
 
-var showAreaWidth = 1000;
-var showAreaHeight = 1000;
+var showAreaWidth = 400;
+var showAreaHeight = 300;
 
 var mapWidth = 1000;
 var mapHeight = 1000;
 
 var distanceFromWall = 30;
 
-var tankWidth = 40;
-var tankLength = 40;
-var tankTurretRadius = 12;
-var tankGunWidth = 4;
-var tankGunLength = 25;
+var tankWidth = 30;
+var tankLength = 30;
+var tankTurretRadius = 9;
+var tankGunWidth = 3;
+var tankGunLength = 20;
 var tankSpeed = 5;
 
 var tankReloadTime = 2000;
@@ -47,9 +47,9 @@ var test = 0;
 
 var clients = {};
 
-var _und = require("./underscore-min");
+var _und = require('./underscore-min');
 var groups = require('./group.js');
-
+var geom = require('./geom.js');
 groups.init(mapWidth, mapHeight);
 
 exports.initGame = function(sio, socket){
@@ -191,7 +191,7 @@ function doShot(tank){
 		bulletDistanceFromGun + 
 		(bullet.size.length / 2);
    
-    var vector = moveVector(bullet.rotation, distFromTurretCenter);
+    var vector = geom.moveVector(bullet.rotation, distFromTurretCenter);
     bullet.color = getRandomColor();
     bullet.position = { x : vector.x + tank.position.x, y : vector.y + tank.position.y };
     bullet.type = 'bullet';
@@ -244,8 +244,8 @@ function serverTick(){
             for (var j = 0; j < group.length; j++) {
                 var curObject = objects[group[j]];
                 if (moved[group[j]] !== 'moved') {
-                    var vector = moveVector(curObject.rotation, curObject.speed);
-                    curObject.position = { x : vector.x + curObject.position.x, y : vector.y + curObject.position.y };
+                    var vector = geom.moveVector(curObject.rotation, curObject.speed);
+                    curObject.position = geom.addToPos(curObject.position, vector, 1);
                     objects[group[j]] = curObject;
                     moved[group[j]] = 'moved';
                 } 
@@ -281,6 +281,7 @@ function positionComparator(a, b) {
     return a.position.y < b.position.y ? -1 : 1;
 
 }
+
 /**
 	Пока просто рандом, потом будем выбирать по менее заселенной местности
 */
@@ -292,12 +293,7 @@ function getRandomPosition(){
 	return pos;
 }
 
-function moveVector(rotation, dist){
-    var angle = (Math.PI / 180) * rotation;
-    var y = Math.sin(angle) * dist;
-    var x = Math.cos(angle) * dist;
-    return { x : x, y : y };
-}
+
 
 function getRandom(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
