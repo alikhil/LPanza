@@ -153,6 +153,19 @@ var gamePaint = {
 			tank.color,
 			-tank.size.length/2
 		);
+		// front bumper
+		gamePaint.drawRectObject(
+			tank.position,
+			{
+				width: tank.size.width,
+				length: tank.size.length/4 -
+					tank.turret.radius/2
+			},
+			tank.rotation,
+			tank.turret.color,
+			tank.size.length/4 +
+				tank.turret.radius/2
+		);
 	},
 	drawTurret: function (tank) {
 		var turret = tank.turret;
