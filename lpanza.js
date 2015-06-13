@@ -200,7 +200,17 @@ function doShot(tank){
     bullet.moveVector = geom.moveVector(bullet.rotation, bullet.speed);
     bullets.push(bullet);
     tank.turret.gun.state = 'reloading';
-    setTimeout(function () { reloadTank(tank); }, tankReloadTime);
+    tank.turret.gun.timeToReload = tankReloadTime;
+    var updateTankReload = setInterval(
+        function () {
+            tank.turret.gun.timeToReload -= 50; 
+        }, 50);
+
+    setTimeout(
+        function () {
+            reloadTank(tank);
+            clearTimeout(updateTankReload);
+        }, tankReloadTime);
 }
 
 function reloadTank(tank){
