@@ -26,6 +26,8 @@ var tankGunWidth = 3;
 var tankGunLength = 20;
 var tankSpeed = 5;
 
+var maxWidthLength = tankWidth;
+
 var tankReloadTime = 2000;
 
 var bulletDistanceFromGun = 5;
@@ -93,7 +95,7 @@ function userJoin(user) {
     var gun = {};
     gun.size = { width : tankGunWidth, length : tankGunLength };
 	gun.color = getRandomColor();
-    gun.state = 'reloaded';
+    gun.timeToReload = 0;
 
 	var turret = { };
 	turret.rotation = tank.rotation;
@@ -181,7 +183,7 @@ function gameTest () {
  * */
 function doShot(tank){
     var bullet = {};
-    if (tank.turret.gun.state !== 'reloaded') {
+    if (tank.turret.gun.timeToReload > 0) {
         return false;
     }
     bullet.rotation = tank.turret.rotation;
@@ -199,23 +201,20 @@ function doShot(tank){
     bullet.speed = bulletSpeed;
     bullet.moveVector = geom.moveVector(bullet.rotation, bullet.speed);
     bullets.push(bullet);
-    tank.turret.gun.state = 'reloading';
     tank.turret.gun.timeToReload = tankReloadTime;
+
+    var leftTime = tankReloadTime;
+
     var updateTankReload = setInterval(
         function () {
-            tank.turret.gun.timeToReload -= 50; 
+            tank.turret.gun.timeToReload = leftTime / tankReloadTime;
+            leftTime -= 50;
+            if (leftTime < 0) {
+                clearTimeout(updateTankReload);
+            }
         }, 50);
-
-    setTimeout(
-        function () {
-            reloadTank(tank);
-            clearTimeout(updateTankReload);
-        }, tankReloadTime);
 }
 
-function reloadTank(tank){
-    tank.turret.gun.state = 'reloaded';
-}
 
 Object.values = function (obj) {
     var vals = [];
@@ -240,7 +239,7 @@ function serverTick(){
         }
         var objects = Object.values(tanks).concat(bullets);
 
-        var objectGroups = groups.getGroups(objects, showAreaWidth, showAreaHeight);
+        var objectGroups = groups.getGroups(objects, showAreaWidth + maxWidthLength, showAreaHeight + maxWidthLength);
         var repaintGroups = [];
         var moved = Array(objects.length);
 
