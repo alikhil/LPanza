@@ -109,7 +109,7 @@ function userJoin(user) {
 	tank.speed = 0;
 	tank.turret = turret;
 	tank.label = label;
-	
+    tank.moveVector = { x : 0, y : 0 };
 	tanks[userId] = tank;
 	if(debugMode){
 		console.log('userIdNames: ', userIdNames);
@@ -164,6 +164,7 @@ function gameControl(control){
     if (control.type === 'accelerate') {
         tank.rotation = control.rotation;
         tank.speed = control.power * tankSpeed;
+        tank.moveVector = geom.moveVector(tank.rotation, tank.speed);
     }
 	
 }
@@ -196,6 +197,7 @@ function doShot(tank){
     bullet.position = { x : vector.x + tank.position.x, y : vector.y + tank.position.y };
     bullet.type = 'bullet';
     bullet.speed = bulletSpeed;
+    bullet.moveVector = geom.moveVector(bullet.rotation, bullet.speed);
     bullets.push(bullet);
     tank.turret.gun.state = 'reloading';
     setTimeout(function () { reloadTank(tank); }, tankReloadTime);
@@ -244,8 +246,7 @@ function serverTick(){
             for (var j = 0; j < group.length; j++) {
                 var curObject = objects[group[j]];
                 if (moved[group[j]] !== 'moved') {
-                    var vector = geom.moveVector(curObject.rotation, curObject.speed);
-                    curObject.position = geom.addToPos(curObject.position, vector, 1);
+                    curObject.position = geom.addToPos(curObject.position, curObject.moveVector, 1);
                     objects[group[j]] = curObject;
                     moved[group[j]] = 'moved';
                 } 
