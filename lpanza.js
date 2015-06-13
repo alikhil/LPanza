@@ -255,7 +255,14 @@ function serverTick(){
             for (var j = 0; j < group.length; j++) {
                 var curObject = objects[group[j]];
                 if (moved[group[j]] !== 'moved') {
-                    curObject.position = geom.addToPos(curObject.position, curObject.moveVector, 1);
+                    var newPos = geom.addToPos(curObject.position, curObject.moveVector, 1);
+                    if (curObject.type === 'tank') {
+                        if (newPos.x >= 0 && newPos.y >= 0 && newPos.x <= mapWidth && newPos.y <= mapHeight)
+                            curObject.position = newPos;
+                    }
+                    else {
+                        curObject.position = newPos;
+                    }
                     objects[group[j]] = curObject;
                     moved[group[j]] = 'moved';
                 } 
@@ -280,7 +287,14 @@ function serverTick(){
 
 
 // HelperFunctions
-
+/**Создаем объект точку*/
+function point_(x, y){
+    return { x : x, y : y };
+}
+/**Создаем объект size*/
+function size_(width, height){
+    return { width : width, height : height };
+}
 
 function positionComparator(a, b) {
     if (a.position.y == b.position.y) {
