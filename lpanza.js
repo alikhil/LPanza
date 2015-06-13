@@ -93,7 +93,7 @@ function userJoin(user) {
 	tank.rotation = getRandom(0,360);
     tank.type = 'tank';
     var gun = {};
-    gun.size = { width : tankGunWidth, length : tankGunLength };
+    gun.size = size_(tankGunWidth, tankGunLength);
 	gun.color = getRandomColor();
     gun.timeToReload = 0;
 
@@ -107,7 +107,7 @@ function userJoin(user) {
 	
 	tank.position = getRandomPosition();
 	tank.color = getRandomColor();
-    tank.size = { width : tankWidth, length : tankLength };
+    tank.size = size_(tankWidth, tankLength);
 	tank.speed = 0;
 	tank.turret = turret;
 	tank.label = label;
@@ -187,7 +187,7 @@ function doShot(tank){
         return false;
     }
     bullet.rotation = tank.turret.rotation;
-    bullet.size = { length : bulletLength, width : bulletWidth };
+    bullet.size = size_(bulletWidth, bulletLength) ;
     var distFromTurretCenter = 
 		tank.turret.gun.distance + 
 		tank.turret.gun.size.length + 
@@ -196,7 +196,7 @@ function doShot(tank){
    
     var vector = geom.moveVector(bullet.rotation, distFromTurretCenter);
     bullet.color = getRandomColor();
-    bullet.position = { x : vector.x + tank.position.x, y : vector.y + tank.position.y };
+    bullet.position = point_(vector.x + tank.position.x, vector.y + tank.position.y);
     bullet.type = 'bullet';
     bullet.speed = bulletSpeed;
     bullet.moveVector = geom.moveVector(bullet.rotation, bullet.speed);
@@ -260,8 +260,18 @@ function serverTick(){
                         if (newPos.x >= 0 && newPos.y >= 0 && newPos.x <= mapWidth && newPos.y <= mapHeight)
                             curObject.position = newPos;
                     }
-                    else {
+                    if (curObject.type === 'bullet') {
                         curObject.position = newPos;
+                        for (var h = 0; h < group.length; h++) {
+                            var cur = objects[group[h]];
+                            if (cur.type === 'tank' && 
+                                geom.rectanglesIntersect(
+                                    geom.getRect(cur.position, cur.size, cur.rotation),
+                                    geom.getRect(curObject.position, curObject.size, curObject.rotation)
+                            )) {
+                                bulletOnTankHit(cur, curObject);
+                            }
+                        }
                     }
                     objects[group[j]] = curObject;
                     moved[group[j]] = 'moved';
@@ -285,6 +295,17 @@ function serverTick(){
     console.timeEnd('serverTick');
 }
 
+/**
+ * При попадании пули в танк
+ * */
+
+function bulletOnTankHit(tank, bullet){
+    if (tank.label.hp > 1) {
+        tank.label.hp -= damagePerShot;
+    }
+    bullet.type = 'deleted-bullet';
+    removeFromArray(bullets, bullet);
+}
 
 // HelperFunctions
 /**Создаем объект точку*/
@@ -292,8 +313,8 @@ function point_(x, y){
     return { x : x, y : y };
 }
 /**Создаем объект size*/
-function size_(width, height){
-    return { width : width, height : height };
+function size_(width, length){
+    return { width : width, length : length };
 }
 
 function positionComparator(a, b) {
