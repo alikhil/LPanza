@@ -1,203 +1,230 @@
-var gamePaint = {
-	app: undefined,
-	canvas: undefined,
+var paint = {
 	tanks: [],
 	bullets: [],
-	borderColor: '#000000',
-	voidColor: '#000000',
 	labelFont: '12px Arial',
-	labelColor2: '#404040',
-	labelColor: '#BFBFBF',
-	paintRectPosition: undefined,
+	color: {
+		map: {
+			background: undefined,
+			grid: '#A0A0A0',
+			empty: '#202020'
+		},
+		label: {
+			background: '#BFBFBF',
+			text: '#404040'
+		},
+		hp: {
+			active: '20FF20',
+			background: '#FF2020'
+		},
+		border: '#202020'
+	},
+	mapOffset: undefined,
 	drawRect: undefined,
 	gridStep: 20,
-	gridColor: '#A0A0A0',
-	paint: function (packet) {
+	onPaint: function (packet) {
 		var tanks,
 			bullets,
-			offset = {
-				x: 0,
-				y: 0
-			},
+			offset,
 			index;
-		gamePaint.tanks.splice(0, gamePaint.tanks.length);
+		this.tanks.splice(0, this.tanks.length);
 		tanks = packet.tanks;
 		for(index = 0; index < tanks.length; index ++) {
-			if(tanks[index].label.userId == gamePaint.app.game.userId) {
-				offset.x = tanks[index].position.x -
-					gamePaint.app.game.paintRect.width/2;
-				offset.y = tanks[index].position.y -
-					gamePaint.app.game.paintRect.height/2;
+			if(tanks[index].label.userId == game.userId) {
+				offset = utils.point(
+					tanks[index].position.x -
+						game.paintRect.width/2,
+					tanks[index].position.y -
+						game.paintRect.height/2
+				);
 				break;
 			}
 		}
 		if(index >= tanks.length) {
+			offset = utils.point(0, 0);
 			console.log('Current player`s tank not found');
 		}
-		gamePaint.paintRectPosition = offset;
-		gamePaint.drawRect = {
-			left: (gamePaint.paintRectPosition.x < 0
+		this.mapOffset = offset;
+		this.drawRect = {
+			left: (offset.x < 0
 				?
-					-gamePaint.paintRectPosition.x
+					-offset.x
 				:
 					0
 				),
-			top: (gamePaint.paintRectPosition.y < 0
+			top: (offset.y < 0
 				?
-					-gamePaint.paintRectPosition.y
+					-offset.y
 				:
 					0
 				),
-			right: (gamePaint.paintRectPosition.x +
-				gamePaint.app.game.paintRect.width >
-				gamePaint.app.game.mapSize.width
+			right: (offset.x +
+				game.paintRect.width >
+				game.mapSize.width
 				?
-					gamePaint.app.game.mapSize.width -
-					gamePaint.paintRectPosition.x
+					game.mapSize.width -
+					offset.x
 				:
-					gamePaint.app.game.paintRect.width
+					game.paintRect.width
 				),
-			bottom: (gamePaint.paintRectPosition.y +
-				gamePaint.app.game.paintRect.height >
-				gamePaint.app.game.mapSize.height
+			bottom: (offset.y +
+				game.paintRect.height >
+				game.mapSize.height
 				?
-					gamePaint.app.game.mapSize.height -
-					gamePaint.paintRectPosition.y
+					game.mapSize.height -
+					offset.y
 				:
-					gamePaint.app.game.paintRect.height
+					game.paintRect.height
 				)
 		};
 		for(index = 0; index < tanks.length; index ++) {
 			tanks[index].color =
-				gamePaint.canvas.RGBToCSS(
+				utils.RGBToCSS(
 					tanks[index].color
 				);
 			tanks[index].turret.color =
-				gamePaint.canvas.RGBToCSS(
+				utils.RGBToCSS(
 					tanks[index].turret.color
 				);
 			tanks[index].turret.gun.color =
-				gamePaint.canvas.RGBToCSS(
+				utils.RGBToCSS(
 					tanks[index].turret.gun.color
 				);
 			tanks[index].position.x -= offset.x;
 			tanks[index].position.y -= offset.y;
 		}
-		gamePaint.tanks = tanks;
-		gamePaint.bullets.splice(0, gamePaint.bullets.length);
+		this.tanks = tanks;
+		this.bullets.splice(0, this.bullets.length);
 		bullets = packet.bullets;
 		for(index = 0; index < bullets.length; index ++) {
 			bullets[index].color =
-				gamePaint.canvas.RGBToCSS(
+				utils.RGBToCSS(
 					bullets[index].color
 				);
 			bullets[index].position.x -= offset.x;
 			bullets[index].position.y -= offset.y;
 		}
-		gamePaint.bullets = bullets;
-		gamePaint.repaint();
+		this.bullets = bullets;
+		this.repaint();
 	},
 	repaint: function () {
-		var scaleRatio;
-		//gamePaint.clear();
-		scaleRatio = gamePaint.scaleAsMap();
-		gamePaint.drawVoid();
-		gamePaint.drawBackground();
-		gamePaint.drawGrid();
-		for(var index = 0; index < gamePaint.tanks.length; index ++) {
-			gamePaint.drawTankBody(gamePaint.tanks[index]);
+		//this.clear();
+		this.scaleAsMap();
+		this.drawEmpty();
+		this.drawBackground();
+		this.drawGrid();
+		for(var index = 0; index < this.tanks.length; index ++) {
+			this.drawTankBody(this.tanks[index]);
 		}
-		for(var index = 0; index < gamePaint.tanks.length; index ++) {
-			gamePaint.drawTurret(gamePaint.tanks[index]);
+		for(var index = 0; index < this.tanks.length; index ++) {
+			this.drawTurret(this.tanks[index]);
 		}
-		for(var index = 0; index < gamePaint.tanks.length; index ++) {
-			gamePaint.drawGun(gamePaint.tanks[index]);
+		for(var index = 0; index < this.tanks.length; index ++) {
+			this.drawGun(this.tanks[index]);
 		}
-		for(var index = 0; index < gamePaint.bullets.length; index ++) {
-			gamePaint.drawBullet(gamePaint.bullets[index]);
+		for(var index = 0; index < this.bullets.length; index ++) {
+			this.drawBullet(this.bullets[index]);
 		}
-		for(var index = 0; index < gamePaint.tanks.length; index ++) {
-			gamePaint.drawLabel(gamePaint.tanks[index]);
+		for(var index = 0; index < this.tanks.length; index ++) {
+			this.drawLabel(this.tanks[index]);
 		}
-		gamePaint.scaleAsScreen(scaleRatio);
+		this.scaleAsScreen();
 	},
-	drawVoid: function () {
-		var context = gamePaint.canvas.context;
-		context.fillStyle = gamePaint.voidColor;
+	drawEmpty: function () {
+		var context = canvas.context;
+		context.fillStyle = this.color.map.empty;
 		context.fillRect(
 			0, 0,
-			gamePaint.app.game.paintRect.width,
-			gamePaint.app.game.paintRect.height
+			game.paintRect.width,
+			game.paintRect.height
 		);
 	},
 	drawBackground: function () {
-		var context = gamePaint.canvas.context;
-		context.fillStyle = gamePaint.app.game.backgroundColor;
+		var context = canvas.context;
+		context.fillStyle = game.backgroundColor;
 		context.fillRect(
-			gamePaint.drawRect.left,
-			gamePaint.drawRect.top,
-			gamePaint.drawRect.right -
-				gamePaint.drawRect.left,
-			gamePaint.drawRect.bottom -
-				gamePaint.drawRect.top
+			this.drawRect.left,
+			this.drawRect.top,
+			this.drawRect.right -
+				this.drawRect.left,
+			this.drawRect.bottom -
+				this.drawRect.top
 		);
 	},
 	drawGrid: function () {
-		var context = gamePaint.canvas.context;
+		var context = canvas.context;
 		context.beginPath();
-		context.strokeStyle = gamePaint.gridColor;
-		for(var positionX = gamePaint.drawRect.left +
-				gamePaint.gridStep -
-				(gamePaint.drawRect.left +
-				gamePaint.paintRectPosition.x) %
-				gamePaint.gridStep;
-			positionX < gamePaint.drawRect.right;
-			positionX += gamePaint.gridStep) {
+		context.strokeStyle = this.color.map.grid;
+		for(var positionX = this.drawRect.left +
+				this.gridStep -
+				(this.drawRect.left +
+				this.mapOffset.x) %
+				this.gridStep;
+			positionX < this.drawRect.right;
+			positionX += this.gridStep) {
 			context.moveTo(
 				positionX,
-				gamePaint.drawRect.top
+				this.drawRect.top
 			);
 			context.lineTo(
 				positionX,
-				gamePaint.drawRect.bottom
+				this.drawRect.bottom
 			);
 		}
-		for(var positionY = gamePaint.drawRect.top +
-				gamePaint.gridStep -
-				(gamePaint.drawRect.top +
-				gamePaint.paintRectPosition.y) %
-				gamePaint.gridStep;
-			positionY < gamePaint.drawRect.bottom;
-			positionY += gamePaint.gridStep) {
+		for(var positionY = this.drawRect.top +
+				this.gridStep -
+				(this.drawRect.top +
+				this.mapOffset.y) %
+				this.gridStep;
+			positionY < this.drawRect.bottom;
+			positionY += this.gridStep) {
 			context.moveTo(
-				gamePaint.drawRect.left,
+				this.drawRect.left,
 				positionY
 			);
 			context.lineTo(
-				gamePaint.drawRect.right,
+				this.drawRect.right,
 				positionY
 			);
 		}
 		context.stroke();
 	},
 	scaleAsMap: function () {
-		var ratio = gamePaint.canvas.width/gamePaint.app.game.paintRect.width;
-		gamePaint.canvas.context.scale(ratio, ratio);
-		return ratio;
+		var ratio = canvas.renderSize.width/
+			game.paintRect.width,
+			offset = canvas.renderOffset,
+			context = canvas.context;
+		context.save();
+		context.translate(
+			offset.x,
+			offset.y
+		);
+		context.beginPath();
+		context.rect(
+			0,
+			0,
+			canvas.renderSize.width,
+			canvas.renderSize.height
+		);
+		context.clip();
+		context.scale(
+			ratio,
+			ratio
+		);
 	},
-	scaleAsScreen: function (ratio) {
-		gamePaint.canvas.context.scale(1/ratio, 1/ratio);
+	scaleAsScreen: function () {
+		var context = canvas.context;
+		context.restore();
 	},
 	clear: function () {
-		var context = gamePaint.canvas.context;
+		var context = canvas.context;
 		context.clearRect(
 			0, 0,
-			gamePaint.canvas.width,
-			gamePaint.canvas.height
+			canvas.size.width,
+			canvas.size.height
 		);
 	},
 	drawTankBody: function (tank) {
-		gamePaint.drawRectObject(
+		this.drawRectObject(
 			tank.position,
 			tank.size,
 			tank.rotation,
@@ -205,13 +232,13 @@ var gamePaint = {
 			-tank.size.length/2
 		);
 		// front bumper
-		gamePaint.drawRectObject(
+		this.drawRectObject(
 			tank.position,
-			{
-				width: tank.size.width,
-				length: tank.size.length/4 -
+			utils.sizeWL(
+				tank.size.width,
+				tank.size.length/4 -
 					tank.turret.radius/2
-			},
+			),
 			tank.rotation,
 			tank.turret.color,
 			tank.size.length/4 +
@@ -220,7 +247,7 @@ var gamePaint = {
 	},
 	drawTurret: function (tank) {
 		var turret = tank.turret;
-		gamePaint.drawCircleObject(
+		this.drawCircleObject(
 			tank.position,
 			turret.radius,
 			turret.color
@@ -229,7 +256,7 @@ var gamePaint = {
 	drawGun: function (tank) {
 		var turret = tank.turret,
 			gun = turret.gun;
-		gamePaint.drawRectObject(
+		this.drawRectObject(
 			tank.position,
 			gun.size,
 			turret.rotation,
@@ -238,25 +265,20 @@ var gamePaint = {
 		);
 	},
 	drawLabel: function (tank) {
-		var context = gamePaint.canvas.context,
-			text = tank.label.userName + ' [' + tank.label.hp + ' \u2764]';
+		var context = canvas.context,
+			text = tank.label.userName + 
+				' [' + tank.label.hp + ' \u2764]';
 		context.textAlign = 'center';
-		context.font = gamePaint.labelFont;
-		context.fillStyle = gamePaint.labelColor;
+		context.font = this.labelFont;
+		context.fillStyle = this.color.label.text;
 		context.fillText(
 			text,
 			tank.position.x,
 			tank.position.y - tank.size.length
 		);
-		context.fillStyle = gamePaint.labelColor2;
-		context.fillText(
-			text,
-			tank.position.x+1,
-			tank.position.y - tank.size.length + 1
-		);
 	},
 	drawBullet: function (bullet) {
-		gamePaint.drawRectObject(
+		this.drawRectObject(
 			bullet.position,
 			bullet.size,
 			bullet.rotation,
@@ -265,12 +287,17 @@ var gamePaint = {
 		);
 	},
 	drawRectObject: function (position, size, rotation, color, distance) {
-		var context = gamePaint.canvas.context;
-		context.translate(position.x, position.y);
-		context.rotate(gamePaint.app.angleDegToRad(rotation-90));
+		var context = canvas.context,
+			angle = utils.angleDegToRad(rotation-90);
+		context.save();
+		context.translate(
+			position.x,
+			position.y
+		);
+		context.rotate(angle);
 
 		context.beginPath();
-		context.strokeStyle = gamePaint.borderColor;
+		context.strokeStyle = this.color.border;
 		context.fillStyle = color;
 		context.rect(
 			-size.width/2,
@@ -281,14 +308,12 @@ var gamePaint = {
 		context.stroke();
 		context.fill();
 
-		context.rotate(-gamePaint.app.angleDegToRad(rotation-90));
-		context.translate(-position.x, -position.y);
+		context.restore();
 	},
 	drawCircleObject: function (position, radius, color) {
-		var context = gamePaint.canvas.context;
-
+		var context = canvas.context;
 		context.beginPath();
-		context.strokeStyle = gamePaint.borderColor;
+		context.strokeStyle = this.color.border;
 		context.fillStyle = color;
 		context.arc(
 			position.x,
