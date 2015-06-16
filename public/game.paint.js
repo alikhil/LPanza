@@ -2,7 +2,7 @@ var paint = {
 	tanks: [],
 	bullets: [],
 	label: {
-		font: '12px Arial',
+		font: '10px Arial',
 		padding: 2
 	},
 	color: {
@@ -16,7 +16,7 @@ var paint = {
 			text: '#404040'
 		},
 		hp: {
-			active: '20FF20',
+			active: '#20FF20',
 			background: '#FF2020'
 		},
 		border: '#202020'
@@ -281,15 +281,6 @@ var paint = {
 		var context = canvas.context,
 			text = tank.label.userName + 
 				' [' + tank.label.hp + ' \u2764]';
-		context.textAlign = 'center';
-		context.font = this.labelFont;
-		context.fillStyle = this.color.label.text;
-		context.fillText(
-			text,
-			tank.position.x,
-			//tank.position.y - tank.size.length
-			tank.position.y - tank.size.length*3/4
-		);
 		context.fillStyle = this.color.hp.background;
 		context.fillRect(
 			tank.position.x - tank.size.width/2,
@@ -298,14 +289,21 @@ var paint = {
 			tank.size.length/4 -
 				tank.turret.radius/2
 		);
-		//context.fillStyle = this.color.hp.active;
-		context.fillStyle = "#00FF00";
+		context.fillStyle = this.color.hp.active;
 		context.fillRect(
 			tank.position.x - tank.size.width/2,
 			tank.position.y - tank.size.length*3/4,
 			tank.size.width*tank.label.hp/10,
 			tank.size.length/4 -
 				tank.turret.radius/2
+		);
+		context.textAlign = 'center';
+		context.font = this.label.font;
+		context.fillStyle = this.color.label.text;
+		context.fillText(
+			text,
+			tank.position.x,
+			tank.position.y - tank.size.length
 		);
 	},
 	drawBullet: function (bullet) {
