@@ -54,17 +54,17 @@ var socket = {
 	connect: function () {
 		this.io = io();
 		this.io.connect();
+		this.bind();
 	},
-	disconnect: function () {
-		if(this.io !== undefined) {
-			this.io.disconnect();
-			this.io = undefined;
-		}
-	},
-	bindGame: function () {
+	bind: function () {
 		this.io.on('game.paint', function (packet) {
 			game.paint.onPaint(packet);
 		});
+		this.io.on('game.over', function (packet) {
+			app.gameOver(packet);
+		});
+		this.io.on('game.join.ok', app.gameJoin.ok);
+		this.io.on('game.join.fail', app.gameJoin.fail);
 	}
 };
 var canvas = {
@@ -92,6 +92,9 @@ var canvas = {
 	},
 	uninit: function () {
 		$(window).off('resize');
+		this.element
+			.attr('width', 0)
+			.attr('height', 0);
 	},
 	resize: function () {
 // /* log */ console.log('window.resize');
@@ -173,8 +176,11 @@ var game = {
 		
 		this.paint = paint;
 		canvas.init();
-		socket.bindGame();
 		controls.bind();
+	},
+	uninit: function () {
+		controls.unbind();
+		canvas.uninit();
 	},
 	backgroundColor: undefined,
 	userId: undefined
@@ -394,9 +400,6 @@ var app = {
 			if(app.userName.length == 0) {
 				app.userName = app.defaultUserName;
 			}
-			socket.connect();
-			socket.io.on('game.join.ok', app.gameJoin.ok);
-			socket.io.on('game.join.fail', app.gameJoin.fail);
 			socket.io.emit('game.join', {
 				userName: app.userName
 			});
@@ -409,7 +412,17 @@ var app = {
 			$('#errorModal').modal('show');
 		}
 	},
+	score: {
+		show: function (score) {
+			$("#scoreText").text(score);
+			$('#scoreModal').modal('show');
+			$('#scoreModal').on('hide.bs.modal', function () {
+				app.menu.show();
+			});
+		}
+	},
 	init: function () {
+		socket.connect();
 		this.menu.init();
 		this.menu.show();
 	},
@@ -423,6 +436,11 @@ var app = {
 /* log */	console.log('socket.on(\''+'game.join.fail'+'\', '+JSON.stringify(packet)+')');
 			app.error.show(packet.reason);
 		}
+	},
+	gameOver: function (packet) {
+/* log */	console.log('socket.on(\''+'game.over'+'\', '+JSON.stringify(packet)+')');
+		game.uninit();
+		this.score.show(packet.score);
 	}
 };
 $(document).ready(function () {
