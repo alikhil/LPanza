@@ -263,6 +263,16 @@ var paint = {
 			gun.color,
 			gun.distance
 		);
+		this.drawRectObject(
+			tank.position,
+			utils.sizeWL(
+				gun.size.width,
+				gun.size.length*gun.timeToReload
+			),
+			turret.rotation,
+			turret.color,
+			gun.distance
+		);
 	},
 	drawLabel: function (tank) {
 		var context = canvas.context,
