@@ -26,6 +26,9 @@ var tankGunWidth = 3;
 var tankGunLength = 20;
 var tankSpeed = 5;
 
+var scoreForKill = 10;
+var scoreForHit = 1;
+
 var maxWidthLength = tankWidth;
 
 var tankReloadTime = 2000;
@@ -41,7 +44,7 @@ var checkColisionAreaHeight = 100;
 var tanks = [ ];
 var bullets = [ ]
 var userIdNames = { };
-
+var userIdScores = { };
 var userNames = [ ];
 
 var timer;
@@ -82,7 +85,7 @@ function userJoin(user) {
     gameSocket.on('disconnect', userLeave);
 	userIdNames[userId] = user.userName;
 	userNames.push(user.userName);
-	
+    userIdScores[userId] = 0;
 	//Инициализация танка
 	var label = {};
 	label.hp = tanksHP;
@@ -200,6 +203,8 @@ function doShot(tank){
     bullet.type = 'bullet';
     bullet.speed = bulletSpeed;
     bullet.moveVector = geom.moveVector(bullet.rotation, bullet.speed);
+    bullet.owner = tank.label.userId;
+
     bullets.push(bullet);
     tank.turret.gun.timeToReload = 1;
 
@@ -292,6 +297,7 @@ function serverTick(){
                     repaintGroups[id].bullets.push(curObject);
                 }
                 if (curObject.type === 'tank') {
+                    curObject.label.score = userIdScores[curObject.label.userId];
                     repaintGroups[id].tanks.push(curObject);
                 }
             }
@@ -313,10 +319,11 @@ function serverTick(){
 
 function bulletOnTankHit(tank, bullet){
     tank.label.hp -= damagePerShot;
-
+    userIdScores[bullet.owner] += scoreForHit;
     if (tank.label.hp == 0){
         tank.type = 'deleted-tank';
-        clients[tank.label.userId].emit('game.over', { score : 1337 + getRandom(0,999) });
+        clients[tank.label.userId].emit('game.over', { score : userIdScores[tank.label.userId] });
+        userIdScores[bullet.owner] += scoreForKill;
     }
     bullet.type = 'deleted-bullet';
     removeFromArray(bullets, bullet);
