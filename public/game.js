@@ -83,8 +83,8 @@ var canvas = {
 		NaN
 	),
 	init: function () {
-		this.element = $("#gameCanvas");
-		this.context = canvas.element[0].getContext("2d");
+		this.element = $('#gameCanvas');
+		this.context = canvas.element[0].getContext('2d');
 		canvas.resize();
 		$(window).on('resize', function () {
 			canvas.resize();
@@ -408,13 +408,13 @@ var app = {
 	},
 	error: {
 		show: function (text) {
-			$("#errorText").text(text);
+			$('#errorText').text(text);
 			$('#errorModal').modal('show');
 		}
 	},
 	score: {
 		show: function (score) {
-			$("#scoreText").text(score);
+			$('#scoreText').text(score);
 			$('#scoreModal').modal('show');
 			$('#scoreModal').on('hide.bs.modal', function () {
 				app.menu.show();
@@ -444,5 +444,12 @@ var app = {
 	}
 };
 $(document).ready(function () {
-	app.init();
+	var canvas2DSupported = !!window.CanvasRenderingContext2D;
+	if(!canvas2DSupported) {
+		$('#bad_browser').show();
+	} else {
+		$('#canvasWrap').show();
+		$('#browser_check').hide();
+		app.init();
+	}
 });
