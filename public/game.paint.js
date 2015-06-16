@@ -264,7 +264,7 @@ var paint = {
 			gun.size,
 			turret.rotation,
 			gun.color,
-			turret.distanceMarginFromTurretCenter
+			gun.distanceMarginFromTurretCenter
 		);
 		this.drawRectObject(
 			tank.position,
@@ -274,7 +274,7 @@ var paint = {
 			),
 			turret.rotation,
 			turret.color,
-			turret.distanceMarginFromTurretCenter
+			gun.distanceMarginFromTurretCenter
 		);
 	},
 	drawLabel: function (tank) {
