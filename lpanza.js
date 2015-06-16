@@ -139,16 +139,20 @@ function userJoin(user) {
 function userLeave(){
     var socket = this;
 	var userId = getUserId(socket.id);
-	if(userIdNames.hasOwnProperty(userId)){
-		var uname = userIdNames[userId];
-		if(debugMode)
+    deleteUser(userId);
+}
+
+function deleteUser(userId){
+    if (userIdNames.hasOwnProperty(userId)) {
+        var uname = userIdNames[userId];
+        if (debugMode)
             console.log(uname + ' покинул сервер');
         removeFromArray(userNames, uname);
         delete (userIdNames[userId]);
         delete (tanks[userId]);
         delete (clients[userId]);
 		
-	}
+    }
 }
 
 function gameControl(control){
@@ -177,7 +181,7 @@ function gameControl(control){
 function gameTest () {
 	var sock = this;
 	if (debugMode) {
-		sock.emit('game.test', { tanks : Object.values(tanks), bullets : bullets, userNames : userNames, userIdNames : userIdNames });
+        sock.emit('game.test', { tanks : Object.values(tanks), bullets : bullets, userNames : userNames, userIdNames : userIdNames });
 	}
 }
 
@@ -306,7 +310,8 @@ function serverTick(){
         for (var i = 0; i < clientsIds.length; i++) {
             var uid = getUserId(clientsIds[i]);
             if (repaintGroups[uid] !== undefined) {
-                clients[uid].emit('game.paint', repaintGroups[uid]);
+                if(clients.hasOwnProperty(uid))
+                    clients[uid].emit('game.paint', repaintGroups[uid]);
             }
         }
     }
@@ -324,6 +329,8 @@ function bulletOnTankHit(tank, bullet){
         tank.type = 'deleted-tank';
         clients[tank.label.userId].emit('game.over', { score : userIdScores[tank.label.userId] });
         userIdScores[bullet.owner] += scoreForKill;
+        deleteUser(tank.label.userId);
+
     }
     bullet.type = 'deleted-bullet';
     removeFromArray(bullets, bullet);
