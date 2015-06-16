@@ -30,7 +30,7 @@ var maxWidthLength = tankWidth;
 
 var tankReloadTime = 2000;
 
-var bulletDistanceFromGun = 5;
+var bulletDistanceFromGun = 1;
 var bulletWidth = 2;
 var bulletLength = 8;
 var bulletSpeed = 15;
@@ -103,7 +103,7 @@ function userJoin(user) {
 	turret.gun = gun;
 	turret.color = getRandomColor();
 	
-	turret.gun.distance = turret.radius;
+	turret.gun.distanceMarginFromTurretCenter = turret.radius;
 	
 	tank.position = getRandomPosition();
 	tank.color = getRandomColor();
@@ -189,7 +189,7 @@ function doShot(tank){
     bullet.rotation = tank.turret.rotation;
     bullet.size = size_(bulletWidth, bulletLength) ;
     var distFromTurretCenter = 
-		tank.turret.gun.distance + 
+		tank.turret.gun.distanceMarginFromTurretCenter + 
 		tank.turret.gun.size.length + 
 		bulletDistanceFromGun + 
 		(bullet.size.length / 2);
