@@ -174,7 +174,7 @@ function gameControl(control){
 function gameTest () {
 	var sock = this;
 	if (debugMode) {
-		sock.emit('game.test', { tanks : tanks, bullets : bullets, userNames : userNames, userIdNames : userIdNames });
+		sock.emit('game.test', { tanks : Object.values(tanks), bullets : bullets, userNames : userNames, userIdNames : userIdNames });
 	}
 }
 
@@ -312,8 +312,11 @@ function serverTick(){
  * */
 
 function bulletOnTankHit(tank, bullet){
-    if (tank.label.hp > 1) {
-        tank.label.hp -= damagePerShot;
+    tank.label.hp -= damagePerShot;
+
+    if (tank.label.hp == 0){
+        tank.type = 'deleted-tank';
+        clients[tank.label.userId].emit('game.over', { score : 1337 + getRandom(0,999) });
     }
     bullet.type = 'deleted-bullet';
     removeFromArray(bullets, bullet);
