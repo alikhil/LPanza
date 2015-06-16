@@ -1,7 +1,10 @@
 var paint = {
 	tanks: [],
 	bullets: [],
-	labelFont: '12px Arial',
+	label: {
+		font: '12px Arial',
+		padding: 2
+	},
 	color: {
 		map: {
 			background: undefined,
@@ -261,7 +264,7 @@ var paint = {
 			gun.size,
 			turret.rotation,
 			gun.color,
-			gun.distance
+			turret.distanceMarginFromTurretCenter
 		);
 		this.drawRectObject(
 			tank.position,
@@ -271,7 +274,7 @@ var paint = {
 			),
 			turret.rotation,
 			turret.color,
-			gun.distance
+			turret.distanceMarginFromTurretCenter
 		);
 	},
 	drawLabel: function (tank) {
@@ -284,7 +287,25 @@ var paint = {
 		context.fillText(
 			text,
 			tank.position.x,
-			tank.position.y - tank.size.length
+			//tank.position.y - tank.size.length
+			tank.position.y - tank.size.length*3/4
+		);
+		context.fillStyle = this.color.hp.background;
+		context.fillRect(
+			tank.position.x - tank.size.width/2,
+			tank.position.y - tank.size.length*3/4,
+			tank.size.width,
+			tank.size.length/4 -
+				tank.turret.radius/2
+		);
+		//context.fillStyle = this.color.hp.active;
+		context.fillStyle = "#00FF00";
+		context.fillRect(
+			tank.position.x - tank.size.width/2,
+			tank.position.y - tank.size.length*3/4,
+			tank.size.width*tank.label.hp/10,
+			tank.size.length/4 -
+				tank.turret.radius/2
 		);
 	},
 	drawBullet: function (bullet) {
