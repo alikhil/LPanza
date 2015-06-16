@@ -257,8 +257,11 @@ function serverTick(){
                 if (moved[group[j]] !== 'moved') {
                     var newPos = geom.addToPos(curObject.position, curObject.moveVector, 1);
                     if (curObject.type === 'tank') {
-                        if (newPos.x >= 0 && newPos.y >= 0 && newPos.x <= mapWidth && newPos.y <= mapHeight)
-                            curObject.position = newPos;
+                        if (newPos.x >= curObject.size.width / 2 && newPos.x <= mapWidth - curObject.size.width )
+                            curObject.position.x = newPos.x;
+                        if (newPos.y >= curObject.size.length / 2 && newPos.y <= mapHeight - curObject.size.length)
+                            curObject.position.y = newPos.y;
+
                     }
                     if (curObject.type === 'bullet') {
                         curObject.position = newPos;
