@@ -9,7 +9,7 @@ var paint = {
 		map: {
 			background: undefined,
 			grid: '#A0A0A0',
-			empty: '#202020'
+			empty: '#A0A0A0'
 		},
 		label: {
 			background: '#BFBFBF',
