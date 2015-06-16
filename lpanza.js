@@ -201,7 +201,7 @@ function doShot(tank){
     bullet.speed = bulletSpeed;
     bullet.moveVector = geom.moveVector(bullet.rotation, bullet.speed);
     bullets.push(bullet);
-    tank.turret.gun.timeToReload = tankReloadTime;
+    tank.turret.gun.timeToReload = 1;
 
     var leftTime = tankReloadTime;
 
@@ -259,6 +259,9 @@ function serverTick(){
                     if (curObject.type === 'tank') {
                         if (newPos.x >= curObject.size.width / 2 && newPos.x <= mapWidth - curObject.size.width )
                             curObject.position.x = newPos.x;
+                        else {
+                           // curObject.position.x = 
+                        }
                         if (newPos.y >= curObject.size.length / 2 && newPos.y <= mapHeight - curObject.size.length)
                             curObject.position.y = newPos.y;
 
