@@ -192,7 +192,7 @@ function doShot(tank){
 		tank.turret.gun.distanceMarginFromTurretCenter + 
 		tank.turret.gun.size.length + 
 		bulletDistanceFromGun + 
-		(bullet.size.length / 2);
+		(bullet.size.length / 2) - bulletSpeed;
    
     var vector = geom.moveVector(bullet.rotation, distFromTurretCenter);
     bullet.color = getRandomColor();
