@@ -2,8 +2,12 @@ var paint = {
 	tanks: [],
 	bullets: [],
 	label: {
-		font: '10px Arial',
-		padding: 2
+		font: '10px Arial'
+	},
+	score: {
+		margin: 10,
+		fontSize: 24,
+		font: '24px Arial'
 	},
 	color: {
 		map: {
@@ -19,11 +23,15 @@ var paint = {
 			active: '#20FF20',
 			background: '#FF2020'
 		},
+		score: {
+			text: '#FF2020'
+		},
 		border: '#202020'
 	},
 	mapOffset: undefined,
 	drawRect: undefined,
 	gridStep: 20,
+	userScore: NaN,
 	onPaint: function (packet) {
 		var tanks,
 			bullets,
@@ -39,6 +47,7 @@ var paint = {
 					tanks[index].position.y -
 						game.paintRect.height/2
 				);
+				this.userScore = tanks[index].label.score;
 				break;
 			}
 		}
@@ -130,6 +139,7 @@ var paint = {
 		for(var index = 0; index < this.tanks.length; index ++) {
 			this.drawLabel(this.tanks[index]);
 		}
+		this.drawScore(this.userScore);
 		this.scaleAsScreen();
 	},
 	drawEmpty: function () {
@@ -304,6 +314,19 @@ var paint = {
 			text,
 			tank.position.x,
 			tank.position.y - tank.size.length
+		);
+	},
+	drawScore: function (score) {
+		var context = canvas.context,
+			text = 'Score: ' + score;
+		context.textAlign = 'left';
+		context.font = this.score.font;
+		context.fillStyle = this.color.score.text;
+		context.fillText(
+			text,
+			this.score.margin,
+			this.score.margin +
+				this.score.fontSize
 		);
 	},
 	drawBullet: function (bullet) {
