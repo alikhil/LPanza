@@ -119,14 +119,14 @@ var canvas = {
 			.attr('height', this.size.height);
 		
 		this.renderOffset.x = (
-			this.size.width - 
+			this.size.width -
 			this.renderSize.width
 		)/2;
 		this.renderOffset.y = (
-			this.size.height - 
+			this.size.height -
 			this.renderSize.height
 		)/2;
-		// ... + joystick.resize
+		joystick.resize();
 	}
 };
 var game = {
@@ -259,7 +259,7 @@ var controls = {
 				}
 			}
 			newPower = utils.vectorLength(
-				xAcceleration, 
+				xAcceleration,
 				yAcceleration
 			);
 			newPower = (newPower > 0? 1 : 0);
@@ -350,20 +350,88 @@ var controls = {
 	},
 	touch: {
 		isAvailable: function () {
-			return false;
-			// touch interface is not available yet
-			// return 'ontouchstart' in window; 
+			return 'ontouchstart' in window;
 		},
 		bind: function () {
-			// touch interface is not available yet
+			joystick.init();
+			this.wasInRender = false;
+			this.wasInJoystick = false;
+			canvas.element
+				.on('touchstart touchmove', function (event) {
+					controls.touch.onMove(event);
+				})
+				.on('touchend touchcancel', function (event) {
+					controls.touch.onEnd(event);
+				});
 		},
 		unbind: function () {
-			// touch interface is not available yet
+			canvas.element
+				.off('touchstart touchmove')
+				.off('touchend touchcancel');
+		},
+		onMove: function (event) {
+			var touches = event.originalEvent.changedTouches,
+				inJoystickFound,
+				inRenderFound,
+				point;
+			inJoystickFound = false;
+			inRenderFound = false;
+			for(i = 0;
+				i < touches.length && (
+					!inJoystickFound ||
+					!inRenderFound
+				);
+				i ++) {
+				point = utils.point(
+					touches[i].pageX,
+					touches[i].pageY
+				);
+				if(joystick.pointInJoystick(point)) {
+					if(!inJoystickFound) {
+						joystick.ontouch(
+							utils.point(
+								point.x - joystick.center.x,
+								point.y - joystick.center.y
+							)
+						);
+						inJoystickFound = true;
+						this.wasInJoystick = true;
+					}
+				} else {
+					if(controls.pointInRenderRect(point)) {
+						if(!inRenderFound) {
+							controls.mouse.onRotate(point);
+							if(!this.wasInRender) {
+								game.input.shot();
+							}
+							inRenderFound = true;
+							this.wasInRender = true;
+						}
+					}
+				}
+			}
+			if(!inJoystickFound && this.wasInJoystick) {
+				joystick.untouch();
+				this.wasInJoystick = false;
+			}
+			if(!inRenderFound && this.wasInRender) {
+				this.wasInRender = false;
+			}
+			event.preventDefault();
+		},
+		wasInRender: undefined,
+		wasInJoystick: undefined,
+		onEnd: function (event) {
+			if(this.wasInJoystick) {
+				joystick.untouch();
+			}
+			this.wasInJoystick = false;
+			this.wasInRender = false;
 		}
 	},
 	useTouch: undefined,
 	bind: function () {
-		useTouch = controls.touch.isAvailable();
+		this.useTouch = controls.touch.isAvailable();
 		if(this.useTouch) {
 			this.touch.bind();
 		} else {
@@ -378,6 +446,96 @@ var controls = {
 			this.mouse.unbind();
 			this.keyboard.unbind();
 		}
+	}
+};
+var joystick = {
+	init: function () {
+	},
+	resize: function () {
+		var minDimension = Math.min(
+				canvas.size.height,
+				canvas.size.width
+			);
+		if(minDimension > 400) {
+			this.radius.inner = 40;
+			this.radius.outer = 100;
+		} else {
+			this.radius.inner = 26;
+			this.radius.outer = 64;
+		}
+		this.center.x = this.margin +
+			this.radius.outer;
+		this.center.y = canvas.size.height -
+			this.margin -
+			this.radius.outer;
+	},
+	center: utils.point(
+		NaN,
+		NaN
+	),
+	radius: {
+		outer: NaN,
+		inner: NaN
+	},
+	activeAngle: 45,
+	margin: 10,
+	currentTouchRadius: NaN,
+	ontouch: function (point) {
+		var radius = this.currentTouchRadius;
+		if(radius < this.radius.outer) {
+			if(radius >= this.radius.inner) {
+				this.touch(point);
+			} else {
+				this.untouch();
+			}
+		}
+	},
+	touch: function (point) {
+		var newRotation,
+			newPower;
+		if(point.x == 0 && point.y == 0) {
+			newPower = 0;
+			newRotation = controls.acceleration.rotation;
+		} else {
+			newRotation = Math.floor(
+				(utils.angleRadToDeg(
+					utils.vectorAngle(
+						point.x,
+						point.y
+					)
+				) + 45/2)/45
+			)*45;
+			/*newRotation = utils.angleRadToDeg(
+				utils.vectorAngle(
+					point.x,
+					point.y
+				)
+			);*/
+			newPower = 1;
+		}
+		if(controls.acceleration.power != newPower ||
+			controls.acceleration.rotation != newRotation) {
+			controls.acceleration.power = newPower;
+			controls.acceleration.rotation = newRotation;
+			game.input.accelerate();
+		}
+	},
+	untouch: function () {
+		this.touch(
+			utils.point(
+				0,
+				0
+			)
+		);
+	},
+	pointInJoystick: function (point) {
+		this.currentTouchRadius = utils.vectorLength(
+				point.x - this.center.x,
+				point.y - this.center.y
+			)
+		return this.currentTouchRadius <
+			this.margin +
+				this.radius.outer;
 	}
 };
 var app = {

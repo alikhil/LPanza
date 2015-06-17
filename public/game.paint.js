@@ -9,6 +9,7 @@ var paint = {
 		fontSize: 24,
 		font: '24px Arial'
 	},
+	joystickAlpha: 0.5,
 	color: {
 		map: {
 			background: undefined,
@@ -25,6 +26,11 @@ var paint = {
 		},
 		score: {
 			text: '#FF2020'
+		},
+		joystick: {
+			inner: '#A0A0A0',
+			outer: '#808080',
+			active: '#FF2020'
 		},
 		border: '#202020'
 	},
@@ -119,7 +125,9 @@ var paint = {
 		this.repaint();
 	},
 	repaint: function () {
-		//this.clear();
+		if(controls.useTouch) {
+			this.clearJoystick();
+		}
 		this.scaleAsMap();
 		this.drawEmpty();
 		this.drawBackground();
@@ -141,6 +149,9 @@ var paint = {
 		}
 		this.drawScore(this.userScore);
 		this.scaleAsScreen();
+		if(controls.useTouch) {
+			this.drawJoystick();
+		}
 	},
 	drawEmpty: function () {
 		var context = canvas.context;
@@ -228,12 +239,18 @@ var paint = {
 		var context = canvas.context;
 		context.restore();
 	},
-	clear: function () {
-		var context = canvas.context;
+	clearJoystick: function () {
+		var context = canvas.context,
+			diameter = 2*(joystick.margin +
+				joystick.radius.outer)
+			left = joystick.margin,
+			_top = canvas.size.height -
+				diameter;
 		context.clearRect(
-			0, 0,
-			canvas.size.width,
-			canvas.size.height
+			left,
+			_top,
+			diameter,
+			diameter
 		);
 	},
 	drawTankBody: function (tank) {
@@ -289,7 +306,7 @@ var paint = {
 	},
 	drawLabel: function (tank) {
 		var context = canvas.context,
-			text = tank.label.userName + 
+			text = tank.label.userName +
 				' [' + tank.label.hp + ' \u2764]';
 		context.fillStyle = this.color.hp.background;
 		context.fillRect(
@@ -338,6 +355,26 @@ var paint = {
 			-bullet.size.length/2
 		);
 	},
+	drawJoystick: function () {
+		var context = canvas.context,
+			oldAlpha;
+		oldAlpha = context.globalAlpha;
+		context.globalAlpha = this.joystickAlpha;
+		this.drawCircleObject(
+			joystick.center,
+			joystick.radius.outer,
+			this.color.joystick.outer
+		);
+		if(controls.acceleration.power > 0) {
+			this.drawJoystickActiveSector();
+		}
+		this.drawCircleObject(
+			joystick.center,
+			joystick.radius.inner,
+			this.color.joystick.inner
+		);
+		context.globalAlpha = oldAlpha;
+	},
 	drawRectObject: function (position, size, rotation, color, distance) {
 		var context = canvas.context,
 			angle = utils.angleDegToRad(rotation-90);
@@ -371,7 +408,41 @@ var paint = {
 			position.x,
 			position.y,
 			radius,
-			0, 2*Math.PI
+			0,
+			Math.PI*2
+		);
+		context.stroke();
+		context.fill();
+	},
+	drawJoystickActiveSector: function () {
+		var context = canvas.context,
+			atAngle = utils.angleDegToRad(
+				controls.acceleration.rotation
+			),
+			angle = utils.angleDegToRad(
+				joystick.activeAngle
+			);
+		context.beginPath();
+		context.strokeStyle = this.color.border;
+		context.fillStyle = this.color.joystick.active;
+		context.arc(
+			joystick.center.x,
+			joystick.center.y,
+			joystick.radius.outer,
+			atAngle -
+				angle/2,
+			atAngle +
+				angle/2
+		);
+		context.arc(
+			joystick.center.x,
+			joystick.center.y,
+			joystick.radius.inner,
+			atAngle +
+				angle/2,
+			atAngle -
+				angle/2,
+			true
 		);
 		context.stroke();
 		context.fill();
