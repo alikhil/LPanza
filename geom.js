@@ -84,8 +84,8 @@ function TDA_rectanglesIntersect (rect1, rect2) {
 			minDeltaId = j;
 		}
 	}
-	if(!result.collide) {
-		result.rotation = axes[minDeltaId];
+	if(result.collide) {
+		result.rotation = radToDeg(axes[minDeltaId]);
 		result.distance = minDelta;
 	}
 	return result;

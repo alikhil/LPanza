@@ -280,6 +280,23 @@ function serverTick(){
                              mapHeight - curObject.size.length / 2 : 
                              newPos.y;
 
+						for (var h = 0; h < group.length; h++) {
+							var cur = objects[group[h]];
+							if (cur.type === 'tank') {
+								var collision = geom.TDA_rectanglesIntersect(
+									cur,
+									curObject
+								);
+								if(collision.collide) {
+									pushTanksAway(
+										cur,
+										curObject,
+										collision.rotation,
+										collision.distance
+									);
+								}
+							}
+						}
                     }
                     if (curObject.type === 'bullet') {
                         curObject.position = newPos;
@@ -318,6 +335,11 @@ function serverTick(){
         }
     }
     console.timeEnd('serverTick');
+}
+function pushTanksAway (tank1, tank2, rotation, distance) {
+	var v = geom.moveVector(rotation, distance/2);
+	tank1.position = geom.addToPos(tank1.position, v, 1);
+	tank2.position = geom.addToPos(tank2.position, v, -1);
 }
 
 /**
