@@ -7,7 +7,7 @@ var app = express();
 
 var lpanza = require('./lpanza');
 
-var port = 3228;
+var port = 80;
 
 var server = require('http').createServer(app).listen(port);
 
