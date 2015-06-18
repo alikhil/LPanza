@@ -285,12 +285,14 @@ function serverTick(){
                         curObject.position = newPos;
                         for (var h = 0; h < group.length; h++) {
                             var cur = objects[group[h]];
-                            if (cur.type === 'tank' && 
-                                geom.rectanglesIntersect(
-                                    geom.getRect(cur.position, cur.size, cur.rotation),
-                                    geom.getRect(curObject.position, curObject.size, curObject.rotation)
-                            )) {
-                                bulletOnTankHit(cur, curObject);
+							if (cur.type === 'tank') {
+								var collision = geom.TDA_rectanglesIntersect(
+									cur,
+									curObject
+								);
+								if(collision.collide) {
+									bulletOnTankHit(cur, curObject);
+								}
                             }
                         }
                     }

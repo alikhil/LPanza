@@ -12,6 +12,111 @@ exports.vectorToScalar = vectorToScalar;
 exports.scalarMult = scalarMult;
 exports.vectorsAreParallel = vectorsAreParallel;
 
+exports.TDA_rectanglesIntersect = TDA_rectanglesIntersect;
+
+/**
+ * Теорема о разделяющих осях
+ * */
+function radToDeg (angle) {
+	return 180*(angle/Math.PI);
+}
+function degToRad (angle) {
+	return Math.PI*(angle/180);
+}
+function TDA_rectanglesIntersect (rect1, rect2) {
+	var axes = [
+			degToRad(rect1.rotation),
+			degToRad(rect1.rotation + 90),
+			degToRad(rect2.rotation),
+			degToRad(rect2.rotation + 90)
+		],
+		points = [
+			getRect(
+				rect1.position,
+				rect1.size,
+				radToDeg(rect1.rotation)
+			),
+			getRect(
+				rect2.position,
+				rect2.size,
+				radToDeg(rect2.rotation)
+			)
+		],
+		delta,
+		minDelta = Infinity,
+		minDeltaId,
+		ranges = [],
+		range,
+		projected,
+		result = {
+			collide: true,
+			rotation: NaN,
+			distance: NaN
+		};
+	for(var j = 0; j < axes.length; j ++) {
+		ranges.splice(0, ranges.length);
+		for(var i = 0; i < points.length; i ++) {
+			range = {left: Infinity, right: -Infinity};
+			for(var k in points[i]) {
+				projected = TDA_toAxis(axes[j], 
+					points[i][k]
+				);
+				if(range.right < projected) {
+					range.right = projected;
+				}
+				if(projected < range.left) {
+					range.left = projected;
+				}
+			}
+			ranges.push(range);
+		}
+		if(ranges[0].right < ranges[1].left ||
+			ranges[1].right < ranges[0].left) {
+			result.collide = false;
+			break;
+		}
+		delta = Math.min(
+			Math.abs(ranges[0].right - ranges[1].left),
+			Math.abs(ranges[1].right - ranges[0].left)
+		);
+		if(delta < minDelta) {
+			minDelta = delta;
+			minDeltaId = j;
+		}
+	}
+	if(!result.collide) {
+		result.rotation = axes[minDeltaId];
+		result.distance = minDelta;
+	}
+	return result;
+}
+function TDA_toAxis (angle, point) {
+	var xa = point.x,
+		ya = point.y,
+		f = angle,
+		d, xb, yb,
+		tf = Math.tan(f),
+		cf = Math.cos(f),
+		p;
+	if(cf == 0) {
+		// doesn't work because of precision - cos is not equal 0
+		xb = 0;
+		yb = ya;
+	} else if(ya - tf*xa == 0) {
+		// point is on line, can't use zero length vector
+		xb = xa;
+		yb = ya;
+	} else {
+		xb = (xa + ya * tf)/(1 + tf*tf);
+		yb = xb * tf;
+	}
+	p = Math.sqrt(xb*xb + yb*yb);
+	if(xb < 0 || xb == 0 && yb > 0) {
+		p *= -1;
+	}
+	return p;
+}
+
 /**
  * Пересекаются ли два данных прямоугольника
  * */
