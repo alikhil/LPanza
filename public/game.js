@@ -482,12 +482,10 @@ var joystick = {
 	currentTouchRadius: NaN,
 	ontouch: function (point) {
 		var radius = this.currentTouchRadius;
-		if(radius < this.radius.outer) {
-			if(radius >= this.radius.inner) {
-				this.touch(point);
-			} else {
-				this.untouch();
-			}
+		if(radius < this.radius.inner || this.radius.outer < radius) {
+			this.untouch();
+		} else {
+			this.touch(point);
 		}
 	},
 	touch: function (point) {
@@ -532,7 +530,7 @@ var joystick = {
 		this.currentTouchRadius = utils.vectorLength(
 				point.x - this.center.x,
 				point.y - this.center.y
-			)
+			);
 		return this.currentTouchRadius <
 			this.margin +
 				this.radius.outer;
