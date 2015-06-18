@@ -93,7 +93,7 @@ function userJoin(user) {
     label.userId = userId;
 
 	var tank = { };
-	tank.rotation = getRandom(-3,4) * 45;
+	tank.rotation = getRandom(0,7) * 45;
     tank.type = 'tank';
     var gun = {};
     gun.size = size_(tankGunWidth, tankGunLength);
