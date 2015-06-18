@@ -3,7 +3,7 @@ var gameSocket;
 
 // Constants
 var debugMode = true;
-var serverMaxUsersCount = 10;
+var serverMaxUsersCount = 20;
 var serverTickDelay = 50;
 
 var backgroundColor = [144, 238, 144];
@@ -33,6 +33,8 @@ var maxWidthLength = tankWidth;
 
 var tankReloadTime = 2000;
 
+var ratingUpdateDelay = 4000;
+
 var bulletDistanceFromGun = 1;
 var bulletWidth = 2;
 var bulletLength = 8;
@@ -48,6 +50,7 @@ var userIdScores = { };
 var userNames = [ ];
 
 var timer;
+var timerRatingUpdate;
 var test = 0;
 
 var clients = {};
@@ -69,6 +72,7 @@ exports.initGame = function(sio, socket){
 
 exports.startServer = function (){
     timer = setInterval(serverTick, serverTickDelay);
+    timerRatingUpdate = setInterval(updateRating, ratingUpdateDelay);
 }
 function userJoin(user) {
 	var sock = this;
@@ -83,6 +87,8 @@ function userJoin(user) {
 	
 	gameSocket.on('game.control', gameControl);
     gameSocket.on('disconnect', userLeave);
+    gameSocket.on('game.ping', userPing);
+    
 	userIdNames[userId] = user.userName;
 	userNames.push(user.userName);
     userIdScores[userId] = 0;
@@ -134,12 +140,41 @@ function userJoin(user) {
 		}
 	});
 	if(debugMode)
-			console.log(user.userName + ' подключился к серверу');
+        console.log(user.userName + ' подключился к серверу');
+    updateOnline();
 }
+
+function updateRating(){
+    if (io !== undefined && userNames.length > 0) {
+        var rating = [];
+        var keys = Object.keys(userIdScores);
+        
+        for (var i = 0; i < keys.length; i++) {
+            rating.push({ userName : userIdNames[keys[i]], score : userIdScores[keys[i]] });
+        }
+        rating.sort(ratingCmp);
+        io.emit('game.online', { users : rating });
+    }
+}
+
+function ratingCmp(a, b){
+    return a == b ? 0 : a < b ? -1 : 1;
+}
+
+function userPing(data){
+    var sock = this;
+    sock.emit('game.ping', data);
+}
+
+function updateOnline(){
+    io.emit('game.online', { users : userNames });
+}
+
 function userLeave(){
     var socket = this;
 	var userId = getUserId(socket.id);
     deleteUser(userId);
+    updateOnline();
 }
 
 function deleteUser(userId){
