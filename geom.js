@@ -1,4 +1,4 @@
-﻿
+﻿var eps = 0.0001;
 
 exports.rectanglesIntersect = rectanglesIntersect;
 exports.rectangleContainsPoint = rectangleContainsPoint;
@@ -8,6 +8,9 @@ exports.makeVector = makeVector;
 exports.getRect = getRect;
 exports.addToPos = addToPos;
 exports.moveVector = moveVector;
+exports.vectorToScalar = vectorToScalar;
+exports.scalarMult = scalarMult;
+exports.vectorsAreParallel = vectorsAreParallel;
 
 /**
  * Пересекаются ли два данных прямоугольника
@@ -33,6 +36,12 @@ function pointInLeft(point, a, b) {
     return vectorMult(makeVector(a, point), makeVector(a, b)) < 0;
 }
 
+/**
+ * Скалярное произведение
+ * */
+function scalarMult(a, b){
+    return a.x * b.x + a.y * b.y;
+}
 
 /**
  * Векторное произведение
@@ -78,4 +87,53 @@ function moveVector(rotation, dist) {
     var y = Math.sin(angle) * dist;
     var x = Math.cos(angle) * dist;
     return { x : x, y : y };
+}
+
+/**
+ * Умножение вектора на число
+ * */
+function vectorToScalar(v, k){
+    var nv = v;
+    nv.x *= k;
+    nv.y *= k;
+    return nv;
+}
+/**
+ * Проверка векторов на параллельность
+ * */
+function vectorsAreParallel(a, b){
+    return vectorMult(a, b) == 0;
+}
+/**
+ * Проверка векторов на перпендикулярность
+ * */
+function vectorsArePerpendicular(a, b){
+    return scalarMult(a, b) == 0;
+}
+
+exports.vectorsAreCodirectional = vectorsAreCodirectional;
+/**
+ * Проверка векторов на сонаправленность
+ * */
+function vectorsAreCodirectional(a, b){
+    var A = vectorToScalar(a, 1 / vectorLength(a));
+    var B = vectorToScalar(b, 1 / vectorLength(b));
+    
+    return (doubleEqual(A.x, B.x) && doubleEqual(A.y, B.y));
+}
+
+exports.vectorLength = vectorLength;
+/**
+ * Вычисление длины вектора
+ * */
+function vectorLength(a){
+    return Math.sqrt(a.x * a.x + a.y * a.y);
+}
+
+exports.dEq = doubleEqual;
+/**
+ * Равность двух нецелых чисел с погрешностью
+ * */
+function doubleEqual(a, b){
+    return Math.abs(b - a) < eps;
 }
