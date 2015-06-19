@@ -74,10 +74,19 @@ var socket = {
 		});
 		this.io.on('game.online', function (packet) {
 			online.refresh(packet);
-		})
+		});
 		this.io.on('game.rating', function (packet) {
 			rating.refresh(packet);
-		})
+		});
+		this.io.on('disconnect', function () {
+			if(game.inProgress) {
+				$('#errorDismissButton').hide();
+			}
+			app.error.show(
+				'Потеряно соединение с сервером',
+				'Обновите страницу'
+			);
+		});
 	}
 };
 var canvas = {
@@ -157,6 +166,7 @@ function scrollToTop () {
 	$(window).scrollTop(0);
 }
 var game = {
+	inProgress: false,
 	input: {
 		accelerate: function () {
 			socket.io.emit('game.control', {
@@ -201,6 +211,7 @@ var game = {
 		this.mapSize = packet.mapSize;
 		this.userId = utils.getUserId();
 		
+		this.inProgress = true;
 		this.paint = paint;
 		canvas.init();
 		controls.bind();
@@ -210,6 +221,7 @@ var game = {
 		$('.gameOverlay').show();
 	},
 	uninit: function () {
+		this.inProgress = false;
 		controls.unbind();
 		canvas.uninit();
 		ping.uninit();
@@ -674,7 +686,8 @@ var app = {
 		}
 	},
 	error: {
-		show: function (text) {
+		show: function (title, text) {
+			$('#errorTitle').text(title);
 			$('#errorText').text(text);
 			$('#errorModal').modal('show');
 		}
@@ -793,8 +806,12 @@ var app = {
 		},
 		fail: function (packet) {
 /* log */	console.log('socket.on(\''+'game.join.fail'+'\', '+JSON.stringify(packet)+')');
-			app.error.show(packet.reason);
-		}
+			app.error.show(
+				app.gameJoin.failErrorTitle,
+				packet.reason
+			);
+		},
+		failErrorTitle: 'Не могу присоединится к игре'
 	},
 	gameOver: function (packet) {
 /* log */	console.log('socket.on(\''+'game.over'+'\', '+JSON.stringify(packet)+')');
