@@ -1,12 +1,9 @@
-/*
- * Взято отсюда
- * http://frontender.info/building-multiplayer-games-with-node-js-and-socket-io/
- */
+
 var express = require('express');
 var app = express();
 
 var lpanza = require('./lpanza');
-var feedback = require('./feedback');
+//var feedback = require('./feedback');
 
 var port = 3228;
 
@@ -20,7 +17,7 @@ lpanza.startServer();
 
 io.on('connection', function(socket){
 	lpanza.initGame(io, socket);
-	feedback.init(socket);
+	//feedback.init(socket);
 });
 
 
