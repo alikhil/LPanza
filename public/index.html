@@ -129,7 +129,17 @@
 
 		<div class='fullWrap' id='canvasWrap'>
 			<div class='gameOverlay gameOverlayTopLeft'><h3 id='gameStatsScore'></h3></div>
-			<div class='gameOverlay gameOverlayTopRight'><button type='button' class='btn btn-primary' id='gameStatsOnlineButton'>Онлайн <span class='badge' id='gameStatsOnlineCount'>?</span></button></div>
+			<div class='gameOverlay gameOverlayTopRight'>
+				<div class='text-right form-group'>
+					<button type='button' class='btn btn-primary' id='gameStatsOnlineButton'>Онлайн <span class='badge' id='gameStatsOnlineCount'>?</span></button>
+				</div>
+				<h5 class='text-center'>Рейтинг</h5>
+				<ul class='list-group' id='gameStatsRatingList'>
+					<li>Alik</li>
+					<li>Ruslan</li>
+					<li>Last</li>
+				</ul>
+			</div>
 			<div class='gameOverlay gameOverlayBottomRight'><span id='gameStatsPing'></span></div>
 			<canvas width='0' height='0' id='gameCanvas'>HTML5 не поддерживается</canvas>
 		</div>

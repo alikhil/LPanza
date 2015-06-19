@@ -73,6 +73,9 @@ var socket = {
 		this.io.on('game.online', function (packet) {
 			online.refresh(packet);
 		})
+		this.io.on('game.rating', function (packet) {
+			rating.refresh(packet);
+		})
 	}
 };
 var canvas = {
@@ -187,6 +190,7 @@ var game = {
 		controls.bind();
 		ping.init();
 		online.init();
+		rating.init();
 		$('.gameOverlay').show();
 	},
 	uninit: function () {
@@ -194,6 +198,7 @@ var game = {
 		canvas.uninit();
 		ping.uninit();
 		online.uninit();
+		rating.uninit();
 		$('.gameOverlay').hide();
 	},
 	backgroundColor: undefined,
@@ -234,6 +239,30 @@ var ping = {
 	timer: undefined,
 	delay: 10*1000,
 	requests: []
+};
+var rating = {
+	users: [],
+	init: function () {
+		$('#gameStatsRatingList').empty();
+	},
+	uninit: function () {
+		this.users.splice(0, this.users.length);
+	},
+	refresh: function (packet) {
+		this.users.splice(0, this.users.length);
+		this.users = packet.users;
+		$('#gameStatsRatingList').empty();
+		for(var i = 0; i < this.users.length; i ++) {
+			$('#gameStatsRatingList').append(
+				$('<li>')
+					.text(
+						(i + 1) + '.' +
+						this.users[i].userName + ' - ' +
+						this.users[i].score
+					)
+			);
+		}
+	}
 };
 var online = {
 	count: undefined,

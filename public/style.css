@@ -20,6 +20,8 @@ html, body, .fullWrap {
 }
 .gameOverlay {
 	position: absolute;
+	opacity: 0.7;
+	filter: alpha(70);
 
 	-webkit-touch-callout: none;
 	-webkit-user-select: none;
@@ -27,6 +29,9 @@ html, body, .fullWrap {
 	-moz-user-select: none;
 	-ms-user-select: none;
 	user-select: none;
+}
+#gameStatsRatingList {
+	list-style-type: none;
 }
 .gameOverlayTopLeft {
 	left: 10px;
