@@ -4,11 +4,6 @@ var paint = {
 	label: {
 		font: '10px Arial'
 	},
-	score: {
-		margin: 10,
-		fontSize: 24,
-		font: '24px Arial'
-	},
 	joystickAlpha: 0.5,
 	color: {
 		map: {
@@ -23,9 +18,6 @@ var paint = {
 		hp: {
 			active: '#20FF20',
 			background: '#FF2020'
-		},
-		score: {
-			text: '#FF2020'
 		},
 		joystick: {
 			inner: '#A0A0A0',
@@ -334,17 +326,8 @@ var paint = {
 		);
 	},
 	drawScore: function (score) {
-		var context = canvas.context,
-			text = 'Score: ' + score;
-		context.textAlign = 'left';
-		context.font = this.score.font;
-		context.fillStyle = this.color.score.text;
-		context.fillText(
-			text,
-			this.score.margin,
-			this.score.margin +
-				this.score.fontSize
-		);
+		var text = 'Score: ' + score;
+		$('#gameStatsScore').text(text);
 	},
 	drawBullet: function (bullet) {
 		this.drawRectObject(

@@ -13,13 +13,32 @@ html, body, .fullWrap {
 	display: block;
 	margin-left: auto;
 	margin-right: auto;
-
-	/* debug */
-	/* outline: 3px dashed red; */
-	/* debug */
 }
 #canvasWrap {
 	display: none;
+	position: relative;
+}
+.gameOverlay {
+	position: absolute;
+
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+.gameOverlayTopLeft {
+	left: 10px;
+	top: -5px;
+}
+.gameOverlayTopRight {
+	right: 10px;
+	top: 10px;
+}
+.gameOverlayBottomRight {
+	right: 10px;
+	bottom: 10px;
 }
 .modal {
 	position: absolute;
@@ -31,6 +50,9 @@ html, body, .fullWrap {
 .inline_to_right_text {
 	float: right;
 	display: block;
+}
+#gameStatsScore {
+	color: #FF2020;
 }
 
 /* bad browser css */

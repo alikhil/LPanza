@@ -177,13 +177,56 @@ var game = {
 		this.paint = paint;
 		canvas.init();
 		controls.bind();
+		ping.init();
+		$('.gameOverlay').show();
 	},
 	uninit: function () {
 		controls.unbind();
 		canvas.uninit();
+		ping.uninit();
+		$('.gameOverlay').hide();
 	},
 	backgroundColor: undefined,
 	userId: undefined
+};
+var ping = {
+	init: function () {
+		socket.io.on('game.ping', function (packet) {
+			ping.pong(packet);
+		});
+		this.timer = window.setInterval(function () {
+				ping.ping();
+			},
+			this.delay
+		);
+		ping.ping();
+	},
+	uninit: function () {
+		window.clearInterval(this.timer);
+		this.requests.splice(0, this.requests.length);
+	},
+	ping: function () {
+		var curTime = (new Date()).getTime();
+		this.requests.push(curTime);
+		socket.io.emit('game.ping', {time: curTime});
+	},
+	pong: function (packet) {
+		var curTime = (new Date()).getTime(),
+			oldTime = packet.time;
+		for(var i = 0; i < this.requests.length; i ++) {
+			if(this.requests[i] == oldTime) {
+				$('#gameStatsPing').text((
+						curTime -
+						oldTime
+					) + ' мс'
+				);
+				this.requests.splice(0, i + 1);
+			}
+		}
+	},
+	timer: undefined,
+	delay: 10*1000,
+	requests: []
 };
 var controls = {
 	acceleration: {
@@ -678,6 +721,7 @@ $(document).ready(function () {
 	if(!canvas2DSupported) {
 		$('#bad_browser').show();
 	} else {
+		$('.gameOverlay').hide();
 		$('#canvasWrap').show();
 		$('#browser_check').hide();
 		app.init();

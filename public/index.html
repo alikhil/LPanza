@@ -46,7 +46,7 @@
 								</span>
 							</div>
 							<div class='alert' id='feedbackStatus'>
-								<a href="#" class="close" id='feedbackStatusClose'>&times;</a>
+								<a href='#' class='close' id='feedbackStatusClose'>&times;</a>
 								<span id='feedbackStatusText'></span>
 							</div>
 						</form>
@@ -128,8 +128,10 @@
 		</div>
 
 		<div class='fullWrap' id='canvasWrap'>
-			<canvas width='0' height='0' id='gameCanvas'>
-			</canvas>
+			<div class='gameOverlay gameOverlayTopLeft'><h3 id='gameStatsScore'></h3></div>
+			<div class='gameOverlay gameOverlayTopRight'><button type='button' class='btn btn-primary' id='gameStatsOnlineButton'>Онлайн <span class='badge' id='gameStatsOnlineCount'>?</span></button></div>
+			<div class='gameOverlay gameOverlayBottomRight'><span id='gameStatsPing'></span></div>
+			<canvas width='0' height='0' id='gameCanvas'>HTML5 не поддерживается</canvas>
 		</div>
 		
 	</body>
