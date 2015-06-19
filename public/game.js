@@ -100,6 +100,10 @@ var canvas = {
 		$(window).on('resize', function () {
 			canvas.resize();
 		});
+		window.setTimeout(function () {
+			scrollToTop();
+			canvas.resize();
+		}, 250);
 	},
 	uninit: function () {
 		$(window).off('resize');
@@ -109,7 +113,13 @@ var canvas = {
 	},
 	resize: function () {
 // /* log */ console.log('window.resize');
-		var parent = this.element.parent()[0];
+		var parentElement = this.element.parent(),
+			parent = parentElement[0],
+			screenSizeHackElement = $('#screenSizeHack')[0];
+		scrollToTop();
+		parentElement
+			.width(screenSizeHackElement.offsetLeft + 1)
+			.height(screenSizeHackElement.offsetTop + 1);
 		this.size.width = parent.offsetWidth;
 		this.size.height = parent.offsetHeight;
 		
@@ -140,6 +150,9 @@ var canvas = {
 		joystick.resize();
 	}
 };
+function scrollToTop () {
+	$(window).scrollTop(0);
+}
 var game = {
 	input: {
 		accelerate: function () {
