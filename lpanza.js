@@ -34,6 +34,7 @@ var maxWidthLength = tankWidth;
 var tankReloadTime = 2000;
 
 var ratingUpdateDelay = 4000;
+var ratingShowUsersCount = 5;
 
 var bulletDistanceFromGun = 1;
 var bulletWidth = 2;
@@ -153,6 +154,7 @@ function updateRating(){
             rating.push({ userName : userIdNames[keys[i]], score : userIdScores[keys[i]] });
         }
         rating.sort(ratingCmp);
+        rating = rating.slice(0, ratingShowUsersCount);
         io.emit('game.rating', { users : rating });
     }
 }
