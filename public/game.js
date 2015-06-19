@@ -105,6 +105,7 @@ var canvas = {
 		window.setTimeout(function () {
 			scrollToTop();
 			canvas.resize();
+			paint.repaint();
 		}, 250);
 	},
 	uninit: function () {
