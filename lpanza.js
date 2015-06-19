@@ -186,7 +186,7 @@ function deleteUser(userId){
         delete (userIdNames[userId]);
         delete (tanks[userId]);
         delete (clients[userId]);
-		
+        delete (userIdScores[userId]);
     }
 }
 
