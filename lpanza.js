@@ -33,7 +33,6 @@ var maxWidthLength = tankWidth;
 
 var tankReloadTime = 2000;
 
-var ratingUpdateDelay = 4000;
 var ratingShowUsersCount = 5;
 
 var bulletDistanceFromGun = 1;
@@ -51,7 +50,6 @@ var userIdScores = { };
 var userNames = [ ];
 
 var timer;
-var timerRatingUpdate;
 var test = 0;
 
 var clients = {};
@@ -73,7 +71,6 @@ exports.initGame = function(sio, socket){
 
 exports.startServer = function (){
     timer = setInterval(serverTick, serverTickDelay);
-    timerRatingUpdate = setInterval(updateRating, ratingUpdateDelay);
 }
 function userJoin(user) {
 	var sock = this;
@@ -143,6 +140,7 @@ function userJoin(user) {
 	if(debugMode)
         console.log(user.userName + ' подключился к серверу');
     updateOnline();
+    updateRating();
 }
 
 function updateRating(){
@@ -177,6 +175,7 @@ function userLeave(){
 	var userId = getUserId(socket.id);
     deleteUser(userId);
     updateOnline();
+    updateRating();
 }
 
 function deleteUser(userId){
@@ -391,8 +390,8 @@ function bulletOnTankHit(tank, bullet){
         clients[tank.label.userId].emit('game.over', { score : userIdScores[tank.label.userId] });
         userIdScores[bullet.owner] += scoreForKill;
         deleteUser(tank.label.userId);
-
     }
+    updateRating();
     bullet.type = 'deleted-bullet';
     removeFromArray(bullets, bullet);
 }
