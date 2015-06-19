@@ -2,6 +2,8 @@
 <html>
 	<head>
 		<title>Last Panzer</title>
+		<meta charset='utf-8' />
+		<meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
 		<meta name='viewport' content='width=device-width, height=device-height, initial-scale=1.0, user-scalable=no'>
 		<link href='./bootstrap/bootstrap.css' rel='stylesheet' type='text/css' />
 		<script src='./socket.io/socket.io.js'></script>
@@ -22,14 +24,35 @@
 					<div class='modal-body panel-body'>
 						<form role='form' id='menuForm'>
 							<div class='form-group'>
-								<label for='userNameTextInput'>Ваше имя:</label>
+								<label for='userNameTextInput'>Ваше имя</label>
 								<input type='text' class='form-control' id='userNameTextInput' />
 							</div>
-							<button type='submit' class='btn btn-default'>Играть</button>
+							<button type='submit' class='btn btn-primary'>Играть</button>
+						</form>
+						<form role='form' id='feedbackForm' name='feedbackForm'>
+							<h4 class='text-center'>Обратная связь</h4>
+							<div class='form-group'>
+								<label for='userNameTextInput'>Ваш e-mail</label>
+								<input type='email' class='form-control' id='feedbackEmailText' required />
+							</div>
+							<div class='form-group'>
+								<label for='feedbackMessageText'>Сообщение</label>
+								<textarea class='form-control' rows='5' id='feedbackMessageText' required></textarea>
+							</div>
+							<div class='form-group'>
+								<button type='submit' class='btn btn-primary'>Отправить</button>
+								<span class='inline_to_right_text'>
+									<button type='button' class='btn btn-default' id='feedbackBackButton'>Назад</button>
+								</span>
+							</div>
+							<div class='alert' id='feedbackStatus'>
+								<a href="#" class="close" id='feedbackStatusClose'>&times;</a>
+								<span id='feedbackStatusText'></span>
+							</div>
 						</form>
 					</div>
 					<div class='modal-footer panel-footer'>
-						<div class='text-center'>RBLI Hi-Tech, 2015</div>
+						<div class='text-left'>RBLI Hi-Tech, 2015<a class='inline_to_right_text' href='#' id='feedbackLink'>Обратная связь</a></div>
 					</div>
 				</div>
 			</div>
@@ -47,7 +70,7 @@
 					<div class='modal-body panel-body'>
 						<h4 class='text-center'>Не могу присоединится к игре</h4>
 						<p id='errorText'></p>
-						<button type='button' class='button' data-dismiss='modal'>Назад</button>
+						<button type='button' class='btn btn-primary' data-dismiss='modal'>Назад</button>
 					</div>
 				</div>
 			</div>
@@ -69,7 +92,7 @@
 						<div class='text-center'><button type='button' class='button' data-dismiss='modal'>Играть еще</button></div>
 					</div>
 					<div class='modal-footer panel-footer'>
-						<div class='text-center'>RBLI Hi-Tech, 2015</div>
+						<div class='text-left'>RBLI Hi-Tech, 2015</div>
 					</div>
 				</div>
 			</div>
@@ -91,10 +114,10 @@
 					</noscript>
 					<div id='bad_browser'>
 						<p>Для работы с сайтом необходима поддержка HTML5.<br>Чтобы использовать все возможности сайта, загрузите и установите один из этих браузеров:<p>
-						<div id="browsers">
-							<a href="http://www.google.com/chrome/" target="_blank" style="background: url(/images/chrome.png) no-repeat 50% 17px;">Chrome</a>
-							<a href="http://www.mozilla-europe.org/" target="_blank" style="background: url(/images/firefox.png) no-repeat 50% 17px;">Firefox</a>
-							<a href="http://www.opera.com/" target="_blank" style="background: url(/images/opera.png) no-repeat 50% 15px;">Opera</a>
+						<div id='browsers'>
+							<a href='http://www.google.com/chrome/' target='_blank' style='background: url(/images/chrome.png) no-repeat 50% 17px;'>Chrome</a>
+							<a href='http://www.mozilla-europe.org/' target='_blank' style='background: url(/images/firefox.png) no-repeat 50% 17px;'>Firefox</a>
+							<a href='http://www.opera.com/' target='_blank' style='background: url(/images/opera.png) no-repeat 50% 15px;'>Opera</a>
 						</div>
 					</div>
 				</div>

@@ -25,6 +25,13 @@ html, body, .fullWrap {
 	position: absolute;
 	overflow: auto;
 }
+#feedbackMessageText {
+	resize: vertical;
+}
+.inline_to_right_text {
+	float: right;
+	display: block;
+}
 
 /* bad browser css */
 #browsers {

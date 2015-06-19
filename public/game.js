@@ -568,6 +568,79 @@ var app = {
 			$('#errorModal').modal('show');
 		}
 	},
+	feedback: {
+		init: function () {
+			this.hide();
+			$('#feedbackMessageText').val('Уважаемые разработчики,\nпишу к вам ');
+			$('#feedbackForm').on('submit', function () {
+				app.feedback.send(
+					$('#feedbackEmailText').val(),
+					$('#feedbackMessageText').val()
+				);
+				return false;
+			});
+			$('#feedbackBackButton').on('click', this.hide);
+			$('#feedbackLink').on('click', this.show);
+			this.status.init();
+			socket.io.on('game.feedback.ok', this.result.ok);
+			socket.io.on('game.feedback.fail', this.result.fail);
+		},
+		status: {
+			show: function (success, text) {
+				if(success) {
+					$('#feedbackStatus')
+						.removeClass('alert-danger')
+						.addClass('alert-success');
+				} else {
+					$('#feedbackStatus')
+						.removeClass('alert-success')
+						.addClass('alert-danger');
+				}
+				$('#feedbackStatusText')
+					.text(text);
+				$('#feedbackStatus')
+					.show();
+			},
+			hide: function () {
+				$('#feedbackStatus')
+					.hide();
+			},
+			init: function () {
+				$('#feedbackStatusClose').on('click', function () {
+					app.feedback.status.hide();
+				});
+				this.hide();
+			}
+		},
+		show: function () {
+			$('#menuForm').hide();
+			$('#feedbackForm').show();
+			$('#feedbackLink').hide();
+			$('#feedbackEmailText').focus();
+		},
+		hide: function () {
+			$('#menuForm').show();
+			$('#feedbackForm').hide();
+			$('#feedbackLink').show();
+			$('#userNameTextInput').focus();
+		},
+		send: function (email, message) {
+			socket.io.emit('game.feedback', {
+				email: email,
+				message: message
+			});
+		},
+		result: {
+			ok: function (packet) {
+				app.feedback.status.show(true, app.feedback.successText);
+				$('#feedbackMessageText').val('Уважаемые разработчики,\nпишу к вам ');
+			},
+			fail: function (packet) {
+				app.feedback.status.show(false, packet.reason);
+			}
+		},
+		successText: 'Ваше сообщение отправлено'
+	},
 	score: {
 		show: function (score) {
 			$('#scoreText').text(score);
@@ -580,6 +653,7 @@ var app = {
 	init: function () {
 		socket.connect();
 		this.menu.init();
+		this.feedback.init();
 		this.menu.show();
 	},
 	gameJoin: {
