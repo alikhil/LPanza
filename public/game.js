@@ -380,7 +380,7 @@ var controls = {
 		bind: function () {
 			// change controls.rotation from `undefined` to `360`
 			controls.rotation = 360;
-			canvas.element
+			$(window)
 				.on('mousedown', function (event) {
 					controls.mouse.onMove(
 						utils.point(
@@ -405,7 +405,7 @@ var controls = {
 				});
 		},
 		unbind: function () {
-			canvas.element
+			$(window)
 				.off('mousedown')
 				.off('mousemove');
 		},
@@ -451,7 +451,7 @@ var controls = {
 			joystick.init();
 			this.wasInRender = false;
 			this.wasInJoystick = false;
-			canvas.element
+			$(window)
 				.on('touchstart touchmove', function (event) {
 					controls.touch.onMove(event);
 				})
@@ -460,7 +460,7 @@ var controls = {
 				});
 		},
 		unbind: function () {
-			canvas.element
+			$(window)
 				.off('touchstart touchmove')
 				.off('touchend touchcancel');
 		},
