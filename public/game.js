@@ -65,6 +65,14 @@ var socket = {
 		});
 		this.io.on('game.join.ok', app.gameJoin.ok);
 		this.io.on('game.join.fail', app.gameJoin.fail);
+		this.io.on('game.feedback.ok', app.feedback.result.ok);
+		this.io.on('game.feedback.fail', app.feedback.result.fail);
+		this.io.on('game.ping', function (packet) {
+			ping.pong(packet);
+		});
+		this.io.on('game.online', function (packet) {
+			online.refresh(packet);
+		})
 	}
 };
 var canvas = {
@@ -178,12 +186,14 @@ var game = {
 		canvas.init();
 		controls.bind();
 		ping.init();
+		online.init();
 		$('.gameOverlay').show();
 	},
 	uninit: function () {
 		controls.unbind();
 		canvas.uninit();
 		ping.uninit();
+		online.uninit();
 		$('.gameOverlay').hide();
 	},
 	backgroundColor: undefined,
@@ -191,9 +201,6 @@ var game = {
 };
 var ping = {
 	init: function () {
-		socket.io.on('game.ping', function (packet) {
-			ping.pong(packet);
-		});
 		this.timer = window.setInterval(function () {
 				ping.ping();
 			},
@@ -227,6 +234,22 @@ var ping = {
 	timer: undefined,
 	delay: 10*1000,
 	requests: []
+};
+var online = {
+	count: undefined,
+	users: [],
+	init: function () {
+		$('#gameStatsOnlineCount').text('?');
+	},
+	uninit: function () {
+		this.users.splice(0, this.users.length);
+	},
+	refresh: function (packet) {
+		this.users.splice(0, this.users.length);
+		this.users = packet.users;
+		this.count = this.users.length;
+		$('#gameStatsOnlineCount').text(this.count);
+	}
 };
 var controls = {
 	acceleration: {
@@ -625,8 +648,6 @@ var app = {
 			$('#feedbackBackButton').on('click', this.hide);
 			$('#feedbackLink').on('click', this.show);
 			this.status.init();
-			socket.io.on('game.feedback.ok', this.result.ok);
-			socket.io.on('game.feedback.fail', this.result.fail);
 		},
 		status: {
 			show: function (success, text) {
