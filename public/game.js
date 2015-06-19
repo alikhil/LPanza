@@ -65,8 +65,10 @@ var socket = {
 		});
 		this.io.on('game.join.ok', app.gameJoin.ok);
 		this.io.on('game.join.fail', app.gameJoin.fail);
+		/*
 		this.io.on('game.feedback.ok', app.feedback.result.ok);
 		this.io.on('game.feedback.fail', app.feedback.result.fail);
+		*/
 		this.io.on('game.ping', function (packet) {
 			ping.pong(packet);
 		});
@@ -676,6 +678,7 @@ var app = {
 			$('#errorModal').modal('show');
 		}
 	},
+	/*
 	feedback: {
 		init: function () {
 			this.hide();
@@ -746,6 +749,25 @@ var app = {
 			}
 		},
 		successText: 'Ваше сообщение отправлено'
+	},
+	*/
+	feedback: {
+		init: function () {
+			this.hide();
+			$('#feedbackBackButton').on('click', this.hide);
+			$('#feedbackLink').on('click', this.show);
+		},
+		show: function () {
+			$('#menuForm').hide();
+			$('#feedbackForm').show();
+			$('#feedbackLink').hide();
+		},
+		hide: function () {
+			$('#feedbackForm').hide();
+			$('#feedbackLink').show();
+			$('#menuForm').show();
+			$('#userNameTextInput').focus();
+		}
 	},
 	score: {
 		show: function (score) {
