@@ -326,7 +326,7 @@ var paint = {
 		);
 	},
 	drawScore: function (score) {
-		var text = 'Score: ' + score;
+		var text = 'Ваши очки: ' + score;
 		$('#gameStatsScore').text(text);
 	},
 	drawBullet: function (bullet) {
