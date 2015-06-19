@@ -153,7 +153,7 @@ function updateRating(){
             rating.push({ userName : userIdNames[keys[i]], score : userIdScores[keys[i]] });
         }
         rating.sort(ratingCmp);
-        io.emit('game.online', { users : rating });
+        io.emit('game.rating', { users : rating });
     }
 }
 
