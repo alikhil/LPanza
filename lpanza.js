@@ -158,7 +158,7 @@ function updateRating(){
 }
 
 function ratingCmp(a, b){
-    return a == b ? 0 : a < b ? -1 : 1;
+    return a.score == b.score ? 0 : a.score > b.score ? -1 : 1;
 }
 
 function userPing(data){
