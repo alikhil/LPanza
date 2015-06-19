@@ -29,7 +29,7 @@
 							</div>
 							<button type='submit' class='btn btn-primary'>Играть</button>
 						</form>
-						<form role='form' id='feedbackForm' name='feedbackForm'>
+						<!--<form role='form' id='feedbackForm'>
 							<h4 class='text-center'>Обратная связь</h4>
 							<div class='form-group'>
 								<label for='userNameTextInput'>Ваш e-mail</label>
@@ -49,7 +49,21 @@
 								<a href='#' class='close' id='feedbackStatusClose'>&times;</a>
 								<span id='feedbackStatusText'></span>
 							</div>
-						</form>
+						</form>-->
+						<div id='feedbackForm'>
+							<h4 class='text-center'>Обратная связь</h4>
+							<p>По вопросам и предложениям пишите на почтовый ящик</p>
+							<div class='form-group'>
+								<div class='well'>
+									<h4>
+										<a href='mailto:support@lpanza.ru?subject=Игра Last Panzer - Вопросы и предложения' >support@lpanza.ru</a>
+									</h4>
+								</div>
+								<span class='inline_to_right_text'>
+									<button type='button' class='btn btn-default' id='feedbackBackButton'>Назад</button>
+								</span>
+							</div>
+						</div>
 					</div>
 					<div class='modal-footer panel-footer'>
 						<div class='text-left'>RBLI Hi-Tech, 2015<a class='inline_to_right_text' href='#' id='feedbackLink'>Обратная связь</a></div>
@@ -135,14 +149,12 @@
 				</div>
 				<h5 class='text-center'>Рейтинг</h5>
 				<ul class='list-group' id='gameStatsRatingList'>
-					<li>Alik</li>
-					<li>Ruslan</li>
-					<li>Last</li>
 				</ul>
 			</div>
 			<div class='gameOverlay gameOverlayBottomRight'><span id='gameStatsPing'></span></div>
 			<canvas width='0' height='0' id='gameCanvas'>HTML5 не поддерживается</canvas>
 		</div>
 		
+		<div id='screenSizeHack'></div>
 	</body>
 </html>

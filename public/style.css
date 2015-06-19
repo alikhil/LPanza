@@ -33,6 +33,14 @@ html, body, .fullWrap {
 #gameStatsRatingList {
 	list-style-type: none;
 }
+#screenSizeHack {
+	position: fixed;
+	bottom: 0px;
+	right: 0px;
+	width: 1px;
+	height: 1px;
+	visibility: hidden;
+}
 .gameOverlayTopLeft {
 	left: 10px;
 	top: -5px;

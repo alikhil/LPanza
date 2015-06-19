@@ -65,8 +65,10 @@ var socket = {
 		});
 		this.io.on('game.join.ok', app.gameJoin.ok);
 		this.io.on('game.join.fail', app.gameJoin.fail);
+		/*
 		this.io.on('game.feedback.ok', app.feedback.result.ok);
 		this.io.on('game.feedback.fail', app.feedback.result.fail);
+		*/
 		this.io.on('game.ping', function (packet) {
 			ping.pong(packet);
 		});
@@ -100,6 +102,10 @@ var canvas = {
 		$(window).on('resize', function () {
 			canvas.resize();
 		});
+		window.setTimeout(function () {
+			scrollToTop();
+			canvas.resize();
+		}, 250);
 	},
 	uninit: function () {
 		$(window).off('resize');
@@ -109,7 +115,13 @@ var canvas = {
 	},
 	resize: function () {
 // /* log */ console.log('window.resize');
-		var parent = this.element.parent()[0];
+		var parentElement = this.element.parent(),
+			parent = parentElement[0],
+			screenSizeHackElement = $('#screenSizeHack')[0];
+		scrollToTop();
+		parentElement
+			.width(screenSizeHackElement.offsetLeft + 1)
+			.height(screenSizeHackElement.offsetTop + 1);
 		this.size.width = parent.offsetWidth;
 		this.size.height = parent.offsetHeight;
 		
@@ -140,6 +152,9 @@ var canvas = {
 		joystick.resize();
 	}
 };
+function scrollToTop () {
+	$(window).scrollTop(0);
+}
 var game = {
 	input: {
 		accelerate: function () {
@@ -663,6 +678,7 @@ var app = {
 			$('#errorModal').modal('show');
 		}
 	},
+	/*
 	feedback: {
 		init: function () {
 			this.hide();
@@ -733,6 +749,25 @@ var app = {
 			}
 		},
 		successText: 'Ваше сообщение отправлено'
+	},
+	*/
+	feedback: {
+		init: function () {
+			this.hide();
+			$('#feedbackBackButton').on('click', this.hide);
+			$('#feedbackLink').on('click', this.show);
+		},
+		show: function () {
+			$('#menuForm').hide();
+			$('#feedbackForm').show();
+			$('#feedbackLink').hide();
+		},
+		hide: function () {
+			$('#feedbackForm').hide();
+			$('#feedbackLink').show();
+			$('#menuForm').show();
+			$('#userNameTextInput').focus();
+		}
 	},
 	score: {
 		show: function (score) {
