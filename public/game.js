@@ -660,11 +660,9 @@ var joystick = {
 	}
 };
 var app = {
-	defaultUserName: 'Anonymous',
 	userName: undefined,
 	menu: {
 		init: function () {
-			$('#userNameTextInput').val(app.defaultUserName);
 			$('#menuForm').on('submit', this.onTryJoin);
 		},
 		show: function () {
@@ -676,12 +674,13 @@ var app = {
 		},
 		onTryJoin: function () {
 			app.userName = $('#userNameTextInput').val();
-			if(app.userName.length == 0) {
-				app.userName = app.defaultUserName;
+			if(app.userName.length > 0) {
+				socket.io.emit('game.join', {
+					userName: app.userName
+				});
+			} else {
+				app.error.show('Введите ваше имя', 'Для входа в игру необходимо ввести ваше имя');
 			}
-			socket.io.emit('game.join', {
-				userName: app.userName
-			});
 			return false;
 		}
 	},
