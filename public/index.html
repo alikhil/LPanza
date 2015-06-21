@@ -4,7 +4,8 @@
 		<title>Last Panzer</title>
 		<meta charset='utf-8' />
 		<meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
-		<meta name='viewport' content='width=device-width, height=device-height, initial-scale=1.0, user-scalable=no'>
+		<link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+		<meta name='viewport' content='width=device-width, height=device-height, initial-scale=1.0, user-scalable=no' />
 		<link href='./bootstrap/bootstrap.css' rel='stylesheet' type='text/css' />
 		<script src='./socket.io/socket.io.js'></script>
 		<script src='./jquery/jquery.js'></script>
@@ -25,7 +26,7 @@
 						<form role='form' id='menuForm'>
 							<div class='form-group'>
 								<label for='userNameTextInput'>Ваше имя</label>
-								<input type='text' class='form-control' id='userNameTextInput' />
+								<input type='text' class='form-control' id='userNameTextInput' required />
 							</div>
 							<button type='submit' class='btn btn-primary'>Играть</button>
 						</form>
@@ -74,17 +75,18 @@
 		<!-- menu modal box end -->
 		
 		<!-- game.join.fail modal begin -->
-		<div class='modal' id='errorModal' role='dialog'>
+		<div class='modal' id='errorModal' role='dialog' data-backdrop='static'>
 			<div class='modal-dialog modal-sm'>
 				<div class='modal-content panel-danger'>
 					<div class='modal-header panel-heading'>
-						<button type='button' class='close' data-dismiss='modal'>&times;</button>
 						<h4 class='text-center'><strong>Ошибка</strong></h4>
 					</div>
 					<div class='modal-body panel-body'>
-						<h4 class='text-center'>Не могу присоединится к игре</h4>
+						<h4 class='text-center' id='errorTitle'>Не могу присоединится к игре</h4>
 						<p id='errorText'></p>
-						<button type='button' class='btn btn-primary' data-dismiss='modal'>Назад</button>
+						<span class='inline_to_right_text' id='errorDismissButton'>
+							<button type='button' class='btn btn-default' data-dismiss='modal'>Назад</button>
+						</span>
 					</div>
 				</div>
 			</div>
@@ -127,7 +129,7 @@
 						</a>
 					</noscript>
 					<div id='bad_browser'>
-						<p>Для работы с сайтом необходима поддержка HTML5.<br>Чтобы использовать все возможности сайта, загрузите и установите один из этих браузеров:<p>
+						<p>Для работы с сайтом необходима поддержка HTML5.<br>Чтобы использовать все возможности сайта, загрузите и установите один из этих браузеров:</p>
 						<div id='browsers'>
 							<a href='http://www.google.com/chrome/' target='_blank' style='background: url(/images/chrome.png) no-repeat 50% 17px;'>Chrome</a>
 							<a href='http://www.mozilla-europe.org/' target='_blank' style='background: url(/images/firefox.png) no-repeat 50% 17px;'>Firefox</a>
