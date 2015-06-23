@@ -43,6 +43,22 @@ var bulletSpeed = 15;
 var checkColisionAreaWidth = 100;
 var checkColisionAreaHeight = 100;
 //
+var models = {
+    tanks : {
+        'kv' : {
+            size : size_(tankWidth, tankLength),
+            center : point_(tankWidth / 2, tankLength / 2),
+            turretCenter : point_(0, 0),
+            file : 'tank.kv.texture.png' 
+        }
+    },
+    turrets : {
+        'kv' : {
+
+        }
+    }
+    
+};
 var tanks = [ ];
 var bullets = [ ]
 var userIdNames = { };
@@ -76,6 +92,11 @@ function userJoin(user) {
 	var sock = this;
 	var userId = getUserId(sock.id);
     clients[userId] = sock;
+    if (user.userName.length > 10) {
+        sock.emit('game.join.fail', { reason : 'Имя игрока должно состоять не более чем из 10 символов' });
+        if (debugMode)
+            console.log(user.userName + ' не смог подключиться');
+    }
 	if(userNames.length >= serverMaxUsersCount){
 		sock.emit('game.join.fail', { reason : 'Достигнут лимит игроков. Подождите пока сервер освободится'});
 		if(debugMode)
@@ -394,6 +415,17 @@ function bulletOnTankHit(tank, bullet){
     updateRating();
     bullet.type = 'deleted-bullet';
     removeFromArray(bullets, bullet);
+}
+
+function getPaintData(object){
+    var paintData = {
+        size : object.size,
+        center : object.position,
+        file : object.type + '.' + object.subType + '.texture.png'
+    };
+    if (object.type === 'tank') {
+        paintData.turretCenter = geom.addToPos(object.turret.position, object.position, -1);
+    }
 }
 
 // HelperFunctions
