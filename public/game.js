@@ -47,6 +47,17 @@ var utils = {
 	getUserId: function () {
 		// copy-paste from server source
 		return socket.io.id.toString().substr(0, 5);
+	},
+	moveVector: function (rotation, distance) {
+		var y = Math.sin(rotation) * distance,
+			x = Math.cos(rotation) * distance;
+		return utils.point(xNew, yNew);
+	},
+	addVector: function (aVector, bVector) {
+		return utils.point(
+			bVector.x + aVector.x,
+			bVector.y + aVector.y
+		);
 	}
 };
 var socket = {
@@ -198,12 +209,12 @@ var game = {
 		);
 	},
 	paintRect: undefined,
-	userPosition: undefined,
+	tankCenter: undefined,
 	mapSize: undefined,
 	paint: undefined,
 	init: function (packet) {
 		this.paintRect = packet.paintRect;
-		this.userPosition = utils.point(
+		this.tankCenter = utils.point(
 			this.paintRect.width/2,
 			this.paintRect.height/2
 		);
@@ -215,6 +226,7 @@ var game = {
 		this.paint = paint;
 		canvas.init();
 		controls.bind();
+		models.loadModels(packet);
 		ping.init();
 		online.init();
 		rating.init();
@@ -314,6 +326,7 @@ var controls = {
 		rotation: NaN
 	},
 	rotation: NaN,
+	turretCenter: undefined,
 	keyboard: {
 		keyPressed: {
 			'W': undefined,
@@ -408,6 +421,7 @@ var controls = {
 		bind: function () {
 			// change controls.rotation from `undefined` to `360`
 			controls.rotation = 360;
+			controls.turretCenter = utils.point(0, 0);
 			$(window)
 				.on('mousedown', function (event) {
 					controls.mouse.onMove(
@@ -450,8 +464,8 @@ var controls = {
 				mapPoint = game.pointScreenToMap(renderPoint),
 				newRotation = utils.angleRadToDeg(
 					utils.vectorAngle(
-						mapPoint.x - game.userPosition.x,
-						mapPoint.y - game.userPosition.y
+						mapPoint.x - controls.turretCenter.x,
+						mapPoint.y - controls.turretCenter.y
 					)
 				);
 			if(controls.rotation != newRotation) {
@@ -477,6 +491,8 @@ var controls = {
 		},
 		bind: function () {
 			joystick.init();
+			controls.rotation = 360;
+			controls.turretCenter = utils.point(0, 0);
 			this.wasInRender = false;
 			this.wasInJoystick = false;
 			$(window)
