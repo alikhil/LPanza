@@ -4,7 +4,7 @@
 		<title>Last Panzer</title>
 		<meta charset='utf-8' />
 		<meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
-		<link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+		<link rel='shortcut icon' href='favicon.ico' type='image/x-icon' />
 		<meta name='viewport' content='width=device-width, height=device-height, initial-scale=1.0, user-scalable=no' />
 		<link href='./bootstrap/bootstrap.css' rel='stylesheet' type='text/css' />
 		<script src='./socket.io/socket.io.js'></script>
@@ -16,7 +16,7 @@
 	</head>
 	<body>
 		<!-- menu modal box begin -->
-		<div class='modal' id='menuModal' role='dialog' data-backdrop='static'>
+		<div class='modal' id='menuModal' role='dialog' data-keyboard='false' data-backdrop='static'>
 			<div class='modal-dialog modal-sm'>
 				<div class='modal-content panel-primary'>
 					<div class='modal-header panel-heading'>
@@ -74,15 +74,15 @@
 		</div>
 		<!-- menu modal box end -->
 		
-		<!-- game.join.fail modal begin -->
-		<div class='modal' id='errorModal' role='dialog' data-backdrop='static'>
+		<!-- error modal begin -->
+		<div class='modal' id='errorModal' role='dialog' data-keyboard='false' data-backdrop='static'>
 			<div class='modal-dialog modal-sm'>
 				<div class='modal-content panel-danger'>
 					<div class='modal-header panel-heading'>
 						<h4 class='text-center'><strong>Ошибка</strong></h4>
 					</div>
 					<div class='modal-body panel-body'>
-						<h4 class='text-center' id='errorTitle'>Не могу присоединится к игре</h4>
+						<h4 class='text-center' id='errorTitle'></h4>
 						<p id='errorText'></p>
 						<span class='inline_to_right_text' id='errorDismissButton'>
 							<button type='button' class='btn btn-default' data-dismiss='modal'>Назад</button>
@@ -91,7 +91,7 @@
 				</div>
 			</div>
 		</div>
-		<!-- game.join.fail modal end -->
+		<!-- error modal end -->
 		
 		<!-- game.over modal begin -->
 		<div class='modal' id='scoreModal' role='dialog' data-backdrop='static'>
