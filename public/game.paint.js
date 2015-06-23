@@ -1,6 +1,118 @@
+var models = {
+	objects: {
+							'tank': {
+								'КВ-1': {
+									size: {
+										width: 50,
+										length: 50
+									},
+									center: {
+										x: 0,
+										y: 0
+									},
+									turretCenter: {
+										x: 0,
+										y: 0
+									}
+								}
+							},
+							'turret': {
+								'КВ-1': {
+									size: {
+										width: 25,
+										length: 25
+									},
+									center: {
+										x: 0,
+										y: 0
+									}
+								}
+							}
+	},
+	drawTank: function (tank) {
+		var turret = tank.turret,
+			modelTank = this.objects['tank'][tank.subtype],
+			modelTurret = this.objects['turret'][tank.subtype],
+			tankAngle = utils.angleDegToRad(tank.rotation-90),
+			relativeTurretAngle = utils.angleDegToRad(turret.rotation-90) - tankAngle,
+			context = canvas.context,
+			relativeTurretCenter = utils.point(
+				modelTank.turretCenter.x -
+					modelTank.center.x,
+				modelTank.turretCenter.y -
+					modelTank.center.y
+			);
+		drawModel(modelTank, tank.position, tankAngle);
+		drawModel(modelTurret, relativeTurretCenter, relativeTurretAngle);
+
+		context.restore();
+		context.restore();
+	},
+	drawModel: function (model, position, rotation) {
+		var context = canvas.context,
+			angle = utils.angleDegToRad(rotation-90);
+		context.save();
+		context.translate(
+			position.x,
+			position.y
+		);
+		context.rotate(angle);
+
+		context.drawImage(
+			model.image,
+			-model.width/2
+				-model.center.x,
+			-model.length/2
+				-model.center.y
+		);
+	},
+	drawSimpleObject: function (terrain) {
+		var modelTerrain = this.objects[terrain.type][terrain.subtype],
+			context = canvas.context,
+			angle = utils.angleDegToRad(terrain.rotation-90);
+		drawModel(modelTerrain, terrain.position, angle);
+
+		context.restore();
+	},
+	drawObject: function (object) {
+		if(object.type === 'tank') {
+			this.drawTank(object);
+		} else {
+			this.drawSimpleObject(object);
+		}
+	},
+	loadModels: function (models) {
+		this.objects = models;
+		for(var type in this.objects) {
+			for(var subtype in this.objects[type]) {
+				this.objects[type][subtype].image = new Image();
+				this.objects[type][subtype].image.src = type + '.' + subtype + '.texture.png';
+			}
+		}
+	},
+	getRelativeTurretCenterPosition: function (tank) {
+		var turret = tank.turret,
+			modelTank = this.objects[tank.type][tank.subtype],
+			tankAngle = utils.angleDegToRad(tank.rotation-90),
+			relativeTurretCenter = utils.point(
+				modelTank.turretCenter.x -
+					modelTank.center.x,
+				modelTank.turretCenter.y -
+					modelTank.center.y
+			),
+			relativeTurretCenterAngle = utils.vectorAngle(
+				relativeTurretCenter.x,
+				relativeTurretCenter.y
+			) - tankAngle;
+		return utils.moveVector(
+			relativeTurretCenterAngle,
+			utils.vectorLength(relativeTurretCenter)
+		);
+	}
+};
 var paint = {
 	tanks: [],
-	bullets: [],
+	nonTanks: [],
 	label: {
 		font: '10px Arial'
 	},
@@ -31,25 +143,36 @@ var paint = {
 	gridStep: 20,
 	userScore: NaN,
 	onPaint: function (packet) {
-		var tanks,
-			bullets,
+		var objects,
+			tanks = [],
+			nonTanks = [],
 			offset,
 			index;
+		this.nonTanks.splice(0, this.nonTanks.length);
 		this.tanks.splice(0, this.tanks.length);
-		tanks = packet.tanks;
-		for(index = 0; index < tanks.length; index ++) {
-			if(tanks[index].label.userId == game.userId) {
-				offset = utils.point(
-					tanks[index].position.x -
-						game.paintRect.width/2,
-					tanks[index].position.y -
-						game.paintRect.height/2
-				);
-				this.userScore = tanks[index].label.score;
-				break;
+		objects = packet.objects;
+		for(index = 0; index < objects.length; index ++) {
+			if(objects[index].type === 'tank') {
+				tanks.push(objects[index]);
+				if(objects[index].label.userId == game.userId) {
+					offset = utils.point(
+						objects[index].position.x -
+							game.tankCenter.x,
+						objects[index].position.y -
+							game.tankCenter.y
+					);
+					controls.turretCenter = utils.addVector(
+						objects[index].position,
+						models.getRelativeTurretCenterPosition(objects[index])
+					);
+					this.userScore = objects[index].label.score;
+					break;
+				}
+			} else {
+				nonTanks.push();
 			}
 		}
-		if(index >= tanks.length) {
+		if(index >= objects.length) {
 			offset = utils.point(0, 0);
 			console.log('Current player`s tank not found');
 		}
@@ -87,33 +210,15 @@ var paint = {
 				)
 		};
 		for(index = 0; index < tanks.length; index ++) {
-			tanks[index].color =
-				utils.RGBToCSS(
-					tanks[index].color
-				);
-			tanks[index].turret.color =
-				utils.RGBToCSS(
-					tanks[index].turret.color
-				);
-			tanks[index].turret.gun.color =
-				utils.RGBToCSS(
-					tanks[index].turret.gun.color
-				);
 			tanks[index].position.x -= offset.x;
 			tanks[index].position.y -= offset.y;
 		}
 		this.tanks = tanks;
-		this.bullets.splice(0, this.bullets.length);
-		bullets = packet.bullets;
-		for(index = 0; index < bullets.length; index ++) {
-			bullets[index].color =
-				utils.RGBToCSS(
-					bullets[index].color
-				);
-			bullets[index].position.x -= offset.x;
-			bullets[index].position.y -= offset.y;
+		for(index = 0; index < nonTanks.length; index ++) {
+			nonTanks[index].position.x -= offset.x;
+			nonTanks[index].position.y -= offset.y;
 		}
-		this.bullets = bullets;
+		this.nonTanks = nonTanks;
 		this.repaint();
 	},
 	repaint: function () {
@@ -125,16 +230,10 @@ var paint = {
 		this.drawBackground();
 		this.drawGrid();
 		for(var index = 0; index < this.tanks.length; index ++) {
-			this.drawTankBody(this.tanks[index]);
+			models.drawObject(this.tanks[index]);
 		}
-		for(var index = 0; index < this.tanks.length; index ++) {
-			this.drawTurret(this.tanks[index]);
-		}
-		for(var index = 0; index < this.tanks.length; index ++) {
-			this.drawGun(this.tanks[index]);
-		}
-		for(var index = 0; index < this.bullets.length; index ++) {
-			this.drawBullet(this.bullets[index]);
+		for(var index = 0; index < this.nonTanks.length; index ++) {
+			this.drawObject(this.nonTanks[index]);
 		}
 		for(var index = 0; index < this.tanks.length; index ++) {
 			this.drawLabel(this.tanks[index]);
@@ -245,76 +344,24 @@ var paint = {
 			diameter
 		);
 	},
-	drawTankBody: function (tank) {
-		this.drawRectObject(
-			tank.position,
-			tank.size,
-			tank.rotation,
-			tank.color,
-			-tank.size.length/2
-		);
-		// front bumper
-		this.drawRectObject(
-			tank.position,
-			utils.sizeWL(
-				tank.size.width,
-				tank.size.length/4 -
-					tank.turret.radius/2
-			),
-			tank.rotation,
-			tank.turret.color,
-			tank.size.length/4 +
-				tank.turret.radius/2
-		);
-	},
-	drawTurret: function (tank) {
-		var turret = tank.turret;
-		this.drawCircleObject(
-			tank.position,
-			turret.radius,
-			turret.color
-		);
-	},
-	drawGun: function (tank) {
-		var turret = tank.turret,
-			gun = turret.gun;
-		this.drawRectObject(
-			tank.position,
-			gun.size,
-			turret.rotation,
-			gun.color,
-			gun.distanceMarginFromTurretCenter
-		);
-		this.drawRectObject(
-			tank.position,
-			utils.sizeWL(
-				gun.size.width,
-				gun.size.length*gun.timeToReload
-			),
-			turret.rotation,
-			turret.color,
-			gun.distanceMarginFromTurretCenter
-		);
-	},
 	drawLabel: function (tank) {
 		var context = canvas.context,
 			text = tank.label.userName +
-				' [' + tank.label.hp + ' \u2764]';
+				' [' + tank.label.hp + ' \u2764]',
+			model = models.objects[tank.type][tank.subtype];
 		context.fillStyle = this.color.hp.background;
 		context.fillRect(
-			tank.position.x - tank.size.width/2,
-			tank.position.y - tank.size.length*3/4,
-			tank.size.width,
-			tank.size.length/4 -
-				tank.turret.radius/2
+			tank.position.x - model.size.width/2,
+			tank.position.y - model.size.length*3/4,
+			model.size.width,
+			model.size.length/8
 		);
 		context.fillStyle = this.color.hp.active;
 		context.fillRect(
-			tank.position.x - tank.size.width/2,
-			tank.position.y - tank.size.length*3/4,
-			tank.size.width*tank.label.hp/10,
-			tank.size.length/4 -
-				tank.turret.radius/2
+			tank.position.x - model.size.width/2,
+			tank.position.y - model.size.length*3/4,
+			model.size.width*tank.label.hp/10,
+			model.size.length/8
 		);
 		context.textAlign = 'center';
 		context.font = this.label.font;
@@ -322,21 +369,12 @@ var paint = {
 		context.fillText(
 			text,
 			tank.position.x,
-			tank.position.y - tank.size.length
+			tank.position.y - model.size.length
 		);
 	},
 	drawScore: function (score) {
 		var text = 'Ваши очки: ' + score;
 		$('#gameStatsScore').text(text);
-	},
-	drawBullet: function (bullet) {
-		this.drawRectObject(
-			bullet.position,
-			bullet.size,
-			bullet.rotation,
-			bullet.color,
-			-bullet.size.length/2
-		);
 	},
 	drawJoystick: function () {
 		var context = canvas.context,
@@ -357,30 +395,6 @@ var paint = {
 			this.color.joystick.inner
 		);
 		context.globalAlpha = oldAlpha;
-	},
-	drawRectObject: function (position, size, rotation, color, distance) {
-		var context = canvas.context,
-			angle = utils.angleDegToRad(rotation-90);
-		context.save();
-		context.translate(
-			position.x,
-			position.y
-		);
-		context.rotate(angle);
-
-		context.beginPath();
-		context.strokeStyle = this.color.border;
-		context.fillStyle = color;
-		context.rect(
-			-size.width/2,
-			distance,
-			size.width,
-			size.length
-		);
-		context.stroke();
-		context.fill();
-
-		context.restore();
 	},
 	drawCircleObject: function (position, radius, color) {
 		var context = canvas.context;
