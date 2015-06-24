@@ -123,6 +123,12 @@ function userJoin(user) {
 	var sock = this;
 	var userId = getUserId(sock.id);
     clients[userId] = sock;
+    user.userName = user.userName.trim();
+    if (user.userName.length == 0) {
+        sock.emit('game.join.fail', { reason : 'error.join_fail_text.name_empty' });
+        if (debugMode)
+            console.log(user.userName + ' не смог подключиться');
+    }
     if (user.userName.length > maxUserNameLength) {
         sock.emit('game.join.fail', { reason : 'error.join_fail_text.name_too_long' });
         if (debugMode)
