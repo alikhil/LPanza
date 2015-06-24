@@ -150,7 +150,7 @@ var paint = {
 					break;
 				}
 			} else {
-				nonTanks.push();
+				nonTanks.push(objects[index]);
 			}
 		}
 		if(index >= objects.length) {
@@ -216,7 +216,7 @@ var paint = {
 			models.drawObject(this.tanks[index]);
 		}
 		for(var index = 0; index < this.nonTanks.length; index ++) {
-			this.drawObject(this.nonTanks[index]);
+			models.drawObject(this.nonTanks[index]);
 		}
 		for(var index = 0; index < this.tanks.length; index ++) {
 			this.drawLabel(this.tanks[index]);
