@@ -19,8 +19,8 @@ var mapHeight = 1000;
 
 var distanceFromWall = 30;
 
-var tankWidth = 30;
-var tankLength = 30;
+var tankWidth = 50;
+var tankLength = 50;
 var tankTurretRadius = 9;
 var tankGunWidth = 3;
 var tankGunLength = 20;
@@ -47,26 +47,35 @@ var checkColisionAreaWidth = 100;
 var checkColisionAreaHeight = 100;
 //
 var models = {
-    tanks : {
-        '222-1' : {
-            size : size_(tankWidth, tankLength),
-            center : point_(tankWidth / 2, tankLength / 2),
-            turretCenter : point_(0, 0)
+    objects: {
+        'tank': {
+            'КВ-1': {
+                size: {
+                    width: 50,		
+                    length: 50
+                },		
+                center: {
+                    x: 0,		
+                    y: 0
+                },		
+                turretCenter: {
+                    x: 0,		
+                    y: 0
+                }
+            }
+        },		
+        'turret': {
+            'КВ-1': {
+                size: {
+                    width: 25,		
+                    length: 50
+                },		
+                center: {
+                    x: 0,		
+                    y: -12.5
+                }
+            }
         }
-    },
-    turrets : {
-        '222-1' : {
-            size : size_(turretWidth, turretLength),
-            center :point_(0,0)
-        }
-    },
-    bullets : {
-        '222-1' : {
-            size : size_(bulletWidth, bulletLength)
-        }
-    },
-    terrains : {
-
     }
     
 };
