@@ -677,8 +677,10 @@ var joystick = {
 };
 var app = {
 	userName: undefined,
+	maxUserNameLength: 20,
 	menu: {
 		init: function () {
+			$('#userNameTextInput').attr('maxlength', app.maxUserNameLength);
 			$('#menuForm').on('submit', this.onTryJoin);
 		},
 		show: function () {
@@ -691,9 +693,21 @@ var app = {
 		onTryJoin: function () {
 			app.userName = $('#userNameTextInput').val();
 			if(app.userName.length > 0) {
-				socket.io.emit('game.join', {
-					userName: app.userName
-				});
+				if(app.userName.length > app.maxUserNameLength) {
+					$('#userNameTextInput').val(
+						app.userName.substr(0, app.maxUserNameLength)
+					);
+					app.error.show(
+						'Слишком длинное имя',
+						'Имя не может содержать более ' +
+							app.maxUserNameLength +
+							' символов'
+					);
+				} else {
+					socket.io.emit('game.join', {
+						userName: app.userName
+					});
+				}
 			} else {
 				app.error.show('Введите ваше имя', 'Для входа в игру необходимо ввести ваше имя');
 			}
