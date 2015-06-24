@@ -67,6 +67,9 @@ html, body, .fullWrap {
 #gameStatsScore {
 	color: #FF2020;
 }
+.no_left_padding {
+	padding-left: 0px;
+}
 
 /* bad browser css */
 #browsers {

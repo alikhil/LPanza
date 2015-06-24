@@ -1,34 +1,5 @@
 var models = {
-	objects: {
-							'tank': {
-								'КВ-1': {
-									size: {
-										width: 50,
-										length: 50
-									},
-									center: {
-										x: 0,
-										y: 0
-									},
-									turretCenter: {
-										x: 0,
-										y: 0
-									}
-								}
-							},
-							'turret': {
-								'КВ-1': {
-									size: {
-										width: 25,
-										length: 25
-									},
-									center: {
-										x: 0,
-										y: 0
-									}
-								}
-							}
-	},
+	objects: {},
 	drawTank: function (tank) {
 		var turret = tank.turret,
 			modelTank = this.objects['tank'][tank.subtype],
@@ -373,8 +344,7 @@ var paint = {
 		);
 	},
 	drawScore: function (score) {
-		var text = 'Ваши очки: ' + score;
-		$('#gameStatsScore').text(text);
+		$('#gameStatsScore').text(score);
 	},
 	drawJoystick: function () {
 		var context = canvas.context,

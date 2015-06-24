@@ -110,7 +110,7 @@ function userJoin(user) {
         return false;
     }
 	if(userNames.length >= serverMaxUsersCount){
-		sock.emit('game.join.fail', { reason : 'Достигнут лимит игроков. Подождите пока сервер освободится'});
+		sock.emit('game.join.fail', { reason : 'error.join_fail_text.max_user_count_exceeded'});
 		if(debugMode)
 			console.log(user.userName + ' не смог подключиться');
 		return false;
