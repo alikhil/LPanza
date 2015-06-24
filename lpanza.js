@@ -289,11 +289,10 @@ function doShot(tank){
     bullet.size = models.bullet[tank.subtype].size;
     var shotPos = tank.position;
     shotPos = geom.addToPos(shotPos, geom.turnVector(models.tank[tank.subtype].turretCenter, tank.rotation), 1);
-    shotPos = geom.addToPos(shotPos, geom.moveVector(bullet.rotation, models.turret[tank.subtype].size.length - models.turret[tank.subtype].center.y));
+    shotPos = geom.addToPos(shotPos, geom.moveVector(bullet.rotation, models.turret[tank.subtype].size.length - models.turret[tank.subtype].center.y),1);
    
-    var vector = shotPos;
     bullet.color = getRandomColor();
-    bullet.position = point_(vector.x + tank.position.x, vector.y + tank.position.y);
+    bullet.position = shotPos;
     bullet.type = 'bullet';
     bullet.speed = bulletSpeed;
     bullet.moveVector = geom.moveVector(bullet.rotation, bullet.speed);
