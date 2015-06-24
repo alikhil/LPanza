@@ -47,12 +47,11 @@ var checkColisionAreaWidth = 100;
 var checkColisionAreaHeight = 100;
 //
 var models = {
-    objects: {
         'tank': {
             'КВ-1': {
                 size: {
-                    width: 50,		
-                    length: 50
+                    width: tankWidth,		
+                    length: tankLength
                 },		
                 center: {
                     x: 0,		
@@ -75,8 +74,20 @@ var models = {
                     y: -12.5
                 }
             }
+    },
+    'bullet' : {
+        'КВ-1': {
+            size: {
+                width: bulletWidth,		
+                length: bulletLength
+            },		
+            center: {
+                x: 0,		
+                y: 0
+            }
         }
     }
+
     
 };
 var tanks = [ ];
@@ -113,7 +124,7 @@ function userJoin(user) {
 	var userId = getUserId(sock.id);
     clients[userId] = sock;
     if (user.userName.length > maxUserNameLength) {
-        sock.emit('game.join.fail', { reason : 'Имя игрока должно состоять не более чем из ' + maxUserNameLength + ' символов' });
+        sock.emit('game.join.fail', { reason : 'error.join_fail_text.name_too_long' });
         if (debugMode)
             console.log(user.userName + ' не смог подключиться');
         return false;
@@ -141,29 +152,17 @@ function userJoin(user) {
 	var tank = { };
 	tank.rotation = getRandom(0,7) * 45;
     tank.type = 'tank';
-    tank.subType =Object.keys(models.tanks)[0];
-
+    tank.subtype = Object.keys(models.tank)[0];
+    tank.size = models.tank[tank.subtype].size;
     var gun = {};
-    gun.size = size_(tankGunWidth, tankGunLength);
-	gun.color = getRandomColor();
     gun.timeToReload = 0;
 
     var turret = {};
-    turret.center = models.tanks[tank.subType].turretCenter;
 	turret.rotation = tank.rotation;
 	turret.radius = tankTurretRadius;
     turret.gun = gun;
-    turret.size = models.turrets[tank.subType].size;
-	turret.color = getRandomColor();
-	// !???
-	turret.gun.distanceMarginFromTurretCenter = turret.radius;
 	
     tank.position = getRandomPosition();
-    
-    tank.center = tank.position;
-    
-    tank.color = getRandomColor();
-    tank.size = models.tanks[tank.subType].size;
 	tank.speed = 0;
 	tank.turret = turret;
 	tank.label = label;
@@ -177,16 +176,17 @@ function userJoin(user) {
         console.log('bullets: ', bullets);
 	}
 	sock.emit('game.join.ok', {
-		paintRect : {
-			width : showAreaWidth,
-			height : showAreaHeight
-		},
-		backgroundColor : backgroundColor,
-		mapSize : {
-			width : mapWidth,
-			height : mapHeight
-		}
-	});
+        paintRect : {
+            width : showAreaWidth,
+            height : showAreaHeight
+        },
+        backgroundColor : backgroundColor,
+        mapSize : {
+            width : mapWidth,
+            height : mapHeight
+        },
+        models :  models 
+    });
 	if(debugMode)
         console.log(user.userName + ' подключился к серверу');
     updateOnline();
@@ -280,17 +280,12 @@ function doShot(tank){
         return false;
     }
     bullet.rotation = tank.turret.rotation;
-    bullet.size = size_(bulletWidth, bulletLength);
+    bullet.size = models.bullet[tank.subtype].size;
     var shotPos = tank.center;
-    shotPos = geom.addToPos(shotPos, geom.turnVector(tank.turret.center, tank.rotation), 1);
-    shotPos = geom.addToPos(shotPos, geom.moveVector(tank.turret.rotation, tank.turret.size.length));
-    var distFromTurretCenter = 
-		tank.turret.gun.distanceMarginFromTurretCenter + 
-		tank.turret.gun.size.length + 
-		bulletDistanceFromGun + 
-		(bullet.size.length / 2) - bulletSpeed;
+    shotPos = geom.addToPos(shotPos, geom.turnVector(models.tank[tank.subtype].turretCenter, tank.rotation), 1);
+    shotPos = geom.addToPos(shotPos, geom.moveVector(bullet.rotation, models.turret[tank.subtype].size.length - models.turret[tank.subtype].center.y));
    
-    var vector = geom.moveVector(bullet.rotation, distFromTurretCenter);
+    var vector = shotPos;
     bullet.color = getRandomColor();
     bullet.position = point_(vector.x + tank.position.x, vector.y + tank.position.y);
     bullet.type = 'bullet';
@@ -348,7 +343,7 @@ function serverTick(){
             if (objects[i].type == 'tank') {
                 id = objects[i].label.userId;
             }
-            repaintGroups[id] = { bullets : [], tanks : [] };
+            repaintGroups[id] = [];
 
             for (var j = 0; j < group.length; j++) {
                 var curObject = objects[group[j]];
@@ -406,11 +401,11 @@ function serverTick(){
                     moved[group[j]] = 'moved';
                 } 
                 if (curObject.type === 'bullet') {
-                    repaintGroups[id].bullets.push(curObject);
+                    repaintGroups[id].push(curObject);
                 }
                 if (curObject.type === 'tank') {
                     curObject.label.score = userIdScores[curObject.label.userId];
-                    repaintGroups[id].tanks.push(curObject);
+                    repaintGroups[id].push(curObject);
                 }
             }
         }
@@ -419,7 +414,7 @@ function serverTick(){
             var uid = getUserId(clientsIds[i]);
             if (repaintGroups[uid] !== undefined) {
                 if(clients.hasOwnProperty(uid))
-                    clients[uid].emit('game.paint', repaintGroups[uid]);
+                    clients[uid].emit('game.paint', { objects : repaintGroups[uid] });
             }
         }
     }
@@ -453,7 +448,7 @@ function getPaintData(object){
     var paintData = {
         size : object.size,
         center : object.position,
-        file : object.type + '.' + object.subType + '.texture.png'
+        file : object.type + '.' + object.subtype + '.texture.png'
     };
     if (object.type === 'tank') {
         paintData.turretCenter = geom.addToPos(object.turret.position, object.position, -1);
