@@ -677,7 +677,31 @@ var joystick = {
 				this.radius.outer;
 	}
 };
+var tabActiveMonitor = {
+	stateKey: undefined,
+	eventKey: undefined,
+	init: function () {
+		var keys = {
+				hidden: 'visibilitychange',
+				webkitHidden: 'webkitvisibilitychange',
+				mozHidden: 'mozvisibilitychange',
+				msHidden: 'msvisibilitychange'
+			};
+		for (this.stateKey in keys) {
+			if (this.stateKey in document) {
+				this.eventKey = keys[this.stateKey];
+				break;
+			}
+		}
+		this.update();
+		$(document).on(this.eventKey, this.update);
+	},
+	update: function () {
+		app.isTabActive = !document[tabActiveMonitor.stateKey];
+	}
+};
 var app = {
+	isTabActive: undefined,
 	userName: undefined,
 	maxUserNameLength: 20,
 	menu: {
@@ -828,6 +852,7 @@ var app = {
 		this.menu.init();
 		this.feedback.init();
 		this.menu.show();
+		tabActiveMonitor.init();
 	},
 	gameJoin: {
 		ok: function (packet) {

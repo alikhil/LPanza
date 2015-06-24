@@ -190,7 +190,9 @@ var paint = {
 			nonTanks[index].position.y -= offset.y;
 		}
 		this.nonTanks = nonTanks;
-		this.repaint();
+		if(app.isTabActive) {
+			this.repaint();
+		}
 	},
 	repaint: function () {
 		if(controls.useTouch) {
