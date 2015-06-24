@@ -89,7 +89,9 @@ var language = {
 			'game.rating_element': '%order%.%name% - %score%',
 			'error.disconnect_title': 'Потеряно соединение с сервером',
 			'error.disconnect_text': 'Обновите страницу',
-			'error.join_fail_text.max_user_count_exceeded': 'Достигнут лимит игроков. Подождите пока сервер освободится'
+			'error.join_fail_text.max_user_count_exceeded': 'Достигнут лимит игроков. Подождите пока сервер освободится',
+			'error.join_fail_text.name_too_long': 'Имя игрока должно состоять не более чем из %count% символов',
+			'error.join_fail_text.name_empty': 'Имя игрока не должно быть пустым'
 		},
 		'EN': {
 			'language.label': 'EN',
@@ -113,7 +115,9 @@ var language = {
 			'game.rating_element': '%order%.%name% - %score%',
 			'error.disconnect_title': 'Connection to the server is lost',
 			'error.disconnect_text': 'Reload the page',
-			'error.join_fail_text.max_user_count_exceeded': 'Maximum user count reached. Wait for server to be freed'
+			'error.join_fail_text.max_user_count_exceeded': 'Maximum user count reached. Wait for server to be freed',
+			'error.join_fail_text.name_too_long': 'Player`s name length must not exceed %count% symbols',
+			'error.join_fail_text.name_empty': 'Player`s name must not be empty'
 		}
 	}
 };

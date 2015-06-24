@@ -49,8 +49,8 @@ var utils = {
 		return socket.io.id.toString().substr(0, 5);
 	},
 	moveVector: function (rotation, distance) {
-		var y = Math.sin(rotation) * distance,
-			x = Math.cos(rotation) * distance;
+		var yNew = Math.sin(rotation) * distance,
+			xNew = Math.cos(rotation) * distance;
 		return utils.point(xNew, yNew);
 	},
 	addVector: function (aVector, bVector) {
@@ -717,17 +717,15 @@ var app = {
 			$('#menuModal').modal('hide');
 		},
 		onTryJoin: function () {
-			app.userName = $('#userNameTextInput').val();
+			app.userName = $('#userNameTextInput').val().trim();
 			if(app.userName.length > 0) {
 				if(app.userName.length > app.maxUserNameLength) {
 					$('#userNameTextInput').val(
 						app.userName.substr(0, app.maxUserNameLength)
 					);
 					app.error.show(
-						'Слишком длинное имя',
-						'Имя не может содержать более ' +
-							app.maxUserNameLength +
-							' символов'
+						'game.join_fail_title',
+						'error.join_fail_text.name_too_long'
 					);
 				} else {
 					socket.io.emit('game.join', {
@@ -735,13 +733,23 @@ var app = {
 					});
 				}
 			} else {
-				app.error.show('Введите ваше имя', 'Для входа в игру необходимо ввести ваше имя');
+				app.error.show(
+					'game.join_fail_title',
+					'error.join_fail_text.name_empty'
+				);
 			}
 			return false;
 		}
 	},
 	error: {
 		show: function (title, text) {
+			var error = language.get(text);
+			if(text === 'error.join_fail_text.name_too_long') {
+				error = error.replace(
+					'%count%',
+					'' + app.maxUserNameLength
+				);
+			}
 			language.setDOM('#errorTitle', title);
 			language.setDOM('#errorText', text);
 			$('#errorModal').modal('show');
@@ -862,9 +870,10 @@ var app = {
 		},
 		fail: function (packet) {
 /* log */	console.log('socket.on(\''+'game.join.fail'+'\', '+JSON.stringify(packet)+')');
+			var reason = packet.reason;
 			app.error.show(
 				'game.join_fail_title',
-				packet.reason
+				reason
 			);
 		}
 	},
