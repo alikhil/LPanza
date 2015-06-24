@@ -94,8 +94,8 @@ var socket = {
 				$('#errorDismissButton').hide();
 			}
 			app.error.show(
-				'Потеряно соединение с сервером',
-				'Обновите страницу'
+				'error.disconnect_title',
+				'error.disconnect_text'
 			);
 		});
 	}
@@ -267,10 +267,11 @@ var ping = {
 			oldTime = packet.time;
 		for(var i = 0; i < this.requests.length; i ++) {
 			if(this.requests[i] == oldTime) {
-				$('#gameStatsPing').text((
-						curTime -
-						oldTime
-					) + ' мс'
+				$('#gameStatsPing').text(
+					language.get('game.stats_ping').replace(
+						'%time%',
+						'' + (curTime - oldTime)
+					)
 				);
 				this.requests.splice(0, i + 1);
 			}
@@ -296,9 +297,10 @@ var rating = {
 			$('#gameStatsRatingList').append(
 				$('<li>')
 					.text(
-						(i + 1) + '.' +
-						this.users[i].userName + ' - ' +
-						this.users[i].score
+						language.get('game.rating_element')
+							.replace('%order%', '' + (i + 1))
+							.replace('%score%', '' + this.users[i].score)
+							.replace('%name%', this.users[i].userName)
 					)
 			);
 		}
@@ -716,8 +718,8 @@ var app = {
 	},
 	error: {
 		show: function (title, text) {
-			$('#errorTitle').text(title);
-			$('#errorText').text(text);
+			language.setDOM('#errorTitle', title);
+			language.setDOM('#errorText', text);
 			$('#errorModal').modal('show');
 		}
 	},
@@ -836,11 +838,10 @@ var app = {
 		fail: function (packet) {
 /* log */	console.log('socket.on(\''+'game.join.fail'+'\', '+JSON.stringify(packet)+')');
 			app.error.show(
-				app.gameJoin.failErrorTitle,
+				'game.join_fail_title',
 				packet.reason
 			);
-		},
-		failErrorTitle: 'Не могу присоединится к игре'
+		}
 	},
 	gameOver: function (packet) {
 /* log */	console.log('socket.on(\''+'game.over'+'\', '+JSON.stringify(packet)+')');
@@ -856,6 +857,7 @@ $(document).ready(function () {
 		$('.gameOverlay').hide();
 		$('#canvasWrap').show();
 		$('#browser_check').hide();
+		language.init();
 		app.init();
 	}
 });

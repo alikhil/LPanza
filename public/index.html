@@ -11,6 +11,7 @@
 		<script src='./jquery/jquery.js'></script>
 		<script src='./bootstrap/bootstrap.js'></script>
 		<link href='style.css' rel='stylesheet' type='text/css' />
+		<script src='language.js'></script>
 		<script src='game.paint.js'></script>
 		<script src='game.js'></script>
 	</head>
@@ -25,10 +26,10 @@
 					<div class='modal-body panel-body'>
 						<form role='form' id='menuForm'>
 							<div class='form-group'>
-								<label for='userNameTextInput'>Ваше имя</label>
+								<label for='userNameTextInput' id='label_menu_name'></label>
 								<input type='text' class='form-control' id='userNameTextInput' required />
 							</div>
-							<button type='submit' class='btn btn-primary'>Играть</button>
+							<button type='submit' class='btn btn-primary' id='label_menu_play'></button>
 						</form>
 						<!--<form role='form' id='feedbackForm'>
 							<h4 class='text-center'>Обратная связь</h4>
@@ -52,8 +53,8 @@
 							</div>
 						</form>-->
 						<div id='feedbackForm'>
-							<h4 class='text-center'>Обратная связь</h4>
-							<p>По вопросам и предложениям пишите на почтовый ящик</p>
+							<h4 class='text-center' id='label_feedback_title'></h4>
+							<p id='label_feedback_text'></p>
 							<div class='form-group'>
 								<div class='well'>
 									<h4>
@@ -61,13 +62,21 @@
 									</h4>
 								</div>
 								<span class='inline_to_right_text'>
-									<button type='button' class='btn btn-default' id='feedbackBackButton'>Назад</button>
+									<button type='button' class='btn btn-default' id='feedbackBackButton'></button>
 								</span>
 							</div>
 						</div>
 					</div>
 					<div class='modal-footer panel-footer'>
-						<div class='text-left'>RBLI Hi-Tech, 2015<a class='inline_to_right_text' href='#' id='feedbackLink'>Обратная связь</a></div>
+						<div class='row'>
+							<div class='col-xs-6 text-left'>RBLI Hi-Tech, 2015</div>
+							<div class='col-xs-4 text-right'>
+								<a class='' href='#' id='feedbackLink'></a>
+							</div>
+							<div class='col-xs-2 text-right no_left_padding'>
+								<select class='' id='languageSelect'></select>
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -79,13 +88,13 @@
 			<div class='modal-dialog modal-sm'>
 				<div class='modal-content panel-danger'>
 					<div class='modal-header panel-heading'>
-						<h4 class='text-center'><strong>Ошибка</strong></h4>
+						<h4 class='text-center'><strong id='label_error_error'></strong></h4>
 					</div>
 					<div class='modal-body panel-body'>
 						<h4 class='text-center' id='errorTitle'></h4>
 						<p id='errorText'></p>
 						<span class='inline_to_right_text' id='errorDismissButton'>
-							<button type='button' class='btn btn-default' data-dismiss='modal'>Назад</button>
+							<button type='button' class='btn btn-default' data-dismiss='modal' id='label_error_dismiss'></button>
 						</span>
 					</div>
 				</div>
@@ -102,10 +111,12 @@
 						<h4 class='text-center'>Last Panzer</h4>
 					</div>
 					<div class='modal-body panel-body'>
-						<h3 class='text-center'><strong>Game over</strong></h3>
-						<h4 class='text-center'>Ваши очки</h4>
+						<h3 class='text-center'><strong id='label_score_gameOver'></strong></h3>
+						<h4 class='text-center' id='label_score_score'></h4>
 						<h4 class='text-center' id='scoreText'></h4>
-						<div class='text-center'><button type='button' class='button' data-dismiss='modal'>Играть еще</button></div>
+						<div class='text-center'>
+							<button type='button' class='button' data-dismiss='modal' id='label_score_playAgain'></button>
+						</div>
 					</div>
 					<div class='modal-footer panel-footer'>
 						<div class='text-left'>RBLI Hi-Tech, 2015</div>
@@ -115,6 +126,7 @@
 		</div>
 		<!-- game.over modal end -->
 
+		<!-- noScript and noHTML5 notification begin -->
 		<div class='container' id='browser_check'>
 			<div class='panel panel-primary'>
 				<div class='panel-heading text-center'>
@@ -142,19 +154,20 @@
 				</div>
 			</div>
 		</div>
+		<!-- noScript and noHTML5 notification end -->
 
 		<div class='fullWrap' id='canvasWrap'>
-			<div class='gameOverlay gameOverlayTopLeft'><h3 id='gameStatsScore'></h3></div>
+			<div class='gameOverlay gameOverlayTopLeft'><h3><span id='label_game_score'></span> <span id='gameStatsScore'></span></h3></div>
 			<div class='gameOverlay gameOverlayTopRight'>
 				<div class='text-right form-group'>
-					<button type='button' class='btn btn-primary' id='gameStatsOnlineButton'>Онлайн <span class='badge' id='gameStatsOnlineCount'>?</span></button>
+					<button type='button' class='btn btn-primary' id='gameStatsOnlineButton'><span id='label_game_online'></span> <span class='badge' id='gameStatsOnlineCount'>?</span></button>
 				</div>
-				<h5 class='text-center'>Рейтинг</h5>
+				<h5 class='text-center' id='label_game_rating'></h5>
 				<ul class='list-group' id='gameStatsRatingList'>
 				</ul>
 			</div>
 			<div class='gameOverlay gameOverlayBottomRight'><span id='gameStatsPing'></span></div>
-			<canvas width='0' height='0' id='gameCanvas'>HTML5 не поддерживается</canvas>
+			<canvas width='0' height='0' id='gameCanvas'></canvas>
 		</div>
 		
 		<div id='screenSizeHack'></div>
