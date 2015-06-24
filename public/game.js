@@ -226,7 +226,7 @@ var game = {
 		this.paint = paint;
 		canvas.init();
 		controls.bind();
-		models.loadModels(packet);
+		models.loadModels(packet.models);
 		ping.init();
 		online.init();
 		rating.init();
