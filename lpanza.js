@@ -287,7 +287,7 @@ function doShot(tank){
     }
     bullet.rotation = tank.turret.rotation;
     bullet.size = models.bullet[tank.subtype].size;
-    var shotPos = tank.center;
+    var shotPos = tank.position;
     shotPos = geom.addToPos(shotPos, geom.turnVector(models.tank[tank.subtype].turretCenter, tank.rotation), 1);
     shotPos = geom.addToPos(shotPos, geom.moveVector(bullet.rotation, models.turret[tank.subtype].size.length - models.turret[tank.subtype].center.y));
    
