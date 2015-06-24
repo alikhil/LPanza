@@ -4,8 +4,8 @@ var models = {
 		var turret = tank.turret,
 			modelTank = this.objects['tank'][tank.subtype],
 			modelTurret = this.objects['turret'][tank.subtype],
-			tankAngle = utils.angleDegToRad(tank.rotation-90),
-			relativeTurretAngle = utils.angleDegToRad(turret.rotation-90) - tankAngle,
+			tankAngle = tank.rotation,
+			relativeTurretAngle = turret.rotation - 90 - tankAngle,
 			context = canvas.context,
 			relativeTurretCenter = utils.point(
 				modelTank.turretCenter.x -
@@ -13,15 +13,15 @@ var models = {
 				modelTank.turretCenter.y -
 					modelTank.center.y
 			);
-		drawModel(modelTank, tank.position, tankAngle);
-		drawModel(modelTurret, relativeTurretCenter, relativeTurretAngle);
+		this.drawModel(modelTank, tank.position, tankAngle);
+		this.drawModel(modelTurret, relativeTurretCenter, relativeTurretAngle);
 
 		context.restore();
 		context.restore();
 	},
 	drawModel: function (model, position, rotation) {
 		var context = canvas.context,
-			angle = utils.angleDegToRad(rotation-90);
+			angle = utils.angleDegToRad(rotation+180-90);
 		context.save();
 		context.translate(
 			position.x,
@@ -31,17 +31,17 @@ var models = {
 
 		context.drawImage(
 			model.image,
-			-model.width/2
+			-model.size.width/2
 				-model.center.x,
-			-model.length/2
+			-model.size.length/2
 				-model.center.y
 		);
 	},
-	drawSimpleObject: function (terrain) {
-		var modelTerrain = this.objects[terrain.type][terrain.subtype],
+	drawSimpleObject: function (object) {
+		var model = this.objects[object.type][object.subtype],
 			context = canvas.context,
-			angle = utils.angleDegToRad(terrain.rotation-90);
-		drawModel(modelTerrain, terrain.position, angle);
+			angle = utils.angleDegToRad(object.rotation);
+		this.drawModel(model, object.position, angle);
 
 		context.restore();
 	},
@@ -56,6 +56,7 @@ var models = {
 		this.objects = models;
 		for(var type in this.objects) {
 			for(var subtype in this.objects[type]) {
+				this.objects[type][subtype].center.y *= -1;
 				this.objects[type][subtype].image = new Image();
 				this.objects[type][subtype].image.src = type + '.' + subtype + '.texture.png';
 			}
@@ -75,9 +76,16 @@ var models = {
 				relativeTurretCenter.x,
 				relativeTurretCenter.y
 			) - tankAngle;
+			if(relativeTurretCenter.x == 0 &&
+				relativeTurretCenter.y == 0) {
+				relativeTurretCenterAngle = 0;
+			}
 		return utils.moveVector(
 			relativeTurretCenterAngle,
-			utils.vectorLength(relativeTurretCenter)
+			utils.vectorLength(
+				relativeTurretCenter.x,
+				relativeTurretCenter.y
+			)
 		);
 	}
 };
@@ -136,6 +144,8 @@ var paint = {
 						objects[index].position,
 						models.getRelativeTurretCenterPosition(objects[index])
 					);
+					controls.turretCenter.x -= offset.x;
+					controls.turretCenter.y -= offset.y;
 					this.userScore = objects[index].label.score;
 					break;
 				}
