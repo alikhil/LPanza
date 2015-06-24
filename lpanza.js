@@ -294,6 +294,7 @@ function doShot(tank){
     bullet.color = getRandomColor();
     bullet.position = shotPos;
     bullet.type = 'bullet';
+    bullet.subtype = tank.subtype;
     bullet.speed = bulletSpeed;
     bullet.moveVector = geom.moveVector(bullet.rotation, bullet.speed);
     bullet.owner = tank.label.userId;
