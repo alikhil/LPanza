@@ -5,13 +5,13 @@ var gameSocket;
 var debugMode = true;
 var serverMaxUsersCount = 20;
 var serverTickDelay = 50;
-
+var maxUserNameLength = 20;
 var backgroundColor = [144, 238, 144];
 
 var tanksHP = 10;
 var damagePerShot = 1;
 
-var showAreaWidth = 400;
+var showAreaWidth = 500;
 var showAreaHeight = 300;
 
 var mapWidth = 1000;
@@ -40,22 +40,33 @@ var bulletWidth = 2;
 var bulletLength = 8;
 var bulletSpeed = 15;
 
+var turretLength = 25;
+var turretWidth = 25;
+
 var checkColisionAreaWidth = 100;
 var checkColisionAreaHeight = 100;
 //
 var models = {
     tanks : {
-        'kv' : {
+        '222-1' : {
             size : size_(tankWidth, tankLength),
             center : point_(tankWidth / 2, tankLength / 2),
-            turretCenter : point_(0, 0),
-            file : 'tank.kv.texture.png' 
+            turretCenter : point_(0, 0)
         }
     },
     turrets : {
-        'kv' : {
-
+        '222-1' : {
+            size : size_(turretWidth, turretLength),
+            center :point_(0,0)
         }
+    },
+    bullets : {
+        '222-1' : {
+            size : size_(bulletWidth, bulletLength)
+        }
+    },
+    terrains : {
+
     }
     
 };
@@ -92,10 +103,11 @@ function userJoin(user) {
 	var sock = this;
 	var userId = getUserId(sock.id);
     clients[userId] = sock;
-    if (user.userName.length > 10) {
-        sock.emit('game.join.fail', { reason : 'Имя игрока должно состоять не более чем из 10 символов' });
+    if (user.userName.length > maxUserNameLength) {
+        sock.emit('game.join.fail', { reason : 'Имя игрока должно состоять не более чем из ' + maxUserNameLength + ' символов' });
         if (debugMode)
             console.log(user.userName + ' не смог подключиться');
+        return false;
     }
 	if(userNames.length >= serverMaxUsersCount){
 		sock.emit('game.join.fail', { reason : 'Достигнут лимит игроков. Подождите пока сервер освободится'});
@@ -120,26 +132,34 @@ function userJoin(user) {
 	var tank = { };
 	tank.rotation = getRandom(0,7) * 45;
     tank.type = 'tank';
+    tank.subType =Object.keys(models.tanks)[0];
+
     var gun = {};
     gun.size = size_(tankGunWidth, tankGunLength);
 	gun.color = getRandomColor();
     gun.timeToReload = 0;
 
-	var turret = { };
+    var turret = {};
+    turret.center = models.tanks[tank.subType].turretCenter;
 	turret.rotation = tank.rotation;
 	turret.radius = tankTurretRadius;
-	turret.gun = gun;
+    turret.gun = gun;
+    turret.size = models.turrets[tank.subType].size;
 	turret.color = getRandomColor();
-	
+	// !???
 	turret.gun.distanceMarginFromTurretCenter = turret.radius;
 	
-	tank.position = getRandomPosition();
-	tank.color = getRandomColor();
-    tank.size = size_(tankWidth, tankLength);
+    tank.position = getRandomPosition();
+    
+    tank.center = tank.position;
+    
+    tank.color = getRandomColor();
+    tank.size = models.tanks[tank.subType].size;
 	tank.speed = 0;
 	tank.turret = turret;
 	tank.label = label;
-    tank.moveVector = { x : 0, y : 0 };
+    tank.moveVector = point_(0, 0);
+
 	tanks[userId] = tank;
 	if(debugMode){
 		console.log('userIdNames: ', userIdNames);
@@ -251,7 +271,10 @@ function doShot(tank){
         return false;
     }
     bullet.rotation = tank.turret.rotation;
-    bullet.size = size_(bulletWidth, bulletLength) ;
+    bullet.size = size_(bulletWidth, bulletLength);
+    var shotPos = tank.center;
+    shotPos = geom.addToPos(shotPos, geom.turnVector(tank.turret.center, tank.rotation), 1);
+    shotPos = geom.addToPos(shotPos, geom.moveVector(tank.turret.rotation, tank.turret.size.length));
     var distFromTurretCenter = 
 		tank.turret.gun.distanceMarginFromTurretCenter + 
 		tank.turret.gun.size.length + 

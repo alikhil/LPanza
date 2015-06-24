@@ -256,3 +256,14 @@ exports.dEq = doubleEqual;
 function doubleEqual(a, b){
     return Math.abs(b - a) < eps;
 }
+
+exports.turnVector = turnVector;
+/**
+ * Поворот вектора на угол
+ * */
+function turnVector(v, a) {
+    var sa = Math.sin(a);
+    var ca = Math.cos(a);
+    var np = { x : v.x * ca + v.y * sa, y : v.y * ca - v.x * sa };
+    return np;
+}
