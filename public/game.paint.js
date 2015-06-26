@@ -131,32 +131,39 @@ var paint = {
 		this.tanks.splice(0, this.tanks.length);
 		objects = packet.objects;
 		for(index = 0; index < objects.length; index ++) {
-			if(objects[index].type === 'tank') {
-				tanks.push(objects[index]);
-				if(objects[index].label.userId == game.userId) {
-					offset = utils.point(
-						objects[index].position.x -
-							game.tankCenter.x,
-						objects[index].position.y -
-							game.tankCenter.y
-					);
-					controls.turretCenter = utils.addVector(
-						objects[index].position,
-						models.getRelativeTurretCenterPosition(objects[index])
-					);
-					controls.turretCenter.x -= offset.x;
-					controls.turretCenter.y -= offset.y;
-					this.userScore = objects[index].label.score;
-					break;
-				}
-			} else {
-				nonTanks.push(objects[index]);
+			if(objects[index].type === 'tank' &&
+				objects[index].label.userId == game.userId) {
+				offset = utils.point(
+					objects[index].position.x -
+						game.tankCenter.x,
+					objects[index].position.y -
+						game.tankCenter.y
+				);
+				controls.turretCenter = utils.addVector(
+					objects[index].position,
+					models.getRelativeTurretCenterPosition(objects[index])
+				);
+				controls.turretCenter.x -= offset.x;
+				controls.turretCenter.y -= offset.y;
+				this.userScore = objects[index].label.score;
+				break;
 			}
 		}
 		if(index >= objects.length) {
 			offset = utils.point(0, 0);
 			console.log('Current player`s tank not found');
 		}
+		for(index = 0; index < objects.length; index ++) {
+			objects[index].position.x -= offset.x;
+			objects[index].position.y -= offset.y;
+			if(objects[index].type === 'tank') {
+				tanks.push(objects[index]);
+			} else {
+				nonTanks.push(objects[index]);
+			}
+		}
+		this.tanks = tanks;
+		this.nonTanks = nonTanks;
 		this.mapOffset = offset;
 		this.drawRect = {
 			left: (offset.x < 0
@@ -190,16 +197,6 @@ var paint = {
 					game.paintRect.height
 				)
 		};
-		for(index = 0; index < tanks.length; index ++) {
-			tanks[index].position.x -= offset.x;
-			tanks[index].position.y -= offset.y;
-		}
-		this.tanks = tanks;
-		for(index = 0; index < nonTanks.length; index ++) {
-			nonTanks[index].position.x -= offset.x;
-			nonTanks[index].position.y -= offset.y;
-		}
-		this.nonTanks = nonTanks;
 		if(app.isTabActive) {
 			this.repaint();
 		}
