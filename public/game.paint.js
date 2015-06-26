@@ -40,7 +40,7 @@ var models = {
 	drawSimpleObject: function (object) {
 		var model = this.objects[object.type][object.subtype],
 			context = canvas.context,
-			angle = utils.angleDegToRad(object.rotation);
+			angle = object.rotation;
 		this.drawModel(model, object.position, angle);
 
 		context.restore();
