@@ -5,7 +5,7 @@ var app = express();
 var lpanza = require('./lpanza');
 //var feedback = require('./feedback');
 
-var port = 3228;
+var port = 1337;
 
 var server = require('http').createServer(app).listen(port);
 
