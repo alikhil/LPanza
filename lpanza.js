@@ -1,57 +1,15 @@
 var io;
 var gameSocket;
-
-// Constants
-var debugMode = true;
-var serverMaxUsersCount = 20;
-var serverTickDelay = 50;
-var maxUserNameLength = 20;
-var backgroundColor = [144, 238, 144];
-
-var tanksHP = 10;
-var damagePerShot = 1;
-
-var showAreaWidth = 500;
-var showAreaHeight = 300;
-
-var mapWidth = 1000;
-var mapHeight = 1000;
-
-var distanceFromWall = 30;
-
-var tankWidth = 50;
-var tankLength = 50;
-var tankTurretRadius = 9;
-var tankGunWidth = 3;
-var tankGunLength = 20;
-var tankSpeed = 5;
-
-var scoreForKill = 10;
-var scoreForHit = 1;
-
-var maxWidthLength = tankWidth;
-
-var tankReloadTime = 2000;
-
-var ratingShowUsersCount = 5;
-
-var bulletDistanceFromGun = 1;
-var bulletWidth = 2;
-var bulletLength = 8;
-var bulletSpeed = 15;
-
-var turretLength = 25;
-var turretWidth = 25;
-
-var checkColisionAreaWidth = 100;
-var checkColisionAreaHeight = 100;
 //
+
+var consts = require('./constants.js');
+
 var models = {
         'tank': {
             'КВ-1': {
                 size: {
-                    width: tankWidth,		
-                    length: tankLength
+                    width: consts.tankWidth,		
+                    length: consts.tankWidth
                 },		
                 center: {
                     x: 0,		
@@ -78,8 +36,8 @@ var models = {
     'bullet' : {
         'КВ-1': {
             size: {
-                width: bulletWidth,		
-                length: bulletLength
+                width: consts.bulletWidth,		
+                length: consts.bulletLength
             },		
             center: {
                 x: 0,		
@@ -97,19 +55,18 @@ var userIdScores = { };
 var userNames = [ ];
 
 var timer;
-var test = 0;
 
 var clients = {};
 
 var _und = require('./underscore-min');
 var groups = require('./group.js');
 var geom = require('./geom.js');
-groups.init(mapWidth, mapHeight);
+
+groups.init(consts.mapWidth, consts.mapHeight);
 
 exports.initGame = function(sio, socket){
     io = sio;
     gameSocket = socket;
-    console.log(test);
 	var userId = getUserId(socket.id);
 	
     gameSocket.on('game.join', userJoin);
@@ -117,7 +74,7 @@ exports.initGame = function(sio, socket){
 }
 
 exports.startServer = function (){
-    timer = setInterval(serverTick, serverTickDelay);
+    timer = setInterval(serverTick, consts.serverTickDelay);
 }
 function userJoin(user) {
 	var sock = this;
@@ -126,18 +83,18 @@ function userJoin(user) {
     user.userName = user.userName.trim();
     if (user.userName.length == 0) {
         sock.emit('game.join.fail', { reason : 'error.join_fail_text.name_empty' });
-        if (debugMode)
+        if (consts.debugMode)
             console.log(user.userName + ' не смог подключиться');
     }
-    if (user.userName.length > maxUserNameLength) {
+    if (user.userName.length > consts.maxUserNameLength) {
         sock.emit('game.join.fail', { reason : 'error.join_fail_text.name_too_long' });
-        if (debugMode)
+        if (consts.debugMode)
             console.log(user.userName + ' не смог подключиться');
         return false;
     }
-	if(userNames.length >= serverMaxUsersCount){
+	if(userNames.length >= consts.serverMaxUsersCount){
 		sock.emit('game.join.fail', { reason : 'error.join_fail_text.max_user_count_exceeded'});
-		if(debugMode)
+		if(consts.debugMode)
 			console.log(user.userName + ' не смог подключиться');
 		return false;
 	}
@@ -151,7 +108,7 @@ function userJoin(user) {
     userIdScores[userId] = 0;
 	//Инициализация танка
 	var label = {};
-	label.hp = tanksHP;
+	label.hp = consts.tanksHP;
 	label.userName = user.userName;
     label.userId = userId;
 
@@ -165,7 +122,7 @@ function userJoin(user) {
 
     var turret = {};
 	turret.rotation = tank.rotation;
-	turret.radius = tankTurretRadius;
+	turret.radius = consts.tankWidth;
     turret.gun = gun;
 	
     tank.position = getRandomPosition();
@@ -175,7 +132,7 @@ function userJoin(user) {
     tank.moveVector = point_(0, 0);
 
 	tanks[userId] = tank;
-	if(debugMode){
+	if(consts.debugMode){
 		console.log('userIdNames: ', userIdNames);
 		console.log('userNames: ', userNames);
 		console.log('tanks: ', tanks);
@@ -183,17 +140,17 @@ function userJoin(user) {
 	}
 	sock.emit('game.join.ok', {
         paintRect : {
-            width : showAreaWidth,
-            height : showAreaHeight
+            width : consts.showAreaWidth,
+            height : consts.showAreaHeight
         },
-        backgroundColor : backgroundColor,
+        backgroundColor : consts.backgroundColor,
         mapSize : {
-            width : mapWidth,
-            height : mapHeight
+            width : consts.mapWidth,
+            height : consts.mapHeight
         },
         models :  models 
     });
-	if(debugMode)
+	if(consts.debugMode)
         console.log(user.userName + ' подключился к серверу');
     updateOnline();
     updateRating();
@@ -208,7 +165,7 @@ function updateRating(){
             rating.push({ userName : userIdNames[keys[i]], score : userIdScores[keys[i]] });
         }
         rating.sort(ratingCmp);
-        rating = rating.slice(0, ratingShowUsersCount);
+        rating = rating.slice(0, consts.ratingShowUsersCount);
         io.emit('game.rating', { users : rating });
     }
 }
@@ -237,7 +194,7 @@ function userLeave(){
 function deleteUser(userId){
     if (userIdNames.hasOwnProperty(userId)) {
         var uname = userIdNames[userId];
-        if (debugMode)
+        if (consts.debugMode)
             console.log(uname + ' покинул сервер');
         removeFromArray(userNames, uname);
         delete (userIdNames[userId]);
@@ -264,7 +221,7 @@ function gameControl(control){
 
     if (control.type === 'accelerate') {
         tank.rotation = control.rotation;
-        tank.speed = control.power * tankSpeed;
+        tank.speed = control.power * consts.tankSpeed;
         tank.moveVector = geom.moveVector(tank.rotation, tank.speed);
     }
 	
@@ -272,7 +229,7 @@ function gameControl(control){
 
 function gameTest () {
 	var sock = this;
-	if (debugMode) {
+	if (consts.debugMode) {
         sock.emit('game.test', { tanks : Object.values(tanks), bullets : bullets, userNames : userNames, userIdNames : userIdNames });
 	}
 }
@@ -294,23 +251,23 @@ function doShot(tank){
     var rel = geom.addToPos(model.turretCenter, model.center, -1);
     shotPos = geom.addToPos(shotPos, geom.turnVector(rel, tank.rotation), 1);
     shotPos = geom.addToPos(shotPos, geom.moveVector(tank.turret.rotation, models.turret[tank.subtype].size.length / 2 - model.turretCenter.y, 1),1)
-
+    shotPos = geom.addToPos(shotPos, tank.moveVector, 1);
     bullet.color = getRandomColor();
     bullet.position = shotPos;
     bullet.type = 'bullet';
     bullet.subtype = tank.subtype;
-    bullet.speed = bulletSpeed;
+    bullet.speed = consts.bulletSpeed;
     bullet.moveVector = geom.moveVector(bullet.rotation, bullet.speed);
     bullet.owner = tank.label.userId;
 
     bullets.push(bullet);
     tank.turret.gun.timeToReload = 1;
 
-    var leftTime = tankReloadTime;
+    var leftTime = consts.tankReloadTime;
 
     var updateTankReload = setInterval(
         function () {
-            tank.turret.gun.timeToReload = leftTime / tankReloadTime;
+            tank.turret.gun.timeToReload = leftTime / consts.tankReloadTime;
             leftTime -= 50;
             if (leftTime < 0) {
                 clearTimeout(updateTankReload);
@@ -333,8 +290,8 @@ function serverTick(){
     console.time('serverTick');
     if (userNames.length > 0) {
         for (var i = bullets.length - 1; i >= 0; i--) {
-            if (bullets[i].position.x > mapWidth || 
-                bullets[i].position.y > mapHeight || 
+            if (bullets[i].position.x > consts.mapWidth || 
+                bullets[i].position.y > consts.mapHeight || 
                 bullets[i].position.x < 0 ||
                 bullets[i].position.y < 0) {
                 bullets.splice(i, 1);
@@ -342,7 +299,7 @@ function serverTick(){
         }
         var objects = Object.values(tanks).concat(bullets);
 
-        var objectGroups = groups.getGroups(objects, showAreaWidth + maxWidthLength, showAreaHeight + maxWidthLength);
+        var objectGroups = groups.getGroups(objects, consts.showAreaWidth + consts.maxWidthLength, consts.showAreaHeight + consts.maxWidthLength);
         var repaintGroups = [];
         var moved = Array(objects.length);
 
@@ -363,15 +320,15 @@ function serverTick(){
                         curObject.position.x = 
                         (newPos.x < curObject.size.width / 2) ? 
                             curObject.size.width / 2 : 
-                            (newPos.x > mapWidth - curObject.size.width / 2) ? 
-                                mapWidth - curObject.size.width / 2 : 
+                            (newPos.x > consts.mapWidth - curObject.size.width / 2) ? 
+                                consts.mapWidth - curObject.size.width / 2 : 
                                 newPos.x;
 
                         curObject.position.y = 
                         (newPos.y < curObject.size.length / 2) ?
                             curObject.size.length / 2 :
-                            (newPos.y > mapHeight - curObject.size.length / 2) ?
-                             mapHeight - curObject.size.length / 2 : 
+                            (newPos.y > consts.mapHeight - curObject.size.length / 2) ?
+                             consts.mapHeight - curObject.size.length / 2 : 
                              newPos.y;
 
 						for (var h = 0; h < group.length; h++) {
@@ -441,12 +398,12 @@ function pushTanksAway (tank1, tank2, rotation, distance) {
  * */
 
 function bulletOnTankHit(tank, bullet){
-    tank.label.hp -= damagePerShot;
-    userIdScores[bullet.owner] += scoreForHit;
+    tank.label.hp -= consts.damagePerShot;
+    userIdScores[bullet.owner] += consts.scoreForHit;
     if (tank.label.hp == 0){
         tank.type = 'deleted-tank';
         clients[tank.label.userId].emit('game.over', { score : userIdScores[tank.label.userId] });
-        userIdScores[bullet.owner] += scoreForKill;
+        userIdScores[bullet.owner] += consts.scoreForKill;
         deleteUser(tank.label.userId);
     }
     updateRating();
@@ -491,8 +448,8 @@ function positionComparator(a, b) {
 
 function getRandomPosition(){
 	var pos = { };
-	pos.x = getRandom(distanceFromWall,mapWidth - distanceFromWall);
-	pos.y = getRandom(distanceFromWall,mapHeight - distanceFromWall);
+	pos.x = getRandom(consts.distanceFromWall,consts.mapWidth - consts.distanceFromWall);
+	pos.y = getRandom(consts.distanceFromWall,consts.mapHeight - consts.distanceFromWall);
 	return pos;
 }
 

@@ -127,7 +127,7 @@ var paint = {
 			tanks = [],
 			nonTanks = [],
 			offset,
-			index;
+            index;
 		this.nonTanks.splice(0, this.nonTanks.length);
 		this.tanks.splice(0, this.tanks.length);
 		objects = packet.objects;
