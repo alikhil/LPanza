@@ -64,7 +64,7 @@ html, body, .fullWrap {
 	float: right;
 	display: block;
 }
-#gameStatsScore {
+#gameStatsScore, #label_game_score {
 	color: #FF2020;
 }
 .no_left_padding {

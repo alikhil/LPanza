@@ -61,6 +61,8 @@ var models = {
 				this.objects[type][subtype].image.src = type + '.' + subtype + '.texture.png';
 			}
 		}
+		paint.gridImage = new Image();
+		paint.gridImage.src = 'background.texture.jpg';
 	},
 	getRelativeTurretCenterPosition: function (tank) {
 		var turret = tank.turret,
@@ -98,8 +100,6 @@ var paint = {
 	joystickAlpha: 0.5,
 	color: {
 		map: {
-			background: undefined,
-			grid: '#A0A0A0',
 			empty: '#A0A0A0'
 		},
 		label: {
@@ -119,7 +119,8 @@ var paint = {
 	},
 	mapOffset: undefined,
 	drawRect: undefined,
-	gridStep: 20,
+	gridStep: 512,
+	gridImage: undefined,
 	userScore: NaN,
 	onPaint: function (packet) {
 		var objects,
@@ -208,7 +209,6 @@ var paint = {
 		this.scaleAsMap();
 		this.drawEmpty();
 		this.drawBackground();
-		this.drawGrid();
 		for(var index = 0; index < this.tanks.length; index ++) {
 			models.drawObject(this.tanks[index]);
 		}
@@ -235,53 +235,21 @@ var paint = {
 	},
 	drawBackground: function () {
 		var context = canvas.context;
-		context.fillStyle = game.backgroundColor;
-		context.fillRect(
-			this.drawRect.left,
-			this.drawRect.top,
-			this.drawRect.right -
-				this.drawRect.left,
-			this.drawRect.bottom -
-				this.drawRect.top
-		);
-	},
-	drawGrid: function () {
-		var context = canvas.context;
-		context.beginPath();
-		context.strokeStyle = this.color.map.grid;
-		for(var positionX = this.drawRect.left +
-				this.gridStep -
+		for(var positionX = this.drawRect.left -
 				(this.drawRect.left +
 				this.mapOffset.x) %
 				this.gridStep;
 			positionX < this.drawRect.right;
 			positionX += this.gridStep) {
-			context.moveTo(
-				positionX,
-				this.drawRect.top
-			);
-			context.lineTo(
-				positionX,
-				this.drawRect.bottom
-			);
+			for(var positionY = this.drawRect.top -
+					(this.drawRect.top +
+					this.mapOffset.y) %
+					this.gridStep;
+				positionY < this.drawRect.bottom;
+				positionY += this.gridStep) {
+				context.drawImage(paint.gridImage, positionX, positionY);
+			}
 		}
-		for(var positionY = this.drawRect.top +
-				this.gridStep -
-				(this.drawRect.top +
-				this.mapOffset.y) %
-				this.gridStep;
-			positionY < this.drawRect.bottom;
-			positionY += this.gridStep) {
-			context.moveTo(
-				this.drawRect.left,
-				positionY
-			);
-			context.lineTo(
-				this.drawRect.right,
-				positionY
-			);
-		}
-		context.stroke();
 	},
 	scaleAsMap: function () {
 		var ratio = canvas.renderSize.width/
