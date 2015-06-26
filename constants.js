@@ -3,7 +3,7 @@ exports.debugMode = true;
 /* Максимальное кол-во игроков на сервере*/
 exports.serverMaxUsersCount = 20;
 /*Время через которое происходят все расчеты на сервере*/
-exports.serverTickDelay = 25;
+exports.serverTickDelay = 40;
 /*Максимальная длина ника*/
 exports.maxUserNameLength = 20;
 /*Цвет фона[возможно устарел]*/
