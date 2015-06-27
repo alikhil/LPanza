@@ -5,6 +5,9 @@ var maxHeight; // = 3000;
 
 var objectsCount; // = 300;
 
+var ceilWidth = 50;
+var ceilHeight = 50;
+
 var objects = [];
 
 // дерево фенвик 2D
@@ -18,7 +21,61 @@ exports.init = function (maxWidthL, maxHeightL){
 var _und = require("./underscore-min");
 
 
+exports.getCollideGroups = function(objects_) {
+    var groups = [];
+    var map = [];
+    var n = maxHeight / ceilHeight, m = maxWidth / ceilWidth;
+    for (var i = 0; i < n; i++)
+        map[i] = Array(m);
 
+    for (var i = 0; i < objects_.length; i++) {
+        groups[i] = [];
+        var ip = objects_[i].position;
+        var intedPoint = intPoint({ x : ip.x / ceilWidth, y : ip.y / ceilHeight });
+        if (map[intedPoint.y][intedPoint.x] === undefined)
+            map[intedPoint.y][intedPoint.x] = [];
+
+        map[intedPoint.y][intedPoint.x].push(i);
+    }
+    for (var i = 0; i < n; i++) {
+        for (var j = 0; j < m; j++) {
+            if (map[i][j] !== undefined) {
+                for (var k = 0; k < map[i][j].length; k++) {
+                    groups[map[i][j][k]] = _und.union(groups[map[i][j][k]], map[i][j]);
+                }
+                if (j < m - 1) {
+                    if (i != 0) {
+                        workOn(j, i, j + 1, i - 1);
+                    }
+                    if (i < n - 1) {
+                        workOn(j, i, j + 1, i + 1);
+                    }
+                    workOn(j, i, j + 1, i);
+                }
+                if (i < n - 1) {
+                    workOn(j, i, j, i + 1);
+                }
+            }
+        }
+    }
+    function workOn(x, y, xx, yy){
+        if (map[y][x] === undefined || map[yy][xx] === undefined)
+            return false;
+        var first = map[y][x].length, second = map[yy][xx].length;
+        for (var i = 0; i < first; i++) {
+            for (var j = 0; j < second; j++) {
+
+                groups[map[y][x][i]] = _und.union(groups[map[y][x][i]], map[yy][xx]);
+                groups[map[yy][xx][j]] = _und.union(groups[map[yy][xx][j]], map[y][x]);
+            }
+        }
+    }
+    return groups;
+}
+
+function intPoint(a){
+    return { x : Math.floor(a.x), y : Math.floor(a.y) };
+}
 /**
  * Получаем список груп для каждого объекта соответсвенно
  * */
