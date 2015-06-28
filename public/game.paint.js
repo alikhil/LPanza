@@ -38,7 +38,6 @@ var models = {
 		);
 	},
     drawSimpleObject: function (object) {
-        console.log(JSON.stringify(object));
 		var model = this.objects[object.type][object.subtype],
 			context = canvas.context,
 			angle = object.rotation;

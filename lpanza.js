@@ -294,7 +294,7 @@ function serverTick(){
    
     if (userNames.length > 0) {
         console.time('serverTick');
-        console.time('delete-bullets');
+       // console.time('delete-bullets');
         for (var i = bullets.length - 1; i >= 0; i--) {
             if (bullets[i].position.x > consts.mapWidth || 
                 bullets[i].position.y > consts.mapHeight || 
@@ -303,8 +303,8 @@ function serverTick(){
                 bullets.splice(i, 1);
             }
         }
-        console.timeEnd('delete-bullets');
-        console.time('collide-groups');
+        //console.timeEnd('delete-bullets');
+        //console.time('collide-groups');
         var objects = Object.values(tanks).concat(bullets);
         var deleteIds = [];
         var objectGroups = groups.getCollideGroups(objects);
@@ -385,9 +385,9 @@ function serverTick(){
             }
         }
         
-        console.timeEnd('collide-groups');
-        console.time('repaint-groups');
-        console.time('get-repaint');
+        //console.timeEnd('collide-groups');
+        //console.time('repaint-groups');
+        //console.time('get-repaint');
         //Выделяем группы для прорисовки
         var repGroups = groups.getGroups(objects, consts.showAreaWidth + consts.maxWidthLength, consts.showAreaHeight + consts.maxWidthLength);
         var repaintGroups = [];
@@ -397,7 +397,7 @@ function serverTick(){
             var iObj = objects[i];
             if (iObj.type === 'tank') {
                 var id = objects[i].label.userId;
-                reloadData[id] = { reload : iObj.turret.gun.timeToReload, score : iObj.label.score};
+                reloadData[id] = { reload : iObj.turret.gun.timeToReload, score : iObj.label.score };
                 repaintGroups[id] = [];
                 if (group !== undefined) {
                     for (var j = 0; j < group.length; j++) {
@@ -408,30 +408,30 @@ function serverTick(){
                                     if (i === j)
                                         repaintGroups[id] = _und.union(curOb, repaintGroups[id]);
                                     else
-                                    repaintGroups[id].push(getPaintData(curOb));
+                                        repaintGroups[id].push(getPaintData(curOb));
                                 }
+                            }
                         }
                     }
                 }
             }
-        }
-        console.timeEnd('get-repaint');
-        console.time('send-repaint');
-        var clientsIds = Object.keys(io.engine.clients);
-        for (var i = 0; i < clientsIds.length; i++) {
-            var uid = getUserId(clientsIds[i]);
-            if (repaintGroups[uid] !== undefined) {
-                if (clients.hasOwnProperty(uid)) {
-                    console.time('paint');
-                    clients[uid].emit('game.paint', { user : reloadData[uid],  objects : repaintGroups[uid] });
-                    console.timeEnd('paint');
+            //console.timeEnd('get-repaint');
+            //console.time('send-repaint');
+            var clientsIds = Object.keys(io.engine.clients);
+            for (var i = 0; i < clientsIds.length; i++) {
+                var uid = getUserId(clientsIds[i]);
+                if (repaintGroups[uid] !== undefined) {
+                    if (clients.hasOwnProperty(uid)) {
+                        console.time('paint');
+                        clients[uid].emit('game.paint', { user : reloadData[uid], objects : repaintGroups[uid] });
+                        console.timeEnd('paint');
+                    }
                 }
             }
+            //console.timeEnd('send-repaint');
+            // console.timeEnd('repaint-groups');
+            console.timeEnd('serverTick');
         }
-        console.timeEnd('send-repaint');
-        console.timeEnd('repaint-groups');
-        console.timeEnd('serverTick');
-
     }
 }
 function pushTanksAway (tank1, tank2, rotation, distance) {
@@ -533,4 +533,6 @@ function removeFromArray(array, val) {
         }
     }
 }
-//
+//ы
+
+
