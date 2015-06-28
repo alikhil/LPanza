@@ -122,7 +122,6 @@ function userJoin(user) {
 
     var turret = {};
 	turret.rotation = tank.rotation;
-	turret.radius = consts.tankWidth;
     turret.gun = gun;
 	
     tank.position = getRandomPosition();
@@ -252,7 +251,6 @@ function doShot(tank){
     shotPos = geom.addToPos(shotPos, geom.turnVector(rel, tank.rotation), 1);
     shotPos = geom.addToPos(shotPos, geom.moveVector(tank.turret.rotation, models.turret[tank.subtype].size.length / 2 - model.turretCenter.y, 1),1)
     shotPos = geom.addToPos(shotPos, tank.moveVector, 1);
-    bullet.color = getRandomColor();
     bullet.position = shotPos;
     bullet.type = 'bullet';
     bullet.subtype = tank.subtype;
@@ -275,6 +273,12 @@ function doShot(tank){
         }, 50);
 }
 
+if (typeof String.prototype.startsWith != 'function') {
+    // see below for better implementation!
+    String.prototype.startsWith = function (str) {
+        return str !== undefined && this.indexOf(str) === 0;
+    };
+}
 
 Object.values = function (obj) {
     var vals = [];
@@ -287,8 +291,10 @@ Object.values = function (obj) {
 }
 //пока не буду отслеживать колизии танков и снарядов
 function serverTick(){
-    console.time('serverTick');
+   
     if (userNames.length > 0) {
+        console.time('serverTick');
+       // console.time('delete-bullets');
         for (var i = bullets.length - 1; i >= 0; i--) {
             if (bullets[i].position.x > consts.mapWidth || 
                 bullets[i].position.y > consts.mapHeight || 
@@ -297,58 +303,62 @@ function serverTick(){
                 bullets.splice(i, 1);
             }
         }
+        //console.timeEnd('delete-bullets');
+        //console.time('collide-groups');
         var objects = Object.values(tanks).concat(bullets);
-
-        var objectGroups = groups.getGroups(objects, consts.showAreaWidth + consts.maxWidthLength, consts.showAreaHeight + consts.maxWidthLength);
-        var repaintGroups = [];
+        var deleteIds = [];
+        var objectGroups = groups.getCollideGroups(objects);
         var moved = Array(objects.length);
-
+        //группы для проверки на коллизию
         for (var i = 0; i < objects.length; i++) {
             var group = objectGroups[i];
             var groupNewPos = [];
-            var id = 0;
-            if (objects[i].type == 'tank') {
-                id = objects[i].label.userId;
-            }
-            repaintGroups[id] = [];
 
             for (var j = 0; j < group.length; j++) {
                 var curObject = objects[group[j]];
                 if (moved[group[j]] !== 'moved') {
-                    var newPos = geom.addToPos(curObject.position, curObject.moveVector, 1);
-                    if (curObject.type === 'tank') {
-                        curObject.position.x = 
+                    try{
+                        var newPos = geom.addToPos(curObject.position, curObject.moveVector, 1);
+                    }
+                    catch(e)  {
+                        console.log(e);
+                        console.log(curObject);
+                        console.log(groups);
+                    }
+                        if (curObject.type === 'tank') {
+                            curObject.position.x = 
                         (newPos.x < curObject.size.width / 2) ? 
                             curObject.size.width / 2 : 
                             (newPos.x > consts.mapWidth - curObject.size.width / 2) ? 
                                 consts.mapWidth - curObject.size.width / 2 : 
                                 newPos.x;
-
-                        curObject.position.y = 
+                            
+                            curObject.position.y = 
                         (newPos.y < curObject.size.length / 2) ?
                             curObject.size.length / 2 :
                             (newPos.y > consts.mapHeight - curObject.size.length / 2) ?
                              consts.mapHeight - curObject.size.length / 2 : 
                              newPos.y;
-
-						for (var h = 0; h < group.length; h++) {
-							var cur = objects[group[h]];
-							if (cur.type === 'tank') {
-								var collision = geom.TDA_rectanglesIntersect(
-									cur,
+                            
+                            for (var h = 0; h < group.length; h++) {
+                                var cur = objects[group[h]];
+                                if (cur.type === 'tank') {
+                                    var collision = geom.TDA_rectanglesIntersect(
+                                        cur,
 									curObject
-								);
-								if(collision.collide) {
-									pushTanksAway(
-										cur,
+                                    );
+                                    if (collision.collide) {
+                                        pushTanksAway(
+                                            cur,
 										curObject,
 										collision.rotation,
 										collision.distance
-									);
-								}
-							}
-						}
-                    }
+                                        );
+                                    }
+                                }
+                            }
+                        }
+                    
                     if (curObject.type === 'bullet') {
                         curObject.position = newPos;
                         for (var h = 0; h < group.length; h++) {
@@ -359,7 +369,11 @@ function serverTick(){
 									curObject
 								);
 								if(collision.collide) {
-									bulletOnTankHit(cur, curObject);
+                                    bulletOnTankHit(cur, curObject);
+                                    if (cur.type === 'deleted-tank') {
+                                        deleteIds.push(group[h]);
+                                    }
+                                    deleteIds.push(group[j]);
 								}
                             }
                         }
@@ -367,25 +381,58 @@ function serverTick(){
                     objects[group[j]] = curObject;
                     moved[group[j]] = 'moved';
                 } 
-                if (curObject.type === 'bullet') {
-                    repaintGroups[id].push(curObject);
-                }
-                if (curObject.type === 'tank') {
-                    curObject.label.score = userIdScores[curObject.label.userId];
-                    repaintGroups[id].push(curObject);
-                }
+                
             }
         }
-        var clientsIds = Object.keys(io.engine.clients);
-        for (var i = 0; i < clientsIds.length; i++) {
-            var uid = getUserId(clientsIds[i]);
-            if (repaintGroups[uid] !== undefined) {
-                if(clients.hasOwnProperty(uid))
-                    clients[uid].emit('game.paint', { objects : repaintGroups[uid] });
+        
+        //console.timeEnd('collide-groups');
+        //console.time('repaint-groups');
+        //console.time('get-repaint');
+        //Выделяем группы для прорисовки
+        var repGroups = groups.getGroups(objects, consts.showAreaWidth + consts.maxWidthLength, consts.showAreaHeight + consts.maxWidthLength);
+        var repaintGroups = [];
+        var reloadData = []
+        for (var i = 0; i < repGroups.length; i++) {
+            var group = repGroups[i];
+            var iObj = objects[i];
+            if (iObj.type === 'tank') {
+                var id = objects[i].label.userId;
+                reloadData[id] = { reload : iObj.turret.gun.timeToReload, score : iObj.label.score };
+                repaintGroups[id] = [];
+                if (group !== undefined) {
+                    for (var j = 0; j < group.length; j++) {
+                        if (group[j] !== undefined) {
+                            var curOb = objects[group[j]];
+                            if (!curOb.type.startsWith('deleted')) {
+                                {
+                                    if (i === j)
+                                        repaintGroups[id] = _und.union(curOb, repaintGroups[id]);
+                                    else
+                                        repaintGroups[id].push(getPaintData(curOb));
+                                }
+                            }
+                        }
+                    }
+                }
             }
+            //console.timeEnd('get-repaint');
+            //console.time('send-repaint');
+            var clientsIds = Object.keys(io.engine.clients);
+            for (var i = 0; i < clientsIds.length; i++) {
+                var uid = getUserId(clientsIds[i]);
+                if (repaintGroups[uid] !== undefined) {
+                    if (clients.hasOwnProperty(uid)) {
+                        console.time('paint');
+                        clients[uid].emit('game.paint', { user : reloadData[uid], objects : repaintGroups[uid] });
+                        console.timeEnd('paint');
+                    }
+                }
+            }
+            //console.timeEnd('send-repaint');
+            // console.timeEnd('repaint-groups');
+            console.timeEnd('serverTick');
         }
     }
-    console.timeEnd('serverTick');
 }
 function pushTanksAway (tank1, tank2, rotation, distance) {
 	var v = geom.moveVector(rotation, distance/2);
@@ -414,14 +461,22 @@ function bulletOnTankHit(tank, bullet){
 }
 
 function getPaintData(object){
-    var paintData = {
-        size : object.size,
-        center : object.position,
-        file : object.type + '.' + object.subtype + '.texture.png'
-    };
+    // TODO сделать объект только с нужными свойствами
+    var newObj = _und.clone(object);
     if (object.type === 'tank') {
-        paintData.turretCenter = geom.addToPos(object.turret.position, object.position, -1);
+        delete (newObj.size);
+        delete (newObj.speed);
+        delete (newObj.moveVector);
+        delete (newObj.label.userId);
+        delete (newObj.turret.gun);
     }
+    if (object.type === 'bullet') {
+        delete (newObj.size);
+        delete (newObj.speed);
+        delete (newObj.moveVector);
+        delete (newObj.owner);
+    }
+    return newObj;
 }
 
 // HelperFunctions
@@ -478,4 +533,6 @@ function removeFromArray(array, val) {
         }
     }
 }
-//
+//ы
+
+

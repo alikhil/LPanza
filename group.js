@@ -5,6 +5,9 @@ var maxHeight; // = 3000;
 
 var objectsCount; // = 300;
 
+var ceilWidthСollision = 50;
+var ceilHeightCollistion = 50;
+
 var objects = [];
 
 // дерево фенвик 2D
@@ -17,33 +20,126 @@ exports.init = function (maxWidthL, maxHeightL){
 
 var _und = require("./underscore-min");
 
+var map;
+var groups;
+var n, m;
+exports.getCollideGroups = function(objects_) {
+    groups = [];
+    map = [];
+    var ceilWidth = ceilWidthСollision, ceilHeight = ceilHeightCollistion;
+    n = maxHeight / ceilHeight, m = maxWidth / ceilWidth;
+    for (var i = 0; i < n; i++)
+        map[i] = Array(m);
 
+    for (var i = 0; i < objects_.length; i++) {
+        groups[i] = [];
+        var ip = objects_[i].position;
+        var intedPoint = intPoint({ x : ip.x / ceilWidth, y : ip.y / ceilHeight });
+        if (map[intedPoint.y][intedPoint.x] === undefined)
+            map[intedPoint.y][intedPoint.x] = [];
 
+        map[intedPoint.y][intedPoint.x].push(i);
+    }
+    for (var i = 0; i < n; i++) {
+        for (var j = 0; j < m; j++) {
+            if (map[i][j] !== undefined) {
+                for (var k = 0; k < map[i][j].length; k++) {
+                    groups[map[i][j][k]] = _und.union(groups[map[i][j][k]], map[i][j]);
+                }
+                if (j < m - 1) {
+                    if (i != 0) {
+                        workOn(j, i, j + 1, i - 1);
+                    }
+                    if (i < n - 1) {
+                        workOn(j, i, j + 1, i + 1);
+                    }
+                    workOn(j, i, j + 1, i);
+                }
+                if (i < n - 1) {
+                    workOn(j, i, j, i + 1);
+                }
+            }
+        }
+    }
+
+    return groups;
+}
+function workOn(x, y, xx, yy) {
+    if (map[y][x] === undefined || map[yy][xx] === undefined || (x === xx && y === yy))
+        return false;
+    var first = map[y][x].length, second = map[yy][xx].length;
+    for (var i = 0; i < first; i++) {
+        for (var j = 0; j < second; j++) {
+            
+            groups[map[y][x][i]] = union(groups[map[y][x][i]], map[yy][xx]);
+            groups[map[yy][xx][j]] = union(groups[map[yy][xx][j]], map[y][x]);
+        }
+    }
+}
+function intPoint(a){
+    return { x : Math.floor(a.x), y : Math.floor(a.y) };
+}
 /**
  * Получаем список груп для каждого объекта соответсвенно
  * */
-exports.getGroups = function(objectsL, takeWidth, takeHeight) {
-    var groups = [];
-    tree = [];
+exports.getGroups = function(objects_, takeWidth, takeHeight) {
+    groups = [];
+    map = [];
+    var ceilWidth = takeWidth / 2, ceilHeight = takeHeight / 2;
 
-    objects = objectsL;
-    objectsCount = objects.length;
+    n = Math.floor(maxHeight / ceilHeight), m = Math.floor(maxWidth / ceilWidth);
+    for (var i = 0; i < n; i++)
+        map[i] = Array(m);
     
-    var dx = Math.floor(takeWidth / 2);
-    var dy = Math.floor(takeHeight / 2);
-
-    for (var i = 0; i <= maxWidth; i++)
-        tree[i] = Array(maxHeight + 1);
+    for (var i = 0; i < objects_.length; i++) {
+        groups[i] = [];
+        var ip = objects_[i].position;
+        var intedPoint = intPoint({ x : ip.x / ceilWidth, y : ip.y / ceilHeight });
+        intedPoint.y = putOnRange(0, n-1, intedPoint.y);
+        intedPoint.x = putOnRange(0, m-1, intedPoint.x);
+        if (map[intedPoint.y][intedPoint.x] === undefined)
+            map[intedPoint.y][intedPoint.x] = [];
+        
+        map[intedPoint.y][intedPoint.x].push(i);
+    }
     
-    for (var i = 0; i < objectsCount; i++) {
-        addObject(objects[i], i);
+    for (var i = 0; i < n; i++) {
+        for (var j = 0; j < m; j++) {
+            if (map[i][j] !== undefined) {
+                for (var k = 0; k < map[i][j].length; k++) {
+                    groups[map[i][j][k]] = _und.union(groups[map[i][j][k]], map[i][j]);
+                }
+                if (j < m - 1) {
+                    if (i != 0) {
+                        workOn(j, i, j + 1, i - 1);
+                    }
+                    if (i < n - 1) {
+                        workOn(j, i, j + 1, i + 1);
+                    }
+                    workOn(j, i, j + 1, i);
+                }
+                if (i < n - 1) {
+                    workOn(j, i, j, i + 1);
+                }
+            }
+        }
     }
+    
 
-    for (var i = 0; i < objectsCount; i++) {
-        var obPos = objects[i].position;
-        groups[i] = getPointsInRect(obPos.x - dx, obPos.y - dy, obPos.x + dx, obPos.y + dy);
-    }
     return groups;
+}
+function putOnRange(a, b, c){
+    if (c > b)
+        c = b;
+    if (c < a)
+        c = a;
+    return c;
+}
+function union(a, b){
+    if (a === undefined || b === undefined) {
+        return a === undefined ? (b === undefined ? [] : b) : a;
+    }
+    return _und.union(a, b);
 }
 
 /**
