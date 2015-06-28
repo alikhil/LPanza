@@ -397,7 +397,7 @@ function serverTick(){
             var iObj = objects[i];
             if (iObj.type === 'tank') {
                 var id = objects[i].label.userId;
-                reloadData[id] = { reload : iObj.turret.gun.timeToReload, score : iObj.label.score };
+                reloadData[id] = { reload : iObj.turret.gun.timeToReload, score : userIdScores[id] };
                 repaintGroups[id] = [];
                 if (group !== undefined) {
                     for (var j = 0; j < group.length; j++) {
