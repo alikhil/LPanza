@@ -399,11 +399,13 @@ function pushTanksAway (tank1, tank2, rotation, distance) {
 
 function bulletOnTankHit(tank, bullet){
     tank.label.hp -= consts.damagePerShot;
-    userIdScores[bullet.owner] += consts.scoreForHit;
+    if(userIdScores[bullet.owner] !== undefined)
+        userIdScores[bullet.owner] += consts.scoreForHit;
     if (tank.label.hp == 0){
         tank.type = 'deleted-tank';
         clients[tank.label.userId].emit('game.over', { score : userIdScores[tank.label.userId] });
-        userIdScores[bullet.owner] += consts.scoreForKill;
+        if (userIdScores[bullet.owner] !== undefined)
+            userIdScores[bullet.owner] += consts.scoreForKill;
         deleteUser(tank.label.userId);
     }
     updateRating();
