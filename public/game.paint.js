@@ -221,6 +221,7 @@ var paint = {
 	},
 	drawEmpty: function () {
 		var context = canvas.context;
+		context.beginPath();
 		context.fillStyle = this.color.map.empty;
 		context.fillRect(
 			0, 0,
@@ -230,6 +231,17 @@ var paint = {
 	},
 	drawBackground: function () {
 		var context = canvas.context;
+		context.save();
+		context.beginPath();
+		context.rect(
+			this.drawRect.left,
+			this.drawRect.top,
+			this.drawRect.right -
+				this.drawRect.left,
+			this.drawRect.bottom -
+				this.drawRect.top
+		);
+		context.clip();
 		for(var positionX = this.drawRect.left -
 				(this.drawRect.left +
 				this.mapOffset.x) %
@@ -245,6 +257,7 @@ var paint = {
 				context.drawImage(paint.gridImage, positionX, positionY);
 			}
 		}
+		context.restore();
 	},
 	scaleAsMap: function () {
 		var ratio = canvas.renderSize.width/
