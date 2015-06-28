@@ -5,8 +5,8 @@ var maxHeight; // = 3000;
 
 var objectsCount; // = 300;
 
-var ceilWidth = 50;
-var ceilHeight = 50;
+var ceilWidthСollision = 50;
+var ceilHeightCollistion = 50;
 
 var objects = [];
 
@@ -26,7 +26,7 @@ var n, m;
 exports.getCollideGroups = function(objects_) {
     groups = [];
     map = [];
-    objects = objects_;
+    var ceilWidth = ceilWidthСollision, ceilHeight = ceilHeightCollistion;
     n = maxHeight / ceilHeight, m = maxWidth / ceilWidth;
     for (var i = 0; i < n; i++)
         map[i] = Array(m);
@@ -82,28 +82,45 @@ function intPoint(a){
 /**
  * Получаем список груп для каждого объекта соответсвенно
  * */
-exports.getGroups = function(objectsL, takeWidth, takeHeight) {
+exports.getGroups = function(objects_, takeWidth, takeHeight) {
     groups = [];
-    var dx = takeWidth / 2;
-    var dy = takeHeight / 2;
-    for (var i = 0; i < objects.length; i++) {
-        var l = Math.floor(Math.max(objects[i].position.x - dx, 0) / ceilWidth);
-        var r = Math.floor(Math.min(objects[i].position.x + dx, maxWidth) / ceilWidth);
-        var u = Math.floor(Math.max(objects[i].position.y - dy, 0) / ceilHeight);
-        var d = Math.floor(Math.min(objects[i].position.y + dy, maxHeight) / ceilHeight);
-        var cur = intPoint({ x : objects[i].position.x / ceilWidth, y : objects[i].position.y / ceilHeight });
-        if (cur.x == m)
-            cur.x--;
-        if (cur.y == n)
-            cur.y--;
-        if (map[cur.y][cur.x] !== undefined) {
-            for (var k = 0; k < map[cur.y][cur.x].length; k++) {
-                groups[map[cur.y][cur.x][k]] = union(groups[map[cur.y][cur.x][k]], map[cur.y][cur.x]);
-            }
-        }
-        for (var j = u; j < d; j++) {
-            for (var k = l; k < r; k++) {
-                workOn(cur.x, cur.y, j, k);
+    map = [];
+    var ceilWidth = takeWidth / 2, ceilHeight = takeHeight / 2;
+
+    n = Math.floor(maxHeight / ceilHeight), m = Math.floor(maxWidth / ceilWidth);
+    for (var i = 0; i < n; i++)
+        map[i] = Array(m);
+    
+    for (var i = 0; i < objects_.length; i++) {
+        groups[i] = [];
+        var ip = objects_[i].position;
+        var intedPoint = intPoint({ x : ip.x / ceilWidth, y : ip.y / ceilHeight });
+        intedPoint.y = putOnRange(0, n-1, intedPoint.y);
+        intedPoint.x = putOnRange(0, m-1, intedPoint.x);
+        if (map[intedPoint.y][intedPoint.x] === undefined)
+            map[intedPoint.y][intedPoint.x] = [];
+        
+        map[intedPoint.y][intedPoint.x].push(i);
+    }
+    
+    for (var i = 0; i < n; i++) {
+        for (var j = 0; j < m; j++) {
+            if (map[i][j] !== undefined) {
+                for (var k = 0; k < map[i][j].length; k++) {
+                    groups[map[i][j][k]] = _und.union(groups[map[i][j][k]], map[i][j]);
+                }
+                if (j < m - 1) {
+                    if (i != 0) {
+                        workOn(j, i, j + 1, i - 1);
+                    }
+                    if (i < n - 1) {
+                        workOn(j, i, j + 1, i + 1);
+                    }
+                    workOn(j, i, j + 1, i);
+                }
+                if (i < n - 1) {
+                    workOn(j, i, j, i + 1);
+                }
             }
         }
     }
@@ -111,7 +128,13 @@ exports.getGroups = function(objectsL, takeWidth, takeHeight) {
 
     return groups;
 }
-
+function putOnRange(a, b, c){
+    if (c > b)
+        c = b;
+    if (c < a)
+        c = a;
+    return c;
+}
 function union(a, b){
     if (a === undefined || b === undefined) {
         return a === undefined ? (b === undefined ? [] : b) : a;

@@ -122,7 +122,6 @@ function userJoin(user) {
 
     var turret = {};
 	turret.rotation = tank.rotation;
-	turret.radius = consts.tankWidth;
     turret.gun = gun;
 	
     tank.position = getRandomPosition();
@@ -252,7 +251,6 @@ function doShot(tank){
     shotPos = geom.addToPos(shotPos, geom.turnVector(rel, tank.rotation), 1);
     shotPos = geom.addToPos(shotPos, geom.moveVector(tank.turret.rotation, models.turret[tank.subtype].size.length / 2 - model.turretCenter.y, 1),1)
     shotPos = geom.addToPos(shotPos, tank.moveVector, 1);
-    bullet.color = getRandomColor();
     bullet.position = shotPos;
     bullet.type = 'bullet';
     bullet.subtype = tank.subtype;
@@ -293,8 +291,10 @@ Object.values = function (obj) {
 }
 //пока не буду отслеживать колизии танков и снарядов
 function serverTick(){
-    console.time('serverTick');
+   
     if (userNames.length > 0) {
+        console.time('serverTick');
+        console.time('delete-bullets');
         for (var i = bullets.length - 1; i >= 0; i--) {
             if (bullets[i].position.x > consts.mapWidth || 
                 bullets[i].position.y > consts.mapHeight || 
@@ -303,6 +303,8 @@ function serverTick(){
                 bullets.splice(i, 1);
             }
         }
+        console.timeEnd('delete-bullets');
+        console.time('collide-groups');
         var objects = Object.values(tanks).concat(bullets);
         var deleteIds = [];
         var objectGroups = groups.getCollideGroups(objects);
@@ -383,7 +385,9 @@ function serverTick(){
             }
         }
         
-
+        console.timeEnd('collide-groups');
+        console.time('repaint-groups');
+        console.time('get-repaint');
         //Выделяем группы для прорисовки
         var repGroups = groups.getGroups(objects, consts.showAreaWidth + consts.maxWidthLength, consts.showAreaHeight + consts.maxWidthLength);
         var repaintGroups = [];
@@ -406,15 +410,21 @@ function serverTick(){
                 }
             }
         }
-
+        console.timeEnd('get-repaint');
+        console.time('send-repaint');
         var clientsIds = Object.keys(io.engine.clients);
         for (var i = 0; i < clientsIds.length; i++) {
             var uid = getUserId(clientsIds[i]);
             if (repaintGroups[uid] !== undefined) {
-                if(clients.hasOwnProperty(uid))
-                    clients[uid].emit('game.paint', { user : reloadData[uid], objects : repaintGroups[uid] });
+                if (clients.hasOwnProperty(uid)) {
+                    console.time('paint');
+                    clients[uid].emit('game.paint', { objects : repaintGroups[uid] });
+                    console.timeEnd('paint');
+                }
             }
         }
+        console.timeEnd('send-repaint');
+        console.timeEnd('repaint-groups');
         console.timeEnd('serverTick');
 
     }
@@ -447,7 +457,20 @@ function bulletOnTankHit(tank, bullet){
 
 function getPaintData(object){
     // TODO сделать объект только с нужными свойствами
-    return object;
+    var newObj = _und.clone(object);
+    if (object.type === 'tank') {
+        delete (newObj.size);
+        delete (newObj.speed);
+        delete (newObj.moveVector);
+        //delete (newObj.label.userId);
+    }
+    if (object.type === 'bullet') {
+        delete (newObj.size);
+        delete (newObj.speed);
+        delete (newObj.moveVector);
+        delete (newObj.owner);
+    }
+    return newObj;
 }
 
 // HelperFunctions
