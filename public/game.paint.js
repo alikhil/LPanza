@@ -145,7 +145,9 @@ var paint = {
 		);
 		this.userScore = packet.user.score;
 
-		game.mayShot = packet.user.reload == 0;
+		if(packet.user.reload == 0 && controls.wantShot) {
+			game.input.shot();
+		}
 
 		for(index = 0; index < objects.length; index ++) {
 			objects[index].position.x -= offset.x;

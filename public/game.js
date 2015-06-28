@@ -490,10 +490,6 @@ var controls = {
 				controls.rotation = newRotation;
 				game.input.rotate();
 			}
-			if(game.mayShot && controls.wantShot) {
-				game.input.shot();
-				game.mayShot = false;
-			}
 		}
 	},
 	pointInRenderRect: function (point) {
