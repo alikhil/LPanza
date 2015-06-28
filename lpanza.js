@@ -368,7 +368,7 @@ function serverTick(){
 									cur,
 									curObject
 								);
-								if(collision.collide) {
+								if(collision.collide && cur.label.userId != curObject.owner){
                                     bulletOnTankHit(cur, curObject);
                                     if (cur.type === 'deleted-tank') {
                                         deleteIds.push(group[h]);
