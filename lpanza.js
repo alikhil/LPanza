@@ -405,8 +405,8 @@ function serverTick(){
                             var curOb = objects[group[j]];
                             if (!curOb.type.startsWith('deleted')) {
                                 {
-                                    if (i === j)
-                                        repaintGroups[id] = _und.union(curOb, repaintGroups[id]);
+                                    if (curOb.type === 'tank' && iObj.label.userId === curOb.label.userId)
+                                        repaintGroups[id].splice(0, 0, getPaintData(curOb));
                                     else
                                         repaintGroups[id].push(getPaintData(curOb));
                                 }
@@ -415,6 +415,7 @@ function serverTick(){
                     }
                 }
             }
+        }
             //console.timeEnd('get-repaint');
             //console.time('send-repaint');
             var clientsIds = Object.keys(io.engine.clients);
@@ -431,9 +432,19 @@ function serverTick(){
             //console.timeEnd('send-repaint');
             // console.timeEnd('repaint-groups');
             console.timeEnd('serverTick');
-        }
+        
     }
 }
+
+function clone(obj) {
+    if (null == obj || "object" != typeof obj) return obj;
+    var copy = obj.constructor();
+    for (var attr in obj) {
+        if (obj.hasOwnProperty(attr)) copy[attr] = obj[attr];
+    }
+    return copy;
+}
+
 function pushTanksAway (tank1, tank2, rotation, distance) {
 	var v = geom.moveVector(rotation, distance/2);
 	tank1.position = geom.addToPos(tank1.position, v, 1);
@@ -462,13 +473,13 @@ function bulletOnTankHit(tank, bullet){
 
 function getPaintData(object){
     // TODO сделать объект только с нужными свойствами
-    var newObj = _und.clone(object);
+    var newObj = JSON.parse(JSON.stringify(object));
     if (object.type === 'tank') {
         delete (newObj.size);
         delete (newObj.speed);
         delete (newObj.moveVector);
         delete (newObj.label.userId);
-        delete (newObj.turret.gun);
+        delete (newObj.turret.gun.timeToReload);
     }
     if (object.type === 'bullet') {
         delete (newObj.size);
