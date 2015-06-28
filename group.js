@@ -20,11 +20,14 @@ exports.init = function (maxWidthL, maxHeightL){
 
 var _und = require("./underscore-min");
 
-
+var map;
+var groups;
+var n, m;
 exports.getCollideGroups = function(objects_) {
-    var groups = [];
-    var map = [];
-    var n = maxHeight / ceilHeight, m = maxWidth / ceilWidth;
+    groups = [];
+    map = [];
+    objects = objects_;
+    n = maxHeight / ceilHeight, m = maxWidth / ceilWidth;
     for (var i = 0; i < n; i++)
         map[i] = Array(m);
 
@@ -58,21 +61,21 @@ exports.getCollideGroups = function(objects_) {
             }
         }
     }
-    function workOn(x, y, xx, yy){
-        if (map[y][x] === undefined || map[yy][xx] === undefined)
-            return false;
-        var first = map[y][x].length, second = map[yy][xx].length;
-        for (var i = 0; i < first; i++) {
-            for (var j = 0; j < second; j++) {
 
-                groups[map[y][x][i]] = _und.union(groups[map[y][x][i]], map[yy][xx]);
-                groups[map[yy][xx][j]] = _und.union(groups[map[yy][xx][j]], map[y][x]);
-            }
-        }
-    }
     return groups;
 }
-
+function workOn(x, y, xx, yy) {
+    if (map[y][x] === undefined || map[yy][xx] === undefined || (x === xx && y === yy))
+        return false;
+    var first = map[y][x].length, second = map[yy][xx].length;
+    for (var i = 0; i < first; i++) {
+        for (var j = 0; j < second; j++) {
+            
+            groups[map[y][x][i]] = union(groups[map[y][x][i]], map[yy][xx]);
+            groups[map[yy][xx][j]] = union(groups[map[yy][xx][j]], map[y][x]);
+        }
+    }
+}
 function intPoint(a){
     return { x : Math.floor(a.x), y : Math.floor(a.y) };
 }
@@ -80,27 +83,40 @@ function intPoint(a){
  * Получаем список груп для каждого объекта соответсвенно
  * */
 exports.getGroups = function(objectsL, takeWidth, takeHeight) {
-    var groups = [];
-    tree = [];
-
-    objects = objectsL;
-    objectsCount = objects.length;
-    
-    var dx = Math.floor(takeWidth / 2);
-    var dy = Math.floor(takeHeight / 2);
-
-    for (var i = 0; i <= maxWidth; i++)
-        tree[i] = Array(maxHeight + 1);
-    
-    for (var i = 0; i < objectsCount; i++) {
-        addObject(objects[i], i);
+    groups = [];
+    var dx = takeWidth / 2;
+    var dy = takeHeight / 2;
+    for (var i = 0; i < objects.length; i++) {
+        var l = Math.floor(Math.max(objects[i].position.x - dx, 0) / ceilWidth);
+        var r = Math.floor(Math.min(objects[i].position.x + dx, maxWidth) / ceilWidth);
+        var u = Math.floor(Math.max(objects[i].position.y - dy, 0) / ceilHeight);
+        var d = Math.floor(Math.min(objects[i].position.y + dy, maxHeight) / ceilHeight);
+        var cur = intPoint({ x : objects[i].position.x / ceilWidth, y : objects[i].position.y / ceilHeight });
+        if (cur.x == m)
+            cur.x--;
+        if (cur.y == n)
+            cur.y--;
+        if (map[cur.y][cur.x] !== undefined) {
+            for (var k = 0; k < map[cur.y][cur.x].length; k++) {
+                groups[map[cur.y][cur.x][k]] = union(groups[map[cur.y][cur.x][k]], map[cur.y][cur.x]);
+            }
+        }
+        for (var j = u; j < d; j++) {
+            for (var k = l; k < r; k++) {
+                workOn(cur.x, cur.y, j, k);
+            }
+        }
     }
+    
 
-    for (var i = 0; i < objectsCount; i++) {
-        var obPos = objects[i].position;
-        groups[i] = getPointsInRect(obPos.x - dx, obPos.y - dy, obPos.x + dx, obPos.y + dy);
-    }
     return groups;
+}
+
+function union(a, b){
+    if (a === undefined || b === undefined) {
+        return a === undefined ? (b === undefined ? [] : b) : a;
+    }
+    return _und.union(a, b);
 }
 
 /**
