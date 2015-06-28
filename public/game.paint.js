@@ -131,29 +131,19 @@ var paint = {
 		this.nonTanks.splice(0, this.nonTanks.length);
 		this.tanks.splice(0, this.tanks.length);
 		objects = packet.objects;
-		for(index = 0; index < objects.length; index ++) {
-			if(objects[index].type === 'tank' &&
-				objects[index].label.userId == game.userId) {
-				offset = utils.point(
-					objects[index].position.x -
-						game.tankCenter.x,
-					objects[index].position.y -
-						game.tankCenter.y
-				);
-				controls.turretCenter = utils.addVector(
-					objects[index].position,
-					models.getRelativeTurretCenterPosition(objects[index])
-				);
-				controls.turretCenter.x -= offset.x;
-				controls.turretCenter.y -= offset.y;
-				this.userScore = objects[index].label.score;
-				break;
-			}
-		}
-		if(index >= objects.length) {
-			offset = utils.point(0, 0);
-			console.log('Current player`s tank not found');
-		}
+
+		offset = utils.point(
+			objects[0].position.x -
+				game.tankCenter.x,
+			objects[0].position.y -
+				game.tankCenter.y
+		);
+		controls.turretCenter = utils.addVector(
+			game.tankCenter,
+			models.getRelativeTurretCenterPosition(objects[0])
+		);
+		this.userScore = packet.user.score;
+
 		for(index = 0; index < objects.length; index ++) {
 			objects[index].position.x -= offset.x;
 			objects[index].position.y -= offset.y;
