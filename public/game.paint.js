@@ -128,6 +128,7 @@ var paint = {
 			nonTanks = [],
 			offset,
             index;
+        console.log(JSON.stringify(packet));
 		this.nonTanks.splice(0, this.nonTanks.length);
 		this.tanks.splice(0, this.tanks.length);
 		objects = packet.objects;
