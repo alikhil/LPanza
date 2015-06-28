@@ -397,14 +397,19 @@ function serverTick(){
             var iObj = objects[i];
             if (iObj.type === 'tank') {
                 var id = objects[i].label.userId;
-                reloadData[id] = { reload : iObj.turret.gun.timeToReload, score : iObj.label.score, position : iObj.position };
+                reloadData[id] = { reload : iObj.turret.gun.timeToReload, score : iObj.label.score};
                 repaintGroups[id] = [];
                 if (group !== undefined) {
                     for (var j = 0; j < group.length; j++) {
                         if (group[j] !== undefined) {
                             var curOb = objects[group[j]];
-                            if (!curOb.type.startsWith('deleted'))
-                                repaintGroups[id].push(getPaintData(curOb));
+                            if (!curOb.type.startsWith('deleted')) {
+                                {
+                                    if (i === j)
+                                        repaintGroups[id] = _und.union(curOb, repaintGroups[id]);
+                                    else
+                                    repaintGroups[id].push(getPaintData(curOb));
+                                }
                         }
                     }
                 }
@@ -418,7 +423,7 @@ function serverTick(){
             if (repaintGroups[uid] !== undefined) {
                 if (clients.hasOwnProperty(uid)) {
                     console.time('paint');
-                    clients[uid].emit('game.paint', { objects : repaintGroups[uid] });
+                    clients[uid].emit('game.paint', { user : reloadData[uid],  objects : repaintGroups[uid] });
                     console.timeEnd('paint');
                 }
             }
@@ -462,7 +467,8 @@ function getPaintData(object){
         delete (newObj.size);
         delete (newObj.speed);
         delete (newObj.moveVector);
-        //delete (newObj.label.userId);
+        delete (newObj.label.userId);
+        delete (newObj.turret.gun);
     }
     if (object.type === 'bullet') {
         delete (newObj.size);
