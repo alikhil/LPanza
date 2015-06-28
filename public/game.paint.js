@@ -145,6 +145,8 @@ var paint = {
 		);
 		this.userScore = packet.user.score;
 
+		game.mayShot = packet.user.reload == 0;
+
 		for(index = 0; index < objects.length; index ++) {
 			objects[index].position.x -= offset.x;
 			objects[index].position.y -= offset.y;
