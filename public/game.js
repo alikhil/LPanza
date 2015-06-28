@@ -212,6 +212,7 @@ var game = {
 	tankCenter: undefined,
 	mapSize: undefined,
 	paint: undefined,
+	mayShot: undefined,
 	init: function (packet) {
 		this.paintRect = packet.paintRect;
 		this.tankCenter = utils.point(
@@ -223,6 +224,7 @@ var game = {
 		this.userId = utils.getUserId();
 		
 		this.inProgress = true;
+		this.mayShot = false;
 		this.paint = paint;
 		canvas.init();
 		controls.bind();
@@ -329,6 +331,8 @@ var controls = {
 	},
 	rotation: NaN,
 	turretCenter: undefined,
+	wantShot: undefined,
+	mouseButtonDown: undefined,
 	keyboard: {
 		keyPressed: {
 			'W': undefined,
@@ -424,15 +428,12 @@ var controls = {
 			// change controls.rotation from `undefined` to `360`
 			controls.rotation = 360;
 			controls.turretCenter = utils.point(0, 0);
+			controls.wantShot = false;
+			controls.mouseButtonDown = false;
 			$(window)
 				.on('mousedown', function (event) {
+					controls.mouseButtonDown = true;
 					controls.mouse.onMove(
-						utils.point(
-							event.pageX,
-							event.pageY
-						)
-					);
-					controls.mouse.onDown(
 						utils.point(
 							event.pageX,
 							event.pageY
@@ -440,6 +441,18 @@ var controls = {
 					);
 				})
 				.on('mousemove', function (event) {
+					controls.mouseButtonDown =
+						controls.mouseButtonDown ||
+						event.which != 0;
+					controls.mouse.onMove(
+						utils.point(
+							event.pageX,
+							event.pageY
+						)
+					);
+				})
+				.on('mouseup', function (event) {
+					controls.mouseButtonDown = false;
 					controls.mouse.onMove(
 						utils.point(
 							event.pageX,
@@ -455,7 +468,10 @@ var controls = {
 		},
 		onMove: function (point) {
 			if(controls.pointInRenderRect(point)) {
+				controls.wantShot = controls.mouseButtonDown;
 				this.onRotate(point);
+			} else {
+				controls.wantShot = false;
 			}
 		},
 		onRotate: function (point) {
@@ -474,10 +490,9 @@ var controls = {
 				controls.rotation = newRotation;
 				game.input.rotate();
 			}
-		},
-		onDown: function (point) {
-			if(controls.pointInRenderRect(point)) {
+			if(game.mayShot && controls.wantShot) {
 				game.input.shot();
+				game.mayShot = false;
 			}
 		}
 	},
@@ -497,6 +512,8 @@ var controls = {
 			controls.turretCenter = utils.point(0, 0);
 			this.wasInRender = false;
 			this.wasInJoystick = false;
+			controls.wantShot = false;
+			controls.mouseButtonDown = false;
 			$(window)
 				.on('touchstart touchmove', function (event) {
 					controls.touch.onMove(event);
@@ -515,6 +532,7 @@ var controls = {
 				inJoystickFound,
 				inRenderFound,
 				point;
+			controls.mouseButtonDown = true;
 			inJoystickFound = false;
 			inRenderFound = false;
 			for(i = 0;
@@ -541,10 +559,8 @@ var controls = {
 				} else {
 					if(controls.pointInRenderRect(point)) {
 						if(!inRenderFound) {
+							controls.wantShot = controls.mouseButtonDown;
 							controls.mouse.onRotate(point);
-							if(!this.wasInRender) {
-								game.input.shot();
-							}
 							inRenderFound = true;
 							this.wasInRender = true;
 						}
@@ -557,12 +573,15 @@ var controls = {
 			}
 			if(!inRenderFound && this.wasInRender) {
 				this.wasInRender = false;
+				controls.wantShot = false;
 			}
 			event.preventDefault();
 		},
 		wasInRender: undefined,
 		wasInJoystick: undefined,
 		onEnd: function (event) {
+			controls.mouseButtonDown = false;
+			controls.wantShot = false;
 			if(this.wasInJoystick) {
 				joystick.untouch();
 			}

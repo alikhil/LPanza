@@ -128,7 +128,7 @@ var paint = {
 			tanks = [],
 			nonTanks = [],
 			offset,
-            index;
+			index;
 		this.nonTanks.splice(0, this.nonTanks.length);
 		this.tanks.splice(0, this.tanks.length);
 		objects = packet.objects;
@@ -144,6 +144,8 @@ var paint = {
 			models.getRelativeTurretCenterPosition(objects[0])
 		);
 		this.userScore = packet.user.score;
+
+		game.mayShot = packet.user.reload == 0;
 
 		for(index = 0; index < objects.length; index ++) {
 			objects[index].position.x -= offset.x;
