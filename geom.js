@@ -34,12 +34,12 @@ function TDA_rectanglesIntersect (rect1, rect2) {
 			getRect(
 				rect1.position,
 				rect1.size,
-				radToDeg(rect1.rotation)
+				rect1.rotation
 			),
 			getRect(
 				rect2.position,
 				rect2.size,
-				radToDeg(rect2.rotation)
+				rect2.rotation
 			)
 		],
 		delta,
