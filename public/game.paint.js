@@ -133,6 +133,29 @@ var paint = {
 		this.tanks.splice(0, this.tanks.length);
 		objects = packet.objects;
 
+		if (objects[0].position.x +
+				game.paintRect.width / 2 >
+				game.mapSize.width) {
+			game.tankCenter.x = objects[0].position.x +
+				game.paintRect.width -
+				game.mapSize.width;
+		} else if (objects[0].position.x < game.paintRect.width / 2) {
+			game.tankCenter.x = objects[0].position.x;
+		} else {
+			game.tankCenter.x = game.paintRect.width / 2;
+		}
+		if (objects[0].position.y +
+				game.paintRect.height / 2 >
+				game.mapSize.height) {
+			game.tankCenter.y = objects[0].position.y +
+				game.paintRect.height -
+				game.mapSize.height;
+		} else if (objects[0].position.y < game.paintRect.height / 2) {
+			game.tankCenter.y = objects[0].position.y;
+		} else {
+			game.tankCenter.y = game.paintRect.height / 2;
+		}
+
 		offset = utils.point(
 			objects[0].position.x -
 				game.tankCenter.x,
