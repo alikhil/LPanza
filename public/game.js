@@ -424,12 +424,16 @@ var controls = {
 		}
 	},
 	mouse: {
+		wasInRender: undefined,
+		cursorAimAllowed: undefined,
 		bind: function () {
 			// change controls.rotation from `undefined` to `360`
 			controls.rotation = 360;
 			controls.turretCenter = utils.point(0, 0);
+			this.wasInRender = false;
 			controls.wantShot = false;
 			controls.mouseButtonDown = false;
+			this.cursorAimAllowed = $('.cursor_aim_allowed');
 			$(window)
 				.on('mousedown', function (event) {
 					controls.mouseButtonDown = true;
@@ -470,8 +474,16 @@ var controls = {
 			if(controls.pointInRenderRect(point)) {
 				controls.wantShot = controls.mouseButtonDown;
 				this.onRotate(point);
+				if (!this.wasInRender) {
+					this.cursorAimAllowed.addClass ('cursor_aim');
+					this.wasInRender = true;
+				}
 			} else {
 				controls.wantShot = false;
+				if (this.wasInRender) {
+					this.cursorAimAllowed.removeClass ('cursor_aim');
+					this.wasInRender = false;
+				}
 			}
 		},
 		onRotate: function (point) {

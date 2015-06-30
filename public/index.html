@@ -158,17 +158,17 @@
 		<!-- noScript and noHTML5 notification end -->
 
 		<div class='fullWrap' id='canvasWrap'>
-			<div class='gameOverlay gameOverlayTopLeft'><h3><span id='label_game_score'></span> <span id='gameStatsScore'></span></h3></div>
-			<div class='gameOverlay gameOverlayTopRight'>
-				<div class='text-right form-group'>
-					<button type='button' class='btn btn-primary' id='gameStatsOnlineButton'><span id='label_game_online'></span> <span class='badge' id='gameStatsOnlineCount'>?</span></button>
+			<div class='gameOverlay gameOverlayTopLeft cursor_aim_allowed'><h3><span id='label_game_score'></span> <span id='gameStatsScore'></span></h3></div>
+			<div class='gameOverlay gameOverlayTopRight form-group cursor_aim_allowed'>
+				<div class='text-right'>
+					<button type='button' class='btn btn-primary cursor_aim_allowed' id='gameStatsOnlineButton'><span id='label_game_online'></span> <span class='badge' id='gameStatsOnlineCount'>?</span></button>
 				</div>
 				<h5 class='text-center' id='label_game_rating'></h5>
 				<ul class='list-group' id='gameStatsRatingList'>
 				</ul>
 			</div>
-			<div class='gameOverlay gameOverlayBottomRight'><span id='gameStatsPing'></span></div>
-			<canvas width='0' height='0' id='gameCanvas'></canvas>
+			<div class='gameOverlay gameOverlayBottomRight cursor_aim_allowed'><span id='gameStatsPing'></span></div>
+			<canvas width='0' height='0' id='gameCanvas' class='cursor_aim_allowed'></canvas>
 		</div>
 		
 		<div id='screenSizeHack'></div>
