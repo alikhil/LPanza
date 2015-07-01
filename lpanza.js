@@ -99,9 +99,9 @@ function userJoin(user) {
 		return false;
 	}
 	
-	gameSocket.on('game.control', gameControl);
-    gameSocket.on('disconnect', userLeave);
-    gameSocket.on('game.ping', userPing);
+	sock.on('game.control', gameControl);
+    sock.on('disconnect', userLeave);
+    sock.on('game.ping', userPing);
     
 	userIdNames[userId] = user.userName;
 	userNames.push(user.userName);
