@@ -97,7 +97,7 @@ var paint = {
 	label: {
 		font: '10px Arial'
 	},
-	joystickAlpha: 0.5,
+	joystickAlpha: 0.3,
 	color: {
 		map: {
 			empty: '#A0A0A0'
@@ -112,8 +112,8 @@ var paint = {
 		},
 		joystick: {
 			inner: '#A0A0A0',
-			outer: '#808080',
-			active: '#FF2020'
+			outer: '#a0a0a0',
+			active: '#FF6060'
 		},
 		border: '#202020'
 	},

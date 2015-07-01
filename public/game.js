@@ -621,10 +621,14 @@ var joystick = {
 	},
 	resize: function () {
 		var minDimension = Math.min(
-				canvas.size.height,
-				canvas.size.width
+				//canvas.size.height,
+				//canvas.size.width
+				canvas.renderSize.height,
+				canvas.renderSize.width
 			);
-		if(minDimension > 400) {
+		this.radius.inner = 0;
+		this.radius.outer = (minDimension/2)*(2/3);
+		/*if(minDimension > 400) {
 			this.radius.inner = 40;
 			this.radius.outer = 100;
 		} else {
@@ -635,7 +639,9 @@ var joystick = {
 			this.radius.outer;
 		this.center.y = canvas.size.height -
 			this.margin -
-			this.radius.outer;
+			this.radius.outer;*/
+		this.center.x = canvas.size.width / 2;
+		this.center.y = canvas.size.height / 2;
 	},
 	center: utils.point(
 		NaN,
