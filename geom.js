@@ -87,7 +87,8 @@ function TDA_rectanglesIntersect (rect1, rect2) {
 	}
 	if(result.collide) {
 		var projeted2;
-		result.rotation = radToDeg(axes[minDeltaId]);
+		result.rotation = angleToRight(radToDeg(axes[minDeltaId]));
+		axes[minDeltaId] = degToRad(result.rotation);
 		result.distance = minDelta;
 		projected = TDA_toAxis(
 			axes[minDeltaId],
@@ -100,9 +101,11 @@ function TDA_rectanglesIntersect (rect1, rect2) {
 		if(projected2 > projected) {
 			result.distance *= -1;
 		}
-		result.rotation = (result.rotation+180)%180
 	}
 	return result;
+}
+function angleToRight (deg) {
+	return (deg+90)%180-90;
 }
 function TDA_toAxis (angle, point) {
 	var xa = point.x,
