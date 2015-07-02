@@ -44,10 +44,6 @@ var utils = {
 		color += letters[B%16];
 		return color;
 	},
-	getUserId: function () {
-		// copy-paste from server source
-		return socket.io.id.toString().substr(0, 5);
-	},
 	moveVector: function (rotation, distance) {
 		var yNew = Math.sin(rotation) * distance,
 			xNew = Math.cos(rotation) * distance;
@@ -221,7 +217,6 @@ var game = {
 		);
 		this.backgroundColor = utils.RGBToCSS(packet.backgroundColor);
 		this.mapSize = packet.mapSize;
-		this.userId = utils.getUserId();
 		
 		this.inProgress = true;
 		this.mayShot = false;
@@ -243,8 +238,7 @@ var game = {
 		rating.uninit();
 		$('.gameOverlay').hide();
 	},
-	backgroundColor: undefined,
-	userId: undefined
+	backgroundColor: undefined
 };
 var ping = {
 	init: function () {
