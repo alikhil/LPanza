@@ -97,7 +97,7 @@ var paint = {
 	label: {
 		font: '10px Arial'
 	},
-	joystickAlpha: 0.5,
+	joystickAlpha: 0.3,
 	color: {
 		map: {
 			empty: '#A0A0A0'
@@ -112,8 +112,8 @@ var paint = {
 		},
 		joystick: {
 			inner: '#A0A0A0',
-			outer: '#808080',
-			active: '#FF2020'
+			outer: '#a0a0a0',
+			active: '#FF6060'
 		},
 		border: '#202020'
 	},
@@ -128,7 +128,7 @@ var paint = {
 			nonTanks = [],
 			offset,
             index;
-        console.log(JSON.stringify(packet));
+        //console.log(JSON.stringify(packet));
 		this.nonTanks.splice(0, this.nonTanks.length);
 		this.tanks.splice(0, this.tanks.length);
 		objects = packet.objects;
@@ -168,8 +168,12 @@ var paint = {
 		);
 		this.userScore = packet.user.score;
 
-		if(packet.user.reload == 0 && controls.wantShot) {
+		if (packet.user.reload == 0 && (
+				controls.wantShot ||
+				controls.wantSingleShot
+			)) {
 			game.input.shot();
+			controls.wantSingleShot = false;
 		}
 
 		for(index = 0; index < objects.length; index ++) {
@@ -310,17 +314,8 @@ var paint = {
 		context.restore();
 	},
 	clearJoystick: function () {
-		var context = canvas.context,
-			diameter = 2*(joystick.margin +
-				joystick.radius.outer)
-			left = joystick.margin,
-			_top = canvas.size.height -
-				diameter;
-		context.clearRect(
-			left,
-			_top,
-			diameter,
-			diameter
+		canvas.context.clearRect(
+			0, 0, canvas.size.width, canvas.size.height
 		);
 	},
 	drawLabel: function (tank) {
@@ -356,23 +351,32 @@ var paint = {
 	},
 	drawJoystick: function () {
 		var context = canvas.context,
-			oldAlpha;
-		oldAlpha = context.globalAlpha;
-		context.globalAlpha = this.joystickAlpha;
-		this.drawCircleObject(
-			joystick.center,
-			joystick.radius.outer,
-			this.color.joystick.outer
-		);
-		if(controls.acceleration.power > 0) {
-			this.drawJoystickActiveSector();
+			oldAlpha,
+			a, b, d, al = 10, r = 4, R = swipe.threshold;
+		if (swipe.joyIs) {
+			a = controls.touch.touches.first[swipe.joy];
+			b = controls.touch.touches.current[swipe.joy];
+			d = utils.vectorLength (b.x - a.x, b.y - a.y);
+			context.save ();
+			context.translate (a.x, a.y);
+			context.rotate (utils.angleDegToRad (controls.acceleration.rotation-90));
+			oldAlpha = context.globalAlpha;
+			context.globalAlpha = this.joystickAlpha;
+			context.beginPath ();
+			context.strokeStyle = '#FFFF40';
+			context.lineCap = 'round';
+			context.lineJoin = 'round';
+			context.lineWidth = r;
+			context.arc (0, 0, R, 0, 2*Math.PI);
+			context.moveTo(0, 0);
+			context.lineTo(0, d);
+			context.lineTo(-al, d - al);
+			context.moveTo(0, d);
+			context.lineTo(al, d - al);
+			context.stroke ();
+			context.globalAlpha = oldAlpha;
+			context.restore ();
 		}
-		this.drawCircleObject(
-			joystick.center,
-			joystick.radius.inner,
-			this.color.joystick.inner
-		);
-		context.globalAlpha = oldAlpha;
 	},
 	drawCircleObject: function (position, radius, color) {
 		var context = canvas.context;

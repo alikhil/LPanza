@@ -166,7 +166,6 @@ var canvas = {
 			this.size.height -
 			this.renderSize.height
 		)/2;
-		joystick.resize();
 	}
 };
 function scrollToTop () {
@@ -326,6 +325,7 @@ var controls = {
 	rotation: NaN,
 	turretCenter: undefined,
 	wantShot: undefined,
+	wantSingleShot: undefined,
 	mouseButtonDown: undefined,
 	keyboard: {
 		keyPressed: {
@@ -426,6 +426,7 @@ var controls = {
 			controls.turretCenter = utils.point(0, 0);
 			this.wasInRender = false;
 			controls.wantShot = false;
+			controls.wantSingleShot = false;
 			controls.mouseButtonDown = false;
 			this.cursorAimAllowed = $('.cursor_aim_allowed');
 			$(window)
@@ -505,90 +506,86 @@ var controls = {
 			point.y <= canvas.renderOffset.y + canvas.renderSize.height;
 	},
 	touch: {
+		touches: {current: {}, first: {}, length: 0},
 		isAvailable: function () {
 			return 'ontouchstart' in window;
 		},
 		bind: function () {
-			joystick.init();
-			controls.rotation = 360;
-			controls.turretCenter = utils.point(0, 0);
-			this.wasInRender = false;
-			this.wasInJoystick = false;
-			controls.wantShot = false;
-			controls.mouseButtonDown = false;
+			swipe.init ();
 			$(window)
-				.on('touchstart touchmove', function (event) {
-					controls.touch.onMove(event);
+				.on('touchstart', function (event) {
+					var e = event.originalEvent,
+						changed = e.changedTouches,
+						t, id;
+					for (var i = 0; i < changed.length; i ++) {
+						t = changed[i];
+						id = t.identifier;
+						if (controls.touch.touches.length < 2) {
+							controls.touch.touches.current[id] = {
+								x: t.pageX,
+								y: t.pageY
+							};
+							controls.touch.touches.first[id] = {
+								x: t.pageX,
+								y: t.pageY
+							}
+							controls.touch.touches.length ++;
+							swipe.on.newDown (id);
+						}
+					}
+					event.preventDefault();
 				})
-				.on('touchend touchcancel', function (event) {
-					controls.touch.onEnd(event);
+				.on('touchmove', function (event) {
+					var e = event.originalEvent,
+						changed = e.changedTouches,
+						t, id;
+					for (var i = 0; i < changed.length; i ++) {
+						t = changed[i];
+						id = t.identifier;
+						if (id in controls.touch.touches.current) {
+							controls.touch.touches.current[id] = {
+								x: t.pageX,
+								y: t.pageY
+							};
+							swipe.on.move (id);
+						}
+					}
+					event.preventDefault();
+				})
+				.on('touchend', function (event) {
+					var e = event.originalEvent,
+						changed = e.changedTouches,
+						t, id;
+					for (var i = 0; i < changed.length; i ++) {
+						t = changed[i];
+						id = t.identifier;
+						if (id in controls.touch.touches.current) {
+							delete controls.touch.touches.current[id];
+							delete controls.touch.touches.first[id];
+							controls.touch.touches.length --;
+							if (id === swipe.joy) {
+								swipe.on.joyUp ();
+							}
+							if (id === swipe.aim) {
+								swipe.on.aimUp ();
+							}
+						}
+					}
+					event.preventDefault();
+				})
+				.on('touchcancel', function (event) {
+					for (var i in controls.touch.touches.current) {
+						delete controls.touch.touches.current[i];
+						delete controls.touch.touches.first[i];
+						controls.touch.touches.length --;
+					}
+					swipe.on.joyUp ();
+					swipe.on.aimUp ();
+					event.preventDefault();
 				});
 		},
 		unbind: function () {
-			$(window)
-				.off('touchstart touchmove')
-				.off('touchend touchcancel');
-		},
-		onMove: function (event) {
-			var touches = event.originalEvent.changedTouches,
-				inJoystickFound,
-				inRenderFound,
-				point;
-			controls.mouseButtonDown = true;
-			inJoystickFound = false;
-			inRenderFound = false;
-			for(i = 0;
-				i < touches.length && (
-					!inJoystickFound ||
-					!inRenderFound
-				);
-				i ++) {
-				point = utils.point(
-					touches[i].pageX,
-					touches[i].pageY
-				);
-				if(joystick.pointInJoystick(point)) {
-					if(!inJoystickFound) {
-						joystick.ontouch(
-							utils.point(
-								point.x - joystick.center.x,
-								point.y - joystick.center.y
-							)
-						);
-						inJoystickFound = true;
-						this.wasInJoystick = true;
-					}
-				} else {
-					if(controls.pointInRenderRect(point)) {
-						if(!inRenderFound) {
-							controls.wantShot = controls.mouseButtonDown;
-							controls.mouse.onRotate(point);
-							inRenderFound = true;
-							this.wasInRender = true;
-						}
-					}
-				}
-			}
-			if(!inJoystickFound && this.wasInJoystick) {
-				joystick.untouch();
-				this.wasInJoystick = false;
-			}
-			if(!inRenderFound && this.wasInRender) {
-				this.wasInRender = false;
-				controls.wantShot = false;
-			}
-			event.preventDefault();
-		},
-		wasInRender: undefined,
-		wasInJoystick: undefined,
-		onEnd: function (event) {
-			controls.mouseButtonDown = false;
-			controls.wantShot = false;
-			if(this.wasInJoystick) {
-				joystick.untouch();
-			}
-			this.wasInJoystick = false;
-			this.wasInRender = false;
+			$(window).off('touchstart touchmove touchend touchcancel');
 		}
 	},
 	useTouch: undefined,
@@ -610,47 +607,80 @@ var controls = {
 		}
 	}
 };
-var joystick = {
+var swipe = {
+	aimIs: undefined,
+	joyIs: undefined,
+	aimFix: undefined,
+	joy: undefined,
+	aim: undefined,
+	threshold: 15,
 	init: function () {
+		this.aimIs = false;
+		this.joyIs = false;
+		this.aimFix = false;
+		this.joy = undefined;
+		this.aim = undefined;
 	},
-	resize: function () {
-		var minDimension = Math.min(
-				canvas.size.height,
-				canvas.size.width
-			);
-		if(minDimension > 400) {
-			this.radius.inner = 40;
-			this.radius.outer = 100;
-		} else {
-			this.radius.inner = 26;
-			this.radius.outer = 64;
+	on: {
+		aimUp: function () { // af -> e, a -> e, bf -> jf
+			swipe.aimIs = swipe.aimFix = false;
+			swipe.aim = undefined;
+			swipe.shot ();
+		},
+		joyUp: function () { // jf -> e, bf -> af
+			swipe.joyIs = false;
+			swipe.joy = undefined;
+			swipe.drive (utils.point (0, 0));
+		},
+		newDown: function (id) {
+			if (swipe.aimIs) { // a, af, bf
+				if (swipe.aimFix) { // af -> bf, bf
+					swipe.joy = id;
+					swipe.joyIs = true;
+				} else { // a -> bf
+					swipe.joy = swipe.aim;
+					swipe.joyIs = true;
+					swipe.aim = id;
+					swipe.aimFix = true;
+				}
+			} else { // e -> a, jf -> bf
+				swipe.aim = id;
+				swipe.aimIs = true;
+				if (swipe.joyIs) { // jf -> bf
+					swipe.aimFix = true;
+				}
+				swipe.rotate (controls.touch.touches.current[id]);
+			}
+		},
+		move: function (id) {
+			var a = controls.touch.touches.first[id],
+				b = controls.touch.touches.current[id],
+				dx = b.x - a.x,
+				dy = b.y - a.y,
+				d;
+			if (id == swipe.aim) { // aimIs: a, af, bf
+				if (!swipe.aimFix) { // a
+					d = utils.vectorLength (dx, dy)
+					if (d > swipe.threshold) { // a -> jf
+						swipe.joy = swipe.aim;
+						swipe.joyIs = true;
+						swipe.aim = undefined;
+						swipe.aimIs = swipe.aimFix = false;
+					}
+				}
+				if (swipe.aimIs) { // not aim -> joy, aim touch
+					swipe.rotate (utils.point (
+						b.x,
+						b.y
+					));
+				}
+			}
+			if (id == swipe.joy) { // joy touch
+				swipe.drive ( utils.point (dx, dy));
+			}
 		}
-		this.center.x = this.margin +
-			this.radius.outer;
-		this.center.y = canvas.size.height -
-			this.margin -
-			this.radius.outer;
 	},
-	center: utils.point(
-		NaN,
-		NaN
-	),
-	radius: {
-		outer: NaN,
-		inner: NaN
-	},
-	activeAngle: 45,
-	margin: 10,
-	currentTouchRadius: NaN,
-	ontouch: function (point) {
-		var radius = this.currentTouchRadius;
-		if(radius < this.radius.inner || this.radius.outer < radius) {
-			this.untouch();
-		} else {
-			this.touch(point);
-		}
-	},
-	touch: function (point) {
+	drive: function (point) {
 		var newRotation,
 			newPower;
 		if(point.x == 0 && point.y == 0) {
@@ -665,12 +695,6 @@ var joystick = {
 					)
 				) + 45/2)/45
 			)*45;
-			/*newRotation = utils.angleRadToDeg(
-				utils.vectorAngle(
-					point.x,
-					point.y
-				)
-			);*/
 			newPower = 1;
 		}
 		if(controls.acceleration.power != newPower ||
@@ -680,22 +704,11 @@ var joystick = {
 			game.input.accelerate();
 		}
 	},
-	untouch: function () {
-		this.touch(
-			utils.point(
-				0,
-				0
-			)
-		);
+	rotate: function (point) {
+		controls.mouse.onRotate(point);
 	},
-	pointInJoystick: function (point) {
-		this.currentTouchRadius = utils.vectorLength(
-				point.x - this.center.x,
-				point.y - this.center.y
-			);
-		return this.currentTouchRadius <
-			this.margin +
-				this.radius.outer;
+	shot: function () {
+		controls.wantSingleShot = true;
 	}
 };
 var tabActiveMonitor = {
