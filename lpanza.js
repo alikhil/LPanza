@@ -3,7 +3,6 @@ var gameSocket;
 //
 
 var consts = require('./constants.js');
-
 var models = {
         'tank': {
             'КВ-1': {
@@ -48,15 +47,25 @@ var models = {
 
     
 };
-var tanks = [ ];
-var bullets = [ ]
+
+
+var userIdRooms = { };
 var userIdNames = { };
-var userIdScores = { };
-var userNames = [ ];
+
+var roomsData = {};
+
+
+
+var totalPlayers = 0;
+var availableTotalPlayers = 0;
+
+var roomList = { };
+
+var curRoomId = 0;
+var freeRoomIds = [];
 
 var timer;
 
-var clients = {};
 
 var _und = require('./underscore-min');
 var groups = require('./group.js');
@@ -76,12 +85,35 @@ exports.initGame = function(sio, socket){
 exports.startServer = function (){
     timer = setInterval(serverTick, consts.serverTickDelay);
 }
+
+function createRoom(){
+    availableTotalPlayers += consts.roomMaxUserCount;
+    var room = freeRoomIds.length > 0 ? freeRoomIds.shift() : ++curRoomId;
+    roomList[room] = { used : 0, total : consts.roomMaxUserCount, id : room };
+    roomsData[room] = {
+        userIdScores : {},
+        userNames : [],
+        tanks : [],
+        bullets : [],
+        clients : {}
+    };
+}
+function deleteRoom(room){
+    availableTotalPlayers -= consts.roomMaxUserCount;
+    delete (roomsData[room]);
+    delete (roomList[room]);
+}
+function updateRoomList(sock){
+    if (sock !== undefined)
+        sock.emit('room.list', { rooms : Object.values(roomList) });
+    else
+        io.emit('room.list', { rooms : Object.values(roomList) });
+}
 function userJoin(user) {
 	var sock = this;
 	var userId = getUserId(sock.id);
-    clients[userId] = sock;
     user.userName = user.userName.trim();
-    if (user.userName.length == 0) {
+    if (user.userName.length === 0) {
         sock.emit('game.join.fail', { reason : 'error.join_fail_text.name_empty' });
         if (consts.debugMode)
             console.log(user.userName + ' не смог подключиться');
@@ -92,20 +124,43 @@ function userJoin(user) {
             console.log(user.userName + ' не смог подключиться');
         return false;
     }
-	if(userNames.length >= consts.serverMaxUsersCount){
+	if(totalPlayers >= consts.serverMaxUsersCount){
 		sock.emit('game.join.fail', { reason : 'error.join_fail_text.max_user_count_exceeded'});
 		if(consts.debugMode)
 			console.log(user.userName + ' не смог подключиться');
 		return false;
-	}
+    }
+    var room = user.roomId;
+    if (!roomList.hasOwnProperty(room)) {
+        sock.emit('game.join.fail', { reason : 'room_does_not_exist' });
+        updateRoomList(sock);
+        return false;
+    }
+    if (roomList[room].used === roomList[room].total) {
+        sock.emit('game.join.fail', { reason : 'room_overload' });
+        updateRoomList(sock);
+        return false;
+    }
+    roomsData[room].clients[userId] = sock;
 	
 	sock.on('game.control', gameControl);
     sock.on('disconnect', userLeave);
     sock.on('game.ping', userPing);
     
-	userIdNames[userId] = user.userName;
-	userNames.push(user.userName);
-    userIdScores[userId] = 0;
+    //таблицы юзера с его данными
+    roomsData[room].userIdScores[userId] = 0;
+    roomsData[room].userNames.push(user.userName);
+
+    userIdNames[userId] = user.userName;
+    userIdRooms[userId] = room;
+
+    roomList[room].used++;
+    if (++totalPlayers === availableTotalPlayers) {
+        createRoom();
+    }
+    sock.join(room);
+    sock.room = room;
+
 	//Инициализация танка
 	var label = {};
 	label.hp = consts.tanksHP;
@@ -130,7 +185,7 @@ function userJoin(user) {
 	tank.label = label;
     tank.moveVector = point_(0, 0);
 
-	tanks[userId] = tank;
+    roomsData[room].tanks[userId] = tank;
 	if(consts.debugMode){
 		console.log('userIdNames: ', userIdNames);
 		console.log('userNames: ', userNames);
@@ -151,21 +206,22 @@ function userJoin(user) {
     });
 	if(consts.debugMode)
         console.log(user.userName + ' подключился к серверу');
-    updateOnline();
-    updateRating();
+    updateOnline(room);
+    updateRating(room);
+    updateRoomList();
 }
 
-function updateRating(){
-    if (io !== undefined && userNames.length > 0) {
+function updateRating(room){
+    if (io !== undefined && roomsData[room].userNames.length > 0) {
         var rating = [];
-        var keys = Object.keys(userIdScores);
+        var keys = Object.keys(roomsData[room].userIdScores);
         
         for (var i = 0; i < keys.length; i++) {
-            rating.push({ userName : userIdNames[keys[i]], score : userIdScores[keys[i]] });
+            rating.push({ userName : userIdNames[keys[i]], score : roomsData[room].userIdScores[keys[i]] });
         }
         rating.sort(ratingCmp);
         rating = rating.slice(0, consts.ratingShowUsersCount);
-        io.emit('game.rating', { users : rating });
+        io.sockets.in(room).emit('game.rating', { users : rating });
     }
 }
 
@@ -178,28 +234,33 @@ function userPing(data){
     sock.emit('game.ping', data);
 }
 
-function updateOnline(){
-    io.emit('game.online', { users : userNames });
+function updateOnline(room){
+    io.emit('game.online', { users : roomsData[room].userNames });
 }
 
 function userLeave(){
     var socket = this;
 	var userId = getUserId(socket.id);
     deleteUser(userId);
-    updateOnline();
-    updateRating();
+    updateOnline(socket.room);
+    updateRating(socket.room);
+    updateRoomList();
 }
 
 function deleteUser(userId){
     if (userIdNames.hasOwnProperty(userId)) {
+        var room = userIdRooms[userId];
         var uname = userIdNames[userId];
         if (consts.debugMode)
             console.log(uname + ' покинул сервер');
-        removeFromArray(userNames, uname);
+        removeFromArray(roomsData[room].userNames, uname);
         delete (userIdNames[userId]);
-        delete (tanks[userId]);
-        delete (clients[userId]);
-        delete (userIdScores[userId]);
+        delete (roomsData[room].tanks[userId]);
+        delete (roomsData[room].clients[userId]);
+        delete (roomsData[room].userIdScores[userId]);
+        if (--roomsData[room].used === 0 && availableTotalPlayers > totalPlayers + consts.roomMaxUserCount) {
+            deleteRoom(room);
+        }
     }
 }
 
@@ -210,7 +271,8 @@ function gameControl(control){
         console.log('Попытка получить данные от юзера которого нет');
         return false;
     }
-    var tank = tanks[userId];
+    var room = userIdRooms[userId];
+    var tank = roomsData[room].tanks[userId];
 	
 	if(control.type === 'shot')
         doShot(tank);
@@ -229,7 +291,7 @@ function gameControl(control){
 function gameTest () {
 	var sock = this;
 	if (consts.debugMode) {
-        sock.emit('game.test', { tanks : Object.values(tanks), bullets : bullets, userNames : userNames, userIdNames : userIdNames });
+        sock.emit('game.test', { roomsData : roomsData, roomList : roomList, userIdRooms : userIdRooms, userIdNames : userIdNames });
 	}
 }
 
@@ -241,6 +303,8 @@ function doShot(tank){
     if (tank.turret.gun.timeToReload > 0) {
         return false;
     }
+    var userId = tank.label.userId;
+    var room = userIdRooms[userId];
     bullet.rotation = tank.turret.rotation;
     bullet.size = models.bullet[tank.subtype].size;
     var shotPos = tank.position;
@@ -258,7 +322,7 @@ function doShot(tank){
     bullet.moveVector = geom.moveVector(bullet.rotation, bullet.speed);
     bullet.owner = tank.label.userId;
 
-    bullets.push(bullet);
+    roomsData[room].bullets.push(bullet);
     tank.turret.gun.timeToReload = 1;
 
     var leftTime = consts.tankReloadTime;
@@ -292,39 +356,42 @@ Object.values = function (obj) {
 //пока не буду отслеживать колизии танков и снарядов
 function serverTick(){
    
-    if (userNames.length > 0) {
+    if (totalPlayers > 0) {
         console.time('serverTick');
-       // console.time('delete-bullets');
-        for (var i = bullets.length - 1; i >= 0; i--) {
-            if (bullets[i].position.x > consts.mapWidth || 
-                bullets[i].position.y > consts.mapHeight || 
-                bullets[i].position.x < 0 ||
-                bullets[i].position.y < 0) {
-                bullets.splice(i, 1);
+        var roomIds = Object.keys(roomsData);
+        for (var k = 0; k < roomIds; k++) {
+            // console.time('delete-bullets');
+            var room = roomsIds[k];
+            for (var i = roomsData[room].bullets.length - 1; i >= 0; i--) {
+                if (roomsData[room].bullets[i].position.x > consts.mapWidth || 
+                roomsData[room].bullets[i].position.y > consts.mapHeight || 
+                roomsData[room].bullets[i].position.x < 0 ||
+                roomsData[room].bullets[i].position.y < 0) {
+                    roomsData[room].bullets.splice(i, 1);
+                }
             }
-        }
-        //console.timeEnd('delete-bullets');
-        //console.time('collide-groups');
-        var objects = Object.values(tanks).concat(bullets);
-        var deleteIds = [];
-        var objectGroups = groups.getCollideGroups(objects);
-        var moved = Array(objects.length);
-        //группы для проверки на коллизию
-        for (var i = 0; i < objects.length; i++) {
-            var group = objectGroups[i];
-            var groupNewPos = [];
-
-            for (var j = 0; j < group.length; j++) {
-                var curObject = objects[group[j]];
-                if (moved[group[j]] !== 'moved') {
-                    try{
-                        var newPos = geom.addToPos(curObject.position, curObject.moveVector, 1);
-                    }
-                    catch(e)  {
-                        console.log(e);
-                        console.log(curObject);
-                        console.log(groups);
-                    }
+            //console.timeEnd('delete-bullets');
+            //console.time('collide-groups');
+            var objects = Object.values(roomsData[room].tanks).concat(roomsData[room].bullets);
+            var deleteIds = [];
+            var objectGroups = groups.getCollideGroups(objects);
+            var moved = Array(objects.length);
+            //группы для проверки на коллизию
+            for (var i = 0; i < objects.length; i++) {
+                var group = objectGroups[i];
+                var groupNewPos = [];
+                
+                for (var j = 0; j < group.length; j++) {
+                    var curObject = objects[group[j]];
+                    if (moved[group[j]] !== 'moved') {
+                        try {
+                            var newPos = geom.addToPos(curObject.position, curObject.moveVector, 1);
+                        }
+                    catch (e) {
+                            console.log(e);
+                            console.log(curObject);
+                            console.log(groups);
+                        }
                         if (curObject.type === 'tank') {
                             curObject.position.x = 
                         (newPos.x < curObject.size.width / 2) ? 
@@ -358,64 +425,64 @@ function serverTick(){
                                 }
                             }
                         }
-                    
-                    if (curObject.type === 'bullet') {
-                        curObject.position = newPos;
-                        for (var h = 0; h < group.length; h++) {
-                            var cur = objects[group[h]];
-							if (cur.type === 'tank') {
-								var collision = geom.TDA_rectanglesIntersect(
-									cur,
+                        
+                        if (curObject.type === 'bullet') {
+                            curObject.position = newPos;
+                            for (var h = 0; h < group.length; h++) {
+                                var cur = objects[group[h]];
+                                if (cur.type === 'tank') {
+                                    var collision = geom.TDA_rectanglesIntersect(
+                                        cur,
 									curObject
-								);
-								if(collision.collide && cur.label.userId != curObject.owner){
-                                    bulletOnTankHit(cur, curObject);
-                                    if (cur.type === 'deleted-tank') {
-                                        deleteIds.push(group[h]);
+                                    );
+                                    if (collision.collide && cur.label.userId != curObject.owner) {
+                                        bulletOnTankHit(cur, curObject);
+                                        if (cur.type === 'deleted-tank') {
+                                            deleteIds.push(group[h]);
+                                        }
+                                        deleteIds.push(group[j]);
                                     }
-                                    deleteIds.push(group[j]);
-								}
+                                }
                             }
                         }
+                        objects[group[j]] = curObject;
+                        moved[group[j]] = 'moved';
                     }
-                    objects[group[j]] = curObject;
-                    moved[group[j]] = 'moved';
-                } 
                 
+                }
             }
-        }
-        
-        //console.timeEnd('collide-groups');
-        //console.time('repaint-groups');
-        //console.time('get-repaint');
-        //Выделяем группы для прорисовки
-        var repGroups = groups.getGroups(objects, consts.showAreaWidth + consts.maxWidthLength, consts.showAreaHeight + consts.maxWidthLength);
-        var repaintGroups = [];
-        var reloadData = []
-        for (var i = 0; i < repGroups.length; i++) {
-            var group = repGroups[i];
-            var iObj = objects[i];
-            if (iObj.type === 'tank') {
-                var id = objects[i].label.userId;
-                reloadData[id] = { reload : iObj.turret.gun.timeToReload, score : userIdScores[id] };
-                repaintGroups[id] = [];
-                if (group !== undefined) {
-                    for (var j = 0; j < group.length; j++) {
-                        if (group[j] !== undefined) {
-                            var curOb = objects[group[j]];
-                            if (!curOb.type.startsWith('deleted')) {
-                                {
-                                    if (curOb.type === 'tank' && iObj.label.userId === curOb.label.userId)
-                                        repaintGroups[id].splice(0, 0, getPaintData(curOb));
-                                    else
-                                        repaintGroups[id].push(getPaintData(curOb));
+            
+            //console.timeEnd('collide-groups');
+            //console.time('repaint-groups');
+            //console.time('get-repaint');
+            //Выделяем группы для прорисовки
+            var repGroups = groups.getGroups(objects, consts.showAreaWidth + consts.maxWidthLength, consts.showAreaHeight + consts.maxWidthLength);
+            var repaintGroups = [];
+            var reloadData = []
+            for (var i = 0; i < repGroups.length; i++) {
+                var group = repGroups[i];
+                var iObj = objects[i];
+                if (iObj.type === 'tank') {
+                    var id = objects[i].label.userId;
+                    reloadData[id] = { reload : iObj.turret.gun.timeToReload, score : userIdScores[id] };
+                    repaintGroups[id] = [];
+                    if (group !== undefined) {
+                        for (var j = 0; j < group.length; j++) {
+                            if (group[j] !== undefined) {
+                                var curOb = objects[group[j]];
+                                if (!curOb.type.startsWith('deleted')) {
+                                    {
+                                        if (curOb.type === 'tank' && iObj.label.userId === curOb.label.userId)
+                                            repaintGroups[id].splice(0, 0, getPaintData(curOb));
+                                        else
+                                            repaintGroups[id].push(getPaintData(curOb));
+                                    }
                                 }
                             }
                         }
                     }
                 }
             }
-        }
             //console.timeEnd('get-repaint');
             //console.time('send-repaint');
             var clientsIds = Object.keys(io.engine.clients);
@@ -424,15 +491,17 @@ function serverTick(){
                 if (repaintGroups[uid] !== undefined) {
                     if (clients.hasOwnProperty(uid)) {
                         console.time('paint');
-                        clients[uid].emit('game.paint', { user : reloadData[uid], objects : repaintGroups[uid] });
+                        roomsData[room].clients[uid].emit('game.paint', { user : reloadData[uid], objects : repaintGroups[uid] });
                         console.timeEnd('paint');
                     }
                 }
             }
             //console.timeEnd('send-repaint');
             // console.timeEnd('repaint-groups');
-            console.timeEnd('serverTick');
         
+        }
+        console.timeEnd('serverTick');
+
     }
 }
 
@@ -456,19 +525,22 @@ function pushTanksAway (tank1, tank2, rotation, distance) {
  * */
 
 function bulletOnTankHit(tank, bullet){
+        
     tank.label.hp -= consts.damagePerShot;
-    if(userIdScores[bullet.owner] !== undefined)
-        userIdScores[bullet.owner] += consts.scoreForHit;
+    var userId = tank.label.userId;
+    var room = userIdRooms[userId];
+    if(roomsData[room].userIdScores[bullet.owner] !== undefined)
+            roomsData[room].userIdScores[bullet.owner] += consts.scoreForHit;
     if (tank.label.hp == 0){
         tank.type = 'deleted-tank';
-        clients[tank.label.userId].emit('game.over', { score : userIdScores[tank.label.userId] });
-        if (userIdScores[bullet.owner] !== undefined)
-            userIdScores[bullet.owner] += consts.scoreForKill;
+            roomsData[room].clients[userId].emit('game.over', { score : roomsData[room].userIdScores[userId] });
+        if (roomsData[room].userIdScores[bullet.owner] !== undefined)
+                roomsData[room].userIdScores[bullet.owner] += consts.scoreForKill;
         deleteUser(tank.label.userId);
     }
     updateRating();
     bullet.type = 'deleted-bullet';
-    removeFromArray(bullets, bullet);
+    removeFromArray(roomsData[room].bullets, bullet);
 }
 
 function getPaintData(object){

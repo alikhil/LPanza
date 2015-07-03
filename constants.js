@@ -1,5 +1,5 @@
 ﻿/* Включение логов и дебаг функций*/
-exports.debugMode = true;
+exports.debugMode = false;
 /* Максимальное кол-во игроков на сервере*/
 exports.serverMaxUsersCount = 200000;
 
