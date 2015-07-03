@@ -77,13 +77,14 @@ exports.initGame = function(sio, socket){
     io = sio;
     gameSocket = socket;
 	var userId = getUserId(socket.id);
-	
+    updateRoomList(socket);
     gameSocket.on('game.join', userJoin);
     gameSocket.on('game.test', gameTest);
 }
 
 exports.startServer = function (){
     timer = setInterval(serverTick, consts.serverTickDelay);
+    createRoom();
 }
 
 function createRoom(){
@@ -212,7 +213,7 @@ function userJoin(user) {
 }
 
 function updateRating(room){
-    if (io !== undefined && roomsData[room].userNames.length > 0) {
+    if (io !== undefined && roomsData.hasOwnProperty(room) && roomsData[room].userNames.length > 0) {
         var rating = [];
         var keys = Object.keys(roomsData[room].userIdScores);
         
@@ -235,14 +236,14 @@ function userPing(data){
 }
 
 function updateOnline(room){
-    io.emit('game.online', { users : roomsData[room].userNames });
+    if(roomsData.hasOwnProperty(room) )
+        io.sockets.in(room).emit('game.online', { users : roomsData[room].userNames });
 }
 
 function userLeave(){
     var socket = this;
 	var userId = getUserId(socket.id);
     deleteUser(userId);
-    updateOnline(socket.room);
     updateRating(socket.room);
     updateRoomList();
 }
@@ -258,10 +259,13 @@ function deleteUser(userId){
         delete (roomsData[room].tanks[userId]);
         delete (roomsData[room].clients[userId]);
         delete (roomsData[room].userIdScores[userId]);
-        if (--roomsData[room].used === 0 && availableTotalPlayers > totalPlayers + consts.roomMaxUserCount) {
+        totalPlayers--;
+        if (--roomList[room].used === 0 && availableTotalPlayers > totalPlayers + consts.roomMaxUserCount) {
             deleteRoom(room);
         }
     }
+    updateOnline(room);
+
 }
 
 function gameControl(control){
@@ -359,9 +363,9 @@ function serverTick(){
     if (totalPlayers > 0) {
         console.time('serverTick');
         var roomIds = Object.keys(roomsData);
-        for (var k = 0; k < roomIds; k++) {
+        for (var k = 0; k < roomIds.length; k++) {
             // console.time('delete-bullets');
-            var room = roomsIds[k];
+            var room = roomIds[k];
             for (var i = roomsData[room].bullets.length - 1; i >= 0; i--) {
                 if (roomsData[room].bullets[i].position.x > consts.mapWidth || 
                 roomsData[room].bullets[i].position.y > consts.mapHeight || 
@@ -464,7 +468,7 @@ function serverTick(){
                 var iObj = objects[i];
                 if (iObj.type === 'tank') {
                     var id = objects[i].label.userId;
-                    reloadData[id] = { reload : iObj.turret.gun.timeToReload, score : userIdScores[id] };
+                    reloadData[id] = { reload : iObj.turret.gun.timeToReload, score : roomsData[room].userIdScores[id] };
                     repaintGroups[id] = [];
                     if (group !== undefined) {
                         for (var j = 0; j < group.length; j++) {
@@ -489,7 +493,7 @@ function serverTick(){
             for (var i = 0; i < clientsIds.length; i++) {
                 var uid = getUserId(clientsIds[i]);
                 if (repaintGroups[uid] !== undefined) {
-                    if (clients.hasOwnProperty(uid)) {
+                    if (roomsData[room].clients.hasOwnProperty(uid)) {
                         console.time('paint');
                         roomsData[room].clients[uid].emit('game.paint', { user : reloadData[uid], objects : repaintGroups[uid] });
                         console.timeEnd('paint');
@@ -538,7 +542,7 @@ function bulletOnTankHit(tank, bullet){
                 roomsData[room].userIdScores[bullet.owner] += consts.scoreForKill;
         deleteUser(tank.label.userId);
     }
-    updateRating();
+    updateRating(room);
     bullet.type = 'deleted-bullet';
     removeFromArray(roomsData[room].bullets, bullet);
 }
