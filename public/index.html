@@ -30,6 +30,10 @@
 								<label for='userNameTextInput' id='label_menu_name'></label>
 								<input type='text' class='form-control' id='userNameTextInput' required />
 							</div>
+							<div class='form-group'>
+								<label for='roomSelect' id='label_menu_room'></label>
+								<select class='form-control' id='roomSelect'></select>
+							</div>
 							<button type='submit' class='btn btn-primary' id='label_menu_play'></button>
 						</form>
 						<!--<form role='form' id='feedbackForm'>
@@ -83,7 +87,7 @@
 			</div>
 		</div>
 		<!-- menu modal box end -->
-		
+
 		<!-- error modal begin -->
 		<div class='modal' id='errorModal' role='dialog' data-keyboard='false' data-backdrop='static'>
 			<div class='modal-dialog modal-sm'>
@@ -102,7 +106,7 @@
 			</div>
 		</div>
 		<!-- error modal end -->
-		
+
 		<!-- game.over modal begin -->
 		<div class='modal' id='scoreModal' role='dialog' data-backdrop='static'>
 			<div class='modal-dialog modal-sm'>
@@ -170,7 +174,7 @@
 			<div class='gameOverlay gameOverlayBottomRight cursor_aim_allowed'><span id='gameStatsPing'></span></div>
 			<canvas width='0' height='0' id='gameCanvas' class='cursor_aim_allowed'></canvas>
 		</div>
-		
+
 		<div id='screenSizeHack'></div>
 	</body>
 </html>
