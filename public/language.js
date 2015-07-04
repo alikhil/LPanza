@@ -95,7 +95,8 @@ var language = {
 			'error.join_fail_text.name_empty': 'Имя игрока не должно быть пустым',
 			'menu.room': 'Комната',
 			'menu.room_element': '#%id% - %used% / %total%',
-			'error.join_fail_text.room_overload': 'Достигнут лимит игроков. Подождите пока комната освободится'
+			'error.join_fail_text.room_overload': 'Достигнут лимит игроков. Подождите пока комната освободится',
+			'error.join_fail_text.room_does_not_exist': 'Выбрана несуществующая комната'
 		},
 		'EN': {
 			'language.label': 'EN',
@@ -124,7 +125,8 @@ var language = {
 			'error.join_fail_text.name_empty': 'Player`s name must not be empty',
 			'menu.room': 'Room',
 			'menu.room_element': '#%id% - %used% / %total%',
-			'error.join_fail_text.room_overload': 'Maximum user count reached. Wait for room to be freed'
+			'error.join_fail_text.room_overload': 'Maximum user count reached. Wait for room to be freed',
+			'error.join_fail_text.room_does_not_exist': 'Chosen room does not exist'
 		}
 	}
 };

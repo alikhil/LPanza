@@ -133,12 +133,12 @@ function userJoin(user) {
     }
     var room = user.roomId;
     if (!roomList.hasOwnProperty(room)) {
-        sock.emit('game.join.fail', { reason : 'room_does_not_exist' });
+        sock.emit('game.join.fail', { reason : 'error.join_fail_text.room_does_not_exist' });
         updateRoomList(sock);
         return false;
     }
     if (roomList[room].used === roomList[room].total) {
-        sock.emit('game.join.fail', { reason : 'room_overload' });
+        sock.emit('game.join.fail', { reason : 'error.join_fail_text.room_overload' });
         updateRoomList(sock);
         return false;
     }
