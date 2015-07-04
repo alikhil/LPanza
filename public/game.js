@@ -94,6 +94,9 @@ var socket = {
 				'error.disconnect_text'
 			);
 		});
+		this.io.on('room.list', function (packet) {
+			app.updateRooms (packet.rooms);
+		});
 	}
 };
 var canvas = {
@@ -216,6 +219,10 @@ var game = {
 		this.backgroundColor = utils.RGBToCSS(packet.backgroundColor);
 		this.mapSize = packet.mapSize;
 		
+		$('#gameRoomIdText').text(
+			language.get('game.room_id')
+				.replace('%id%', app.roomId)
+		);
 		this.inProgress = true;
 		this.mayShot = false;
 		this.paint = paint;
@@ -749,8 +756,10 @@ var app = {
 	isTabActive: undefined,
 	userName: undefined,
 	maxUserNameLength: 20,
+	roomId: undefined,
 	menu: {
 		init: function () {
+			app.updateRooms ([]);
 			$('#userNameTextInput').attr('maxlength', app.maxUserNameLength);
 			$('#menuForm').on('submit', this.onTryJoin);
 		},
@@ -762,6 +771,7 @@ var app = {
 			$('#menuModal').modal('hide');
 		},
 		onTryJoin: function () {
+			app.roomId = $('#roomSelect').val();
 			app.userName = $('#userNameTextInput').val().trim();
 			if(app.userName.length > 0) {
 				if(app.userName.length > app.maxUserNameLength) {
@@ -774,7 +784,8 @@ var app = {
 					);
 				} else {
 					socket.io.emit('game.join', {
-						userName: app.userName
+						userName: app.userName,
+						roomId: app.roomId
 					});
 				}
 			} else {
@@ -784,6 +795,51 @@ var app = {
 				);
 			}
 			return false;
+		}
+	},
+	updateRooms: function (rooms) {
+		var select = $('#roomSelect'),
+			sorted = [],
+			full = [],
+			room,
+			isFull,
+			lastRoom = select.val(),
+			lastRoomStillPresent = false;
+		for (var i = 0; i < rooms.length; i ++) {
+			isFull = rooms[i].total <= rooms[i].used;
+			room = {
+				val: rooms[i].id,
+				text: language.get('menu.room_element')
+					.replace ('%id%', rooms[i].id)
+					.replace ('%total%', rooms[i].total)
+					.replace ('%used%', rooms[i].used)
+			};
+			lastRoomStillPresent =
+				lastRoomStillPresent ||
+				lastRoom == rooms[i].id;
+			if (isFull) {
+				lastRoomStillPresent =
+					lastRoomStillPresent &&
+					lastRoom != rooms[i].id;
+				full.push (room);
+			} else {
+				sorted.push (room);
+			}
+		}
+		sorted = sorted.concat (full);
+		select.empty();
+		for (var i = 0; i < sorted.length; i ++) {
+			select.append (
+				'<option value=' + sorted[i].val + '>' +
+					sorted[i].text +
+					'</option>'
+			);
+		}
+		if (sorted.length > 0) {
+			if (!lastRoomStillPresent) {
+				lastRoom = sorted[0].val;
+			}
+			select.val(lastRoom);
 		}
 	},
 	error: {

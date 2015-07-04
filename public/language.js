@@ -17,7 +17,12 @@ var language = {
 		'#label_menu_play': 'menu.play',
 		'#label_menu_name': 'menu.name',
 		'#label_game_score': 'game.score',
-		'#errorTitle': 'empty'
+
+		'#errorText': 'empty',
+		'#errorTitle': 'empty',
+		'#label_menu_room': 'menu.room',
+		'#label_game_room_id': 'menu.room'
+
 	},
 	init: function () {
 		this.setLanguageId(this.defaultLanguageId);
@@ -90,7 +95,12 @@ var language = {
 			'error.disconnect_text': 'Обновите страницу',
 			'error.join_fail_text.max_user_count_exceeded': 'Достигнут лимит игроков. Подождите пока сервер освободится',
 			'error.join_fail_text.name_too_long': 'Имя игрока должно состоять не более чем из %count% символов',
-			'error.join_fail_text.name_empty': 'Имя игрока не должно быть пустым'
+			'error.join_fail_text.name_empty': 'Имя игрока не должно быть пустым',
+			'menu.room': 'Комната',
+			'menu.room_element': '#%id% - %used% / %total%',
+			'error.join_fail_text.room_overload': 'Достигнут лимит игроков. Подождите пока комната освободится',
+			'error.join_fail_text.room_does_not_exist': 'Выбрана несуществующая комната',
+			'game.room_id': '#%id%'
 		},
 		'EN': {
 			'language.label': 'EN',
@@ -116,7 +126,12 @@ var language = {
 			'error.disconnect_text': 'Reload the page',
 			'error.join_fail_text.max_user_count_exceeded': 'Maximum user count reached. Wait for server to be freed',
 			'error.join_fail_text.name_too_long': 'Player`s name length must not exceed %count% symbols',
-			'error.join_fail_text.name_empty': 'Player`s name must not be empty'
+			'error.join_fail_text.name_empty': 'Player`s name must not be empty',
+			'menu.room': 'Room',
+			'menu.room_element': '#%id% - %used% / %total%',
+			'error.join_fail_text.room_overload': 'Maximum user count reached. Wait for room to be freed',
+			'error.join_fail_text.room_does_not_exist': 'Chosen room does not exist',
+			'game.room_id': '#%id%'
 		}
 	}
 };

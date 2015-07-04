@@ -1,7 +1,10 @@
 ﻿/* Включение логов и дебаг функций*/
-exports.debugMode = true;
+exports.debugMode = false;
 /* Максимальное кол-во игроков на сервере*/
-exports.serverMaxUsersCount = 20;
+exports.serverMaxUsersCount = 200000;
+
+/*Максимальное кол-во игроков в комнате */
+exports.roomMaxUserCount = 20;
 /*Время через которое происходят все расчеты на сервере*/
 exports.serverTickDelay = 40;
 /*Максимальная длина ника*/
@@ -21,6 +24,8 @@ exports.mapWidth = 1000;
 exports.mapHeight = 1000;
 /*Растояние от границ карты, где танки не могут появиться*/
 exports.distanceFromWall = 30;
+
+
 
 /*Размеры танка*/
 exports.tankWidth = 50;
