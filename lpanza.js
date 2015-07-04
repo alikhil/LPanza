@@ -264,7 +264,7 @@ function deleteUser(userId){
         }
     }
     updateOnline(room);
-    updateRating(socket.room);
+    updateRating(room);
     updateRoomList();
 }
 
