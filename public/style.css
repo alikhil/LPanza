@@ -75,11 +75,6 @@ html, body, .fullWrap {
 }
 
 /* bad browser css */
-#browsers {
-	width: 360px;
-	margin-left: auto;
-	margin-right: auto;
-}
 #browsers a {
 	float: left;
 	width: 120px;
