@@ -326,7 +326,6 @@ var controls = {
 	turretCenter: undefined,
 	wantShot: undefined,
 	wantSingleShot: undefined,
-	mouseButtonDown: undefined,
 	keyboard: {
 		keyPressed: {
 			'W': undefined,
@@ -352,6 +351,7 @@ var controls = {
 				})
 				.on('blur', function () {
 					controls.keyboard.onAllKeyUp();
+					controls.wantShot = controls.mouse.buttonDown = false;
 				});
 		},
 		unbind: function () {
@@ -418,6 +418,7 @@ var controls = {
 		}
 	},
 	mouse: {
+		buttonDown: undefined,
 		wasInRender: undefined,
 		cursorAimAllowed: undefined,
 		bind: function () {
@@ -427,11 +428,11 @@ var controls = {
 			this.wasInRender = false;
 			controls.wantShot = false;
 			controls.wantSingleShot = false;
-			controls.mouseButtonDown = false;
+			this.buttonDown = false;
 			this.cursorAimAllowed = $('.cursor_aim_allowed');
 			$(window)
 				.on('mousedown', function (event) {
-					controls.mouseButtonDown = true;
+					controls.mouse.buttonDown = true;
 					controls.mouse.onMove(
 						utils.point(
 							event.pageX,
@@ -440,8 +441,8 @@ var controls = {
 					);
 				})
 				.on('mousemove', function (event) {
-					controls.mouseButtonDown =
-						controls.mouseButtonDown ||
+					controls.mouse.buttonDown =
+						controls.mouse.buttonDown ||
 						event.which != 0;
 					controls.mouse.onMove(
 						utils.point(
@@ -451,7 +452,7 @@ var controls = {
 					);
 				})
 				.on('mouseup', function (event) {
-					controls.mouseButtonDown = false;
+					controls.mouse.buttonDown = false;
 					controls.mouse.onMove(
 						utils.point(
 							event.pageX,
@@ -467,7 +468,7 @@ var controls = {
 		},
 		onMove: function (point) {
 			if(controls.pointInRenderRect(point)) {
-				controls.wantShot = controls.mouseButtonDown;
+				controls.wantShot = controls.mouse.buttonDown;
 				this.onRotate(point);
 				if (!this.wasInRender) {
 					this.cursorAimAllowed.addClass ('cursor_aim');

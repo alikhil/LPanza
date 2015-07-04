@@ -17,7 +17,6 @@ var language = {
 		'#label_menu_play': 'menu.play',
 		'#label_menu_name': 'menu.name',
 		'#label_game_score': 'game.score',
-		'#errorText': 'empty',
 		'#errorTitle': 'empty'
 	},
 	init: function () {
