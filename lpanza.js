@@ -244,8 +244,7 @@ function userLeave(){
     var socket = this;
 	var userId = getUserId(socket.id);
     deleteUser(userId);
-    updateRating(socket.room);
-    updateRoomList();
+    
 }
 
 function deleteUser(userId){
@@ -265,7 +264,8 @@ function deleteUser(userId){
         }
     }
     updateOnline(room);
-
+    updateRating(socket.room);
+    updateRoomList();
 }
 
 function gameControl(control){
