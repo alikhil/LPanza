@@ -156,6 +156,15 @@ var paint = {
 			game.tankCenter.y = game.paintRect.height / 2;
 		}
 
+		if (game.lastTankCenter.x != game.tankCenter.x ||
+				game.lastTankCenter.y != game.tankCenter.y) {
+			controls.tankCenterMove ();
+		}
+		game.lastTankCenter = utils.point (
+			game.tankCenter.x,
+			game.tankCenter.y
+		);
+
 		offset = utils.point(
 			objects[0].position.x -
 				game.tankCenter.x,
