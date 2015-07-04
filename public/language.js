@@ -19,7 +19,8 @@ var language = {
 		'#label_game_score': 'game.score',
 		'#errorText': 'empty',
 		'#errorTitle': 'empty',
-		'#label_menu_room': 'menu.room'
+		'#label_menu_room': 'menu.room',
+		'#label_game_room_id': 'menu.room'
 	},
 	init: function () {
 		this.setLanguageId(this.defaultLanguageId);
@@ -96,7 +97,8 @@ var language = {
 			'menu.room': 'Комната',
 			'menu.room_element': '#%id% - %used% / %total%',
 			'error.join_fail_text.room_overload': 'Достигнут лимит игроков. Подождите пока комната освободится',
-			'error.join_fail_text.room_does_not_exist': 'Выбрана несуществующая комната'
+			'error.join_fail_text.room_does_not_exist': 'Выбрана несуществующая комната',
+			'game.room_id': '#%id%'
 		},
 		'EN': {
 			'language.label': 'EN',
@@ -126,7 +128,8 @@ var language = {
 			'menu.room': 'Room',
 			'menu.room_element': '#%id% - %used% / %total%',
 			'error.join_fail_text.room_overload': 'Maximum user count reached. Wait for room to be freed',
-			'error.join_fail_text.room_does_not_exist': 'Chosen room does not exist'
+			'error.join_fail_text.room_does_not_exist': 'Chosen room does not exist',
+			'game.room_id': '#%id%'
 		}
 	}
 };

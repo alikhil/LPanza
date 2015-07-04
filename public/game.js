@@ -221,6 +221,10 @@ var game = {
 		this.backgroundColor = utils.RGBToCSS(packet.backgroundColor);
 		this.mapSize = packet.mapSize;
 		
+		$('#gameRoomIdText').text(
+			language.get('game.room_id')
+				.replace('%id%', app.roomId)
+		);
 		this.inProgress = true;
 		this.mayShot = false;
 		this.paint = paint;
@@ -728,6 +732,7 @@ var app = {
 	isTabActive: undefined,
 	userName: undefined,
 	maxUserNameLength: 20,
+	roomId: undefined,
 	menu: {
 		init: function () {
 			app.updateRooms ([]);
@@ -742,7 +747,7 @@ var app = {
 			$('#menuModal').modal('hide');
 		},
 		onTryJoin: function () {
-			var roomId = $('#roomSelect').val();
+			app.roomId = $('#roomSelect').val();
 			app.userName = $('#userNameTextInput').val().trim();
 			if(app.userName.length > 0) {
 				if(app.userName.length > app.maxUserNameLength) {
@@ -756,7 +761,7 @@ var app = {
 				} else {
 					socket.io.emit('game.join', {
 						userName: app.userName,
-						roomId: roomId
+						roomId: app.roomId
 					});
 				}
 			} else {
@@ -789,6 +794,9 @@ var app = {
 				lastRoomStillPresent ||
 				lastRoom == rooms[i].id;
 			if (isFull) {
+				lastRoomStillPresent =
+					lastRoomStillPresent &&
+					lastRoom != rooms[i].id;
 				full.push (room);
 			} else {
 				sorted.push (room);
