@@ -208,15 +208,14 @@ var game = {
 	},
 	paintRect: undefined,
 	tankCenter: undefined,
+	lastTankCenter: undefined,
 	mapSize: undefined,
 	paint: undefined,
 	mayShot: undefined,
 	init: function (packet) {
 		this.paintRect = packet.paintRect;
-		this.tankCenter = utils.point(
-			this.paintRect.width/2,
-			this.paintRect.height/2
-		);
+		this.lastTankCenter = utils.point(0, 0);
+		this.tankCenter = utils.point(0, 0);
 		this.backgroundColor = utils.RGBToCSS(packet.backgroundColor);
 		this.mapSize = packet.mapSize;
 		
@@ -428,6 +427,7 @@ var controls = {
 		buttonDown: undefined,
 		wasInRender: undefined,
 		cursorAimAllowed: undefined,
+		lastPosition: utils.point (0, 0),
 		bind: function () {
 			// change controls.rotation from `undefined` to `360`
 			controls.rotation = 360;
@@ -474,6 +474,7 @@ var controls = {
 				.off('mousemove');
 		},
 		onMove: function (point) {
+			this.lastPosition = point;
 			if(controls.pointInRenderRect(point)) {
 				controls.wantShot = controls.mouse.buttonDown;
 				this.onRotate(point);
@@ -612,6 +613,15 @@ var controls = {
 		} else {
 			this.mouse.unbind();
 			this.keyboard.unbind();
+		}
+	},
+	tankCenterMove: function () {
+		if (this.useTouch) {
+			if (swipe.aim !== undefined) {
+				swipe.on.move (swipe.aim);
+			}
+		} else {
+			this.mouse.onMove (this.mouse.lastPosition);
 		}
 	}
 };
