@@ -4,7 +4,7 @@ exports.debugMode = false;
 exports.serverMaxUsersCount = 200000;
 
 /*Максимальное кол-во игроков в комнате */
-exports.roomMaxUserCount = 3;
+exports.roomMaxUserCount = 20;
 /*Время через которое происходят все расчеты на сервере*/
 exports.serverTickDelay = 40;
 /*Максимальная длина ника*/
