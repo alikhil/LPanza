@@ -179,9 +179,9 @@
 
 		<div class='fullWrap' id='canvasWrap'>
 			<div class='gameOverlay gameOverlayTopLeft cursor_aim_allowed'><h3><span id='label_game_score'></span> <span id='gameStatsScore'></span></h3></div>
-			<div class='gameOverlay gameOverlayTopRight form-group cursor_aim_allowed'>
+			<div class='gameOverlay gameOverlayTopRight cursor_aim_allowed'>
 				<div class='text-right'>
-					<button type='button' class='btn btn-primary cursor_aim_allowed' id='gameStatsOnlineButton'><span id='label_game_online'></span> <span class='badge' id='gameStatsOnlineCount'>?</span></button>
+					<div id='gameStatsOnlineButton_placeholder'></div>
 				</div>
 				<h5 class='text-center'><span id='label_game_room_id'></span> <span id='gameRoomIdText'></span></h5>
 				<h5 class='text-center' id='label_game_rating'></h5>
@@ -193,5 +193,6 @@
 		</div>
 
 		<div id='screenSizeHack'></div>
+		<div class='topMost gameOverlay gameOverlayTopRight' id='gameStatsOnlineButton_element'><button type='button' class='btn btn-primary cursor_aim_allowed' id='gameStatsOnlineButton'><span id='label_game_online'></span> <span class='badge' id='gameStatsOnlineCount'>?</span></button></div>
 	</body>
 </html>

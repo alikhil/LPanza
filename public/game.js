@@ -3,7 +3,7 @@ var utils = {
 		return {x: x, y: y};
 	},
 	sizeWH: function (width, height) {
-		return {width: width, width: width};
+		return {width: width, height: height};
 	},
 	sizeWL: function (width, length) {
 		return {width: width, length: length};
@@ -160,7 +160,7 @@ var canvas = {
 		this.element
 			.attr('width', this.size.width)
 			.attr('height', this.size.height);
-		
+
 		this.renderOffset.x = (
 			this.size.width -
 			this.renderSize.width
@@ -321,6 +321,7 @@ var online = {
 		this.users = packet.users;
 		this.count = this.users.length;
 		$('#gameStatsOnlineCount').text(this.count);
+		resizeOnlineButtonPadding ();
 	}
 };
 var controls = {
@@ -332,6 +333,7 @@ var controls = {
 	turretCenter: undefined,
 	wantShot: undefined,
 	wantSingleShot: undefined,
+	clickListeningElements: undefined,
 	keyboard: {
 		keyPressed: {
 			'W': undefined,
@@ -437,7 +439,7 @@ var controls = {
 			controls.wantSingleShot = false;
 			this.buttonDown = false;
 			this.cursorAimAllowed = $('.cursor_aim_allowed');
-			$(window)
+			controls.clickListeningElements
 				.on('mousedown', function (event) {
 					controls.mouse.buttonDown = true;
 					controls.mouse.onMove(
@@ -469,9 +471,8 @@ var controls = {
 				});
 		},
 		unbind: function () {
-			$(window)
-				.off('mousedown')
-				.off('mousemove');
+			controls.clickListeningElements
+				.off('mousedown mousemove mouseup');
 		},
 		onMove: function (point) {
 			this.lastPosition = point;
@@ -521,7 +522,7 @@ var controls = {
 		},
 		bind: function () {
 			swipe.init ();
-			$(window)
+			controls.clickListeningElements
 				.on('touchstart', function (event) {
 					var e = event.originalEvent,
 						changed = e.changedTouches,
@@ -594,11 +595,13 @@ var controls = {
 				});
 		},
 		unbind: function () {
-			$(window).off('touchstart touchmove touchend touchcancel');
+			controls.clickListeningElements
+				.off('touchstart touchmove touchend touchcancel');
 		}
 	},
 	useTouch: undefined,
 	bind: function () {
+		this.clickListeningElements = $('.gameOverlay:not(.topMost)').add (canvas.element);
 		this.useTouch = controls.touch.isAvailable();
 		if(this.useTouch) {
 			this.touch.bind();
@@ -625,6 +628,12 @@ var controls = {
 		}
 	}
 };
+function resizeOnlineButtonPadding () {
+	var p = $('#gameStatsOnlineButton_placeholder'),
+		e = $('#gameStatsOnlineButton_element');
+	p.width(e.width());
+	p.height(e.height());
+}
 var swipe = {
 	aimIs: undefined,
 	joyIs: undefined,

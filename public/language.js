@@ -40,6 +40,7 @@ var language = {
 					$('#languageSelect').val()
 				);
 				language.updateDOM();
+				resizeOnlineButtonPadding ();
 			});
 		this.updateDOM();
 	},
