@@ -239,7 +239,6 @@ var game = {
 		controls.unbind();
 		canvas.uninit();
 		ping.uninit();
-		online.uninit();
 		rating.uninit();
 		$('.gameOverlay').hide();
 	},
