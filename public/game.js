@@ -230,7 +230,7 @@ var game = {
 		controls.bind();
 		models.loadModels(packet.models);
 		ping.init();
-		online.init();
+		online.reset ();
 		rating.init();
 		$('.gameOverlay').show();
 	},
@@ -311,10 +311,14 @@ var online = {
 	count: undefined,
 	users: [],
 	init: function () {
-		$('#gameStatsOnlineCount').text('?');
+		this.hide ();
+		$('#onlineListBackButton').on('click', this.hide);
+		$('#gameStatsOnlineButton').on('click', this.show);
 	},
-	uninit: function () {
+	reset: function () {
 		this.users.splice(0, this.users.length);
+		$('#gameStatsOnlineCount').text('?');
+		this.visible = false;
 	},
 	refresh: function (packet) {
 		this.users.splice(0, this.users.length);
@@ -322,6 +326,36 @@ var online = {
 		this.count = this.users.length;
 		$('#gameStatsOnlineCount').text(this.count);
 		resizeOnlineButtonPadding ();
+		if (this.visible) {
+			this.updateList ();
+		}
+	},
+	updateList: function () {
+		var element = $('#onlineList');
+		$('#label_online_list_count').text (this.count);
+		element.empty ();
+		for (var i = 0; i < this.users.length; i ++) {
+			element.append (
+				$('<li>')
+					.text (
+						language.get ('game.online_element')
+							.replace ('%name%', this.users[i])
+					)
+					.addClass ('list-group-item')
+			);
+		}
+	},
+	visible: undefined,
+	show: function (score) {
+		$('#onlineListForm').show ();
+		$('#menuModal').modal('show');
+		online.visible = true;
+		online.updateList ();
+	},
+	hide: function () {
+		$('#onlineListForm').hide ();
+		$('#menuModal').modal('hide');
+		online.visible = false;
 	}
 };
 var controls = {
@@ -771,12 +805,15 @@ var app = {
 			app.updateRooms ([]);
 			$('#userNameTextInput').attr('maxlength', app.maxUserNameLength);
 			$('#menuForm').on('submit', this.onTryJoin);
+			this.hide();
 		},
 		show: function () {
+			$('#menuForm').show ();
 			$('#menuModal').modal('show');
-			$('#userNameTextInput').focus();
+			//$('#userNameTextInput').focus();
 		},
 		hide: function () {
+			$('#menuForm').hide ();
 			$('#menuModal').modal('hide');
 		},
 		onTryJoin: function () {
@@ -942,33 +979,41 @@ var app = {
 		init: function () {
 			this.hide();
 			$('#feedbackBackButton').on('click', this.hide);
-			$('#feedbackLink').on('click', this.show);
+			$('#feedbackShowButton').on('click', this.show);
 		},
 		show: function () {
-			$('#menuForm').hide();
+			app.menu.hide ();
 			$('#feedbackForm').show();
-			$('#feedbackLink').hide();
+			$('#menuModal').modal('show');
 		},
 		hide: function () {
 			$('#feedbackForm').hide();
-			$('#feedbackLink').show();
-			$('#menuForm').show();
-			$('#userNameTextInput').focus();
+			$('#menuModal').modal('hide');
+			app.menu.show ();
 		}
 	},
 	score: {
+		init: function () {
+			this.hide();
+			$('#playAgainButton').on('click', this.hide);
+		},
 		show: function (score) {
 			$('#scoreText').text(score);
-			$('#scoreModal').modal('show');
-			$('#scoreModal').on('hide.bs.modal', function () {
-				app.menu.show();
-			});
+			$('#gameOverForm').show ();
+			$('#menuModal').modal('show');
+		},
+		hide: function () {
+			$('#gameOverForm').hide ();
+			$('#menuModal').modal('hide');
+			app.menu.show();
 		}
 	},
 	init: function () {
 		socket.connect();
 		this.menu.init();
 		this.feedback.init();
+		this.score.init ();
+		online.init ();
 		this.menu.show();
 		tabActiveMonitor.init();
 	},
@@ -990,6 +1035,9 @@ var app = {
 	gameOver: function (packet) {
 /* log */	console.log('socket.on(\''+'game.over'+'\', '+JSON.stringify(packet)+')');
 		game.uninit();
+		if (online.visible) {
+			online.hide ();
+		}
 		this.score.show(packet.score);
 	}
 };

@@ -4,25 +4,25 @@ var language = {
 	DOM: {
 		'#label_score_score': 'game.score',
 		'#label_score_gameOver': 'game.game_over',
-		'#label_score_playAgain': 'game.play_again',
+		'#playAgainButton': 'game.play_again',
 		'#label_game_rating': 'game.rating',
 		'#label_game_online': 'game.online',
 		'#gameCanvas': 'app.no_canvas',
 		'#label_error_error': 'app.error',
 		'#label_error_dismiss': 'app.back',
-		'#feedbackLink': 'app.feedback',
+		'#feedbackShowButton': 'app.feedback',
 		'#label_feedback_title': 'feedback.title',
 		'#label_feedback_text': 'feedback.text',
 		'#feedbackBackButton': 'app.back',
 		'#label_menu_play': 'menu.play',
 		'#label_menu_name': 'menu.name',
 		'#label_game_score': 'game.score',
-
 		'#errorText': 'empty',
 		'#errorTitle': 'empty',
 		'#label_menu_room': 'menu.room',
-		'#label_game_room_id': 'menu.room'
-
+		'#label_game_room_id': 'menu.room',
+		'#label_online_list_title': 'game.online',
+		'#onlineListBackButton': 'app.back'
 	},
 	init: function () {
 		this.setLanguageId(this.defaultLanguageId);
@@ -101,7 +101,8 @@ var language = {
 			'menu.room_element': '#%id% - %used% / %total%',
 			'error.join_fail_text.room_overload': 'Достигнут лимит игроков. Подождите пока комната освободится',
 			'error.join_fail_text.room_does_not_exist': 'Выбрана несуществующая комната',
-			'game.room_id': '#%id%'
+			'game.room_id': '#%id%',
+			'game.online_element': '%name%'
 		},
 		'EN': {
 			'language.label': 'EN',
@@ -132,7 +133,8 @@ var language = {
 			'menu.room_element': '#%id% - %used% / %total%',
 			'error.join_fail_text.room_overload': 'Maximum user count reached. Wait for room to be freed',
 			'error.join_fail_text.room_does_not_exist': 'Chosen room does not exist',
-			'game.room_id': '#%id%'
+			'game.room_id': '#%id%',
+			'game.online_element': '%name%'
 		}
 	}
 };
