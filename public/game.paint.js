@@ -182,8 +182,8 @@ var paint = {
 				controls.wantSingleShot
 			)) {
 			game.input.shot();
-			controls.wantSingleShot = false;
 		}
+		controls.wantSingleShot = false;
 
 		for(index = 0; index < objects.length; index ++) {
 			objects[index].position.x -= offset.x;

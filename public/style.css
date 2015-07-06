@@ -15,7 +15,7 @@ html, body, .fullWrap {
 	margin-left: auto;
 	margin-right: auto;
 }
-.cursor_aim {
+#gameTouchSurface {
 	cursor: url('cursor.png') 15 15, crosshair;
 }
 #canvasWrap {

@@ -160,7 +160,6 @@ var canvas = {
 		this.element
 			.attr('width', this.size.width)
 			.attr('height', this.size.height);
-
 		this.renderOffset.x = (
 			this.size.width -
 			this.renderSize.width
@@ -169,6 +168,12 @@ var canvas = {
 			this.size.height -
 			this.renderSize.height
 		)/2;
+		$('#gameTouchSurface').css ({
+			'width': this.renderSize.width,
+			'height': this.renderSize.height,
+			'left': this.renderOffset.x,
+			'top': this.renderOffset.y
+		});
 	}
 };
 function scrollToTop () {
@@ -461,7 +466,6 @@ var controls = {
 	mouse: {
 		buttonDown: undefined,
 		wasInRender: undefined,
-		cursorAimAllowed: undefined,
 		lastPosition: utils.point (0, 0),
 		bind: function () {
 			// change controls.rotation from `undefined` to `360`
@@ -471,7 +475,6 @@ var controls = {
 			controls.wantShot = false;
 			controls.wantSingleShot = false;
 			this.buttonDown = false;
-			this.cursorAimAllowed = $('.cursor_aim_allowed');
 			controls.clickListeningElements
 				.on('mousedown', function (event) {
 					controls.mouse.buttonDown = true;
@@ -513,13 +516,11 @@ var controls = {
 				controls.wantShot = controls.mouse.buttonDown;
 				this.onRotate(point);
 				if (!this.wasInRender) {
-					this.cursorAimAllowed.addClass ('cursor_aim');
 					this.wasInRender = true;
 				}
 			} else {
 				controls.wantShot = false;
 				if (this.wasInRender) {
-					this.cursorAimAllowed.removeClass ('cursor_aim');
 					this.wasInRender = false;
 				}
 			}
@@ -634,7 +635,7 @@ var controls = {
 	},
 	useTouch: undefined,
 	bind: function () {
-		this.clickListeningElements = $('.gameOverlay:not(.topMost)').add (canvas.element);
+		this.clickListeningElements = $('#gameTouchSurface');
 		this.useTouch = controls.touch.isAvailable();
 		if(this.useTouch) {
 			this.touch.bind();
@@ -809,7 +810,9 @@ var app = {
 		show: function () {
 			$('#menuForm').show ();
 			$('#menuModal').modal('show');
-			//$('#userNameTextInput').focus();
+			if (!controls.touch.isAvailable ()) {
+				$('#userNameTextInput').focus();
+			}
 		},
 		hide: function () {
 			$('#menuForm').hide ();
