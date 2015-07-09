@@ -1,24 +1,5 @@
 var models = {
 	objects: {},
-	drawTank: function (tank) {
-		var turret = tank.turret,
-			modelTank = this.objects['tank'][tank.subtype],
-			modelTurret = this.objects['turret'][tank.subtype],
-			tankAngle = tank.rotation,
-			relativeTurretAngle = turret.rotation - 90 - tankAngle,
-			context = canvas.context,
-			relativeTurretCenter = utils.point(
-				modelTank.turretCenter.x -
-					modelTank.center.x,
-				modelTank.turretCenter.y -
-					modelTank.center.y
-			);
-		this.drawModel(modelTank, tank.position, tankAngle);
-		this.drawModel(modelTurret, relativeTurretCenter, relativeTurretAngle);
-
-		context.restore();
-		context.restore();
-	},
 	drawModel: function (model, position, rotation) {
 		var context = canvas.context,
 			angle = utils.angleDegToRad(rotation+180-90);
@@ -37,20 +18,13 @@ var models = {
 				-model.center.y
 		);
 	},
-    drawSimpleObject: function (object) {
+	drawObject: function (object) {
 		var model = this.objects[object.type][object.subtype],
 			context = canvas.context,
 			angle = object.rotation;
 		this.drawModel(model, object.position, angle);
 
 		context.restore();
-	},
-	drawObject: function (object) {
-		if(object.type === 'tank') {
-			this.drawTank(object);
-		} else {
-			this.drawSimpleObject(object);
-		}
 	},
 	loadModels: function (models) {
 		this.objects = models;
@@ -67,7 +41,7 @@ var models = {
 	getRelativeTurretCenterPosition: function (tank) {
 		var turret = tank.turret,
 			modelTank = this.objects[tank.type][tank.subtype],
-			tankAngle = utils.angleDegToRad(tank.rotation-90),
+			tankAngle = utils.angleDegToRad(tank.rotation + 90),
 			relativeTurretCenter = utils.point(
 				modelTank.turretCenter.x -
 					modelTank.center.x,
@@ -77,7 +51,7 @@ var models = {
 			relativeTurretCenterAngle = utils.vectorAngle(
 				relativeTurretCenter.x,
 				relativeTurretCenter.y
-			) - tankAngle;
+			) + tankAngle;
 			if(relativeTurretCenter.x == 0 &&
 				relativeTurretCenter.y == 0) {
 				relativeTurretCenterAngle = 0;
@@ -89,11 +63,21 @@ var models = {
 				relativeTurretCenter.y
 			)
 		);
+	},
+	turret: function (tank) {
+		return {
+			position: utils.addVector(
+				tank.position,
+				models.getRelativeTurretCenterPosition(tank)
+			),
+			rotation: tank.turret.rotation,
+			type: 'turret',
+			subtype: tank.subtype
+		};
 	}
 };
 var paint = {
-	tanks: [],
-	nonTanks: [],
+	objects: [],
 	label: {
 		font: '10px Arial'
 	},
@@ -123,14 +107,12 @@ var paint = {
 	gridImage: undefined,
 	userScore: NaN,
 	onPaint: function (packet) {
-		var objects,
-			tanks = [],
-			nonTanks = [],
+		var objects = [],
+			objectsCount,
 			offset,
-            index;
-        //console.log(JSON.stringify(packet));
-		this.nonTanks.splice(0, this.nonTanks.length);
-		this.tanks.splice(0, this.tanks.length);
+			index;
+		//console.log(JSON.stringify(packet));
+		this.objects.splice(0, this.objects.length);
 		objects = packet.objects;
 
 		if (objects[0].position.x +
@@ -185,17 +167,19 @@ var paint = {
 		}
 		controls.wantSingleShot = false;
 
-		for(index = 0; index < objects.length; index ++) {
+		objectsCount = objects.length;
+		for(index = 0; index < objectsCount; index ++) {
 			objects[index].position.x -= offset.x;
 			objects[index].position.y -= offset.y;
 			if(objects[index].type === 'tank') {
-				tanks.push(objects[index]);
-			} else {
-				nonTanks.push(objects[index]);
+				objects.push (
+					models.turret (
+						objects[index]
+					)
+				);
 			}
 		}
-		this.tanks = tanks;
-		this.nonTanks = nonTanks;
+		this.objects = objects;
 		this.mapOffset = offset;
 		this.drawRect = {
 			left: (offset.x < 0
@@ -240,14 +224,13 @@ var paint = {
 		this.scaleAsMap();
 		this.drawEmpty();
 		this.drawBackground();
-		for(var index = 0; index < this.tanks.length; index ++) {
-			models.drawObject(this.tanks[index]);
+		for(var index = 0; index < this.objects.length; index ++) {
+			models.drawObject(this.objects[index]);
 		}
-		for(var index = 0; index < this.nonTanks.length; index ++) {
-			models.drawObject(this.nonTanks[index]);
-		}
-		for(var index = 0; index < this.tanks.length; index ++) {
-			this.drawLabel(this.tanks[index]);
+		for(var index = 0; index < this.objects.length; index ++) {
+			if (this.objects[index].type === 'tank') {
+				this.drawLabel(this.objects[index]);
+			}
 		}
 		this.drawScore(this.userScore);
 		this.scaleAsScreen();

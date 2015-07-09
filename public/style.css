@@ -49,6 +49,10 @@ html, body, .fullWrap {
 	left: 10px;
 	top: -5px;
 }
+.gameOverlayBottomLeft {
+	left: 10px;
+	bottom: 0px;
+}
 .gameOverlayTopRight {
 	right: 10px;
 	top: 10px;
