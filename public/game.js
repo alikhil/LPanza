@@ -496,7 +496,7 @@ var controls = {
 						)
 					);
 				})
-				.on('mouseup', function (event) {
+				.on('mouseup mouseleave', function (event) {
 					controls.mouse.buttonDown = false;
 					controls.mouse.onMove(
 						utils.point(
