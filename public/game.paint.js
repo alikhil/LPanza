@@ -31,6 +31,9 @@ var models = {
 		for(var type in this.objects) {
 			for(var subtype in this.objects[type]) {
 				this.objects[type][subtype].center.y *= -1;
+				if (type === 'tank') {
+					this.objects[type][subtype].turretCenter.y *= -1;
+				}
 				this.objects[type][subtype].image = new Image();
 				this.objects[type][subtype].image.src = type + '.' + subtype + '.texture.png';
 			}
