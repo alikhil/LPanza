@@ -315,8 +315,6 @@ function doShot(tank){
     bullet.rotation = tank.turret.rotation;
     bullet.size = models.bullet[tank.subtype].size;
     var shotPos = tank.position;
-    //shotPos = geom.addToPos(shotPos, geom.turnVector(models.tank[tank.subtype].turretCenter, tank.rotation), 1);
-    //shotPos = geom.addToPos(shotPos, geom.moveVector(bullet.rotation, models.turret[tank.subtype].size.length - models.turret[tank.subtype].center.y),1);
     var model = models.tank[tank.subtype];
     var rel = geom.addToPos(model.turretCenter, model.center, -1);
     shotPos = geom.addToPos(shotPos, geom.turnVector(rel, tank.rotation), 1);
@@ -367,7 +365,6 @@ function serverTick(){
         console.time('serverTick');
         var roomIds = Object.keys(roomsData);
         for (var k = 0; k < roomIds.length; k++) {
-            // console.time('delete-bullets');
             var room = roomIds[k];
             for (var i = roomsData[room].bullets.length - 1; i >= 0; i--) {
                 if (roomsData[room].bullets[i].position.x > consts.mapWidth || 
@@ -377,8 +374,6 @@ function serverTick(){
                     roomsData[room].bullets.splice(i, 1);
                 }
             }
-            //console.timeEnd('delete-bullets');
-            //console.time('collide-groups');
             var objects = Object.values(roomsData[room].tanks).concat(roomsData[room].bullets);
             var deleteIds = [];
             var objectGroups = groups.getCollideGroups(objects);
@@ -459,9 +454,6 @@ function serverTick(){
                 }
             }
             
-            //console.timeEnd('collide-groups');
-            //console.time('repaint-groups');
-            //console.time('get-repaint');
             //Выделяем группы для прорисовки
             var repGroups = groups.getGroups(objects, consts.showAreaWidth + consts.maxWidthLength, consts.showAreaHeight + consts.maxWidthLength);
             var repaintGroups = [];
@@ -490,8 +482,6 @@ function serverTick(){
                     }
                 }
             }
-            //console.timeEnd('get-repaint');
-            //console.time('send-repaint');
             var clientsIds = Object.keys(io.engine.clients);
             for (var i = 0; i < clientsIds.length; i++) {
                 var uid = getUserId(clientsIds[i]);
@@ -503,9 +493,6 @@ function serverTick(){
                     }
                 }
             }
-            //console.timeEnd('send-repaint');
-            // console.timeEnd('repaint-groups');
-        
         }
         console.timeEnd('serverTick');
 
@@ -623,6 +610,5 @@ function removeFromArray(array, val) {
         }
     }
 }
-//ы
 
 
