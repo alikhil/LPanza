@@ -33,6 +33,73 @@
 		<meta name='Keywords' content='tank, multiplayer, online game, online, panzer, танк, многопользовательская, онлайн игра, онлайн' />
 	</head>
 	<body>
+		<!-- noScript and noHTML5 notification begin -->
+		<div class='container' id='browser_check'>
+			<div class='panel panel-primary'>
+				<div class='panel-heading text-center'>
+					<h4 class='text-center'>Last Panzer</h4>
+				</div>
+				<div class='panel-body'>
+					<noscript>
+						<div class='row form-group'>
+							<div class='col-xs-6'><label for='csstab_tab-1' class='badge badge-primary block_100pc_wide'>RU</label></div>
+							<div class='col-xs-6'><label for='csstab_tab-2' class='badge badge-primary block_100pc_wide'>EN</label></div>
+						</div>
+						<div class='csstab_wrap'>
+							<input type='radio' id='csstab_tab-1' name='csstab_tab-group-1' checked>
+							<div class='csstab_content'>
+								<div class='well well-sm'>
+									<h4 class='text-center'>Last Panzer</h4>
+									<p>Многопользовательская онлайн игра сражение танков<br>Стреляй, уничтожай, будь первым</p>
+									<h4 class='text-center'>Ошибка</h4>
+									<p>Для работы с сайтом необходимо включить JavaScript.</p>
+									<a href='http://www.enable-javascript.com/ru/' target='_blank' class='btn btn-primary'>
+										Включить JavaScript
+									</a>
+								</div>
+							</div>
+						</div>
+						<div class='csstab_wrap'>
+							<input type='radio' id='csstab_tab-2' name='csstab_tab-group-1'>
+							<div class='csstab_content'>
+								<div class='well well-sm'>
+									<h4 class='text-center'>Last Panzer</h4>
+									<p>Multiplayer online tank battle game<br>Shot, destroy, be winner</p>
+									<h4 class='text-center'>Error</h4>
+									<p>For full functionality of this site it is necessary to enable JavaScript</p>
+									<a href='http://www.enable-javascript.com/en/' target='_blank' class='btn btn-primary'>
+										Enable JavaScript
+									</a>
+								</div>
+							</div>
+						</div>
+					</noscript>
+					<div id='bad_browser'>
+						<div class='well well-sm'>
+							<h4 class='text-center' id='label_bad_browser_title'></h4>
+							<p>
+								<span id='label_bad_browser_text_1_line'></span>
+								<br>
+								<span id='label_bad_browser_text_2_line'></span>
+							</p>
+						</div>
+						<div id='browsers'>
+							<a href='http://www.google.com/chrome/' target='_blank' style='background: url(/images/chrome.png) no-repeat 50% 17px;'>Chrome</a>
+							<a href='http://www.mozilla-europe.org/' target='_blank' style='background: url(/images/firefox.png) no-repeat 50% 17px;'>Firefox</a>
+							<a href='http://www.opera.com/' target='_blank' style='background: url(/images/opera.png) no-repeat 50% 15px;'>Opera</a>
+						</div>
+					</div>
+				</div>
+				<div class='panel-footer'>
+					<div class='text-left'>
+						RBLI Hi-Tech, 2015
+						<span class='inline_to_right_text'><select class='languageSelect'></select></span>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- noScript and noHTML5 notification end -->
+
 		<!-- menu, feedback, game over modal box begin -->
 		<div class='modal' id='menuModal' role='dialog' data-keyboard='false' data-backdrop='static'>
 			<div class='modal-dialog modal-sm'>
@@ -133,69 +200,6 @@
 			</div>
 		</div>
 		<!-- error modal end -->
-
-		<!-- noScript and noHTML5 notification begin -->
-		<div class='container' id='browser_check'>
-			<div class='panel panel-primary'>
-				<div class='panel-heading text-center'>
-					<h4 class='text-center'>Last Panzer</h4>
-				</div>
-				<div class='panel-body'>
-					<noscript>
-						<div class='row form-group'>
-							<div class='col-xs-6'><label for='csstab_tab-1' class='badge badge-primary block_100pc_wide'>RU</label></div>
-							<div class='col-xs-6'><label for='csstab_tab-2' class='badge badge-primary block_100pc_wide'>EN</label></div>
-						</div>
-						<div class='csstab_wrap'>
-							<input type='radio' id='csstab_tab-1' name='csstab_tab-group-1' checked>
-							<div class='csstab_content'>
-								<div class='well well-sm'>
-									<h4 class='text-center'>Ошибка</h4>
-									<p>Для работы с сайтом необходимо включить JavaScript.</p>
-									<a href='http://www.enable-javascript.com/ru/' target='_blank' class='btn btn-primary'>
-										Включить JavaScript
-									</a>
-								</div>
-							</div>
-						</div>
-						<div class='csstab_wrap'>
-							<input type='radio' id='csstab_tab-2' name='csstab_tab-group-1'>
-							<div class='csstab_content'>
-								<div class='well well-sm'>
-									<h4 class='text-center'>Error</h4>
-									<p>For full functionality of this site it is necessary to enable JavaScript</p>
-									<a href='http://www.enable-javascript.com/en/' target='_blank' class='btn btn-primary'>
-										Enable JavaScript
-									</a>
-								</div>
-							</div>
-						</div>
-					</noscript>
-					<div id='bad_browser'>
-						<div class='well well-sm'>
-							<h4 class='text-center' id='label_bad_browser_title'></h4>
-							<p>
-								<span id='label_bad_browser_text_1_line'></span>
-								<br>
-								<span id='label_bad_browser_text_2_line'></span>
-							</p>
-						</div>
-						<div id='browsers'>
-							<a href='http://www.google.com/chrome/' target='_blank' style='background: url(/images/chrome.png) no-repeat 50% 17px;'>Chrome</a>
-							<a href='http://www.mozilla-europe.org/' target='_blank' style='background: url(/images/firefox.png) no-repeat 50% 17px;'>Firefox</a>
-							<a href='http://www.opera.com/' target='_blank' style='background: url(/images/opera.png) no-repeat 50% 15px;'>Opera</a>
-						</div>
-					</div>
-				</div>
-				<div class='panel-footer'>
-					<div class='text-left'>
-						RBLI Hi-Tech, 2015
-						<span class='inline_to_right_text'><select class='languageSelect'></select></span>
-					</div>
-				</div>
-			</div>
-		</div>
-		<!-- noScript and noHTML5 notification end -->
 
 		<div class='fullWrap' id='canvasWrap'>
 			<div class='gameOverlay gameOverlayBottomLeft'><h3><span id='label_game_score'></span> <span id='gameStatsScore'></span></h3></div>
