@@ -48,7 +48,6 @@ var models = {
     
 };
 
-
 var userIdRooms = { };
 var userIdNames = { };
 
@@ -72,6 +71,8 @@ var groups = require('./group.js');
 var geom = require('./geom.js');
 
 groups.init(consts.mapWidth, consts.mapHeight);
+
+var logger = require('intel').getLogger('logger');
 
 exports.initGame = function(sio, socket){
     io = sio;
@@ -98,11 +99,13 @@ function createRoom(){
         bullets : [],
         clients : {}
     };
+    logger.info('Room[%d] created', curRoomId);
 }
 function deleteRoom(room){
     availableTotalPlayers -= consts.roomMaxUserCount;
     delete (roomsData[room]);
     delete (roomList[room]);
+    logger.info('Room[%d] deleted', curRoomId);
 }
 function updateRoomList(sock){
     if (sock !== undefined)
@@ -205,11 +208,10 @@ function userJoin(user) {
         },
         models :  models 
     });
-	if(consts.debugMode)
-        console.log(user.userName + ' подключился к серверу');
     updateOnline(room);
     updateRating(room);
     updateRoomList();
+    logger.info('User[%s] connected to room[%s]', user.userName, room);
 }
 
 function updateRating(room){
@@ -242,9 +244,9 @@ function updateOnline(room){
 
 function userLeave(){
     var socket = this;
-	var userId = getUserId(socket.id);
+    var userId = getUserId(socket.id);
+    logger.info('User[%s] from room[%s] left the game', userIdNames[userId], socket.room);
     deleteUser(userId);
-    
 }
 
 function deleteUser(userId){
@@ -487,9 +489,7 @@ function serverTick(){
                 var uid = getUserId(clientsIds[i]);
                 if (repaintGroups[uid] !== undefined) {
                     if (roomsData[room].clients.hasOwnProperty(uid)) {
-                        console.time('paint');
                         roomsData[room].clients[uid].emit('game.paint', { user : reloadData[uid], objects : repaintGroups[uid] });
-                        console.timeEnd('paint');
                     }
                 }
             }
