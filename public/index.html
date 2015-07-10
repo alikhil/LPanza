@@ -91,7 +91,7 @@
 					<div class='modal-footer panel-footer'>
 						<div class='text-left'>
 							RBLI Hi-Tech, 2015
-							<span class='inline_to_right_text'><select class='' id='languageSelect'></select></span>
+							<span class='inline_to_right_text'><select class='languageSelect'></select></span>
 						</div>
 					</div>
 				</div>
@@ -143,12 +143,12 @@
 					</noscript>
 					<div id='bad_browser'>
 						<div class='well well-sm'>
-							<h4 class='text-center'>Ошибка</h4>
-							<p>Вы используете устаревший браузер<br>Для работы сайта необходимо установить современный браузер</p>
-						</div>
-						<div class='well well-sm'>
-							<h4 class='text-center'>Error</h4>
-							<p>Your browser is out of date<br>Please upgrade your browser to view this site</p>
+							<h4 class='text-center' id='label_bad_browser_title'></h4>
+							<p>
+								<span id='label_bad_browser_text_1_line'></span>
+								<br>
+								<span id='label_bad_browser_text_2_line'></span>
+							</p>
 						</div>
 						<div id='browsers'>
 							<a href='http://www.google.com/chrome/' target='_blank' style='background: url(/images/chrome.png) no-repeat 50% 17px;'>Chrome</a>
@@ -158,7 +158,10 @@
 					</div>
 				</div>
 				<div class='panel-footer'>
-					<div class='text-center'>RBLI Hi-Tech, 2015</div>
+					<div class='text-left'>
+						RBLI Hi-Tech, 2015
+						<span class='inline_to_right_text'><select class='languageSelect'></select></span>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -178,9 +181,9 @@
 			<div class='gameOverlay gameOverlayBottomRight'><span id='gameStatsPing'></span></div>
 			<div class='gameOverlay' id='gameTouchSurface'></div>
 			<canvas width='0' height='0' id='gameCanvas'></canvas>
+			<div class='topMost gameOverlay gameOverlayTopRight' id='gameStatsOnlineButton_element'><button type='button' class='btn btn-primary' id='gameStatsOnlineButton'><span id='label_game_online'></span> <span class='badge' id='gameStatsOnlineCount'>?</span></button></div>
 		</div>
 
 		<div id='screenSizeHack'></div>
-		<div class='topMost gameOverlay gameOverlayTopRight' id='gameStatsOnlineButton_element'><button type='button' class='btn btn-primary' id='gameStatsOnlineButton'><span id='label_game_online'></span> <span class='badge' id='gameStatsOnlineCount'>?</span></button></div>
 	</body>
 </html>

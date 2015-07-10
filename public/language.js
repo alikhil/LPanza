@@ -22,26 +22,31 @@ var language = {
 		'#label_menu_room': 'menu.room',
 		'#label_game_room_id': 'menu.room',
 		'#label_online_list_title': 'game.online',
-		'#onlineListBackButton': 'app.back'
+		'#onlineListBackButton': 'app.back',
+		'#label_bad_browser_title': 'app.error',
+		'#label_bad_browser_text_1_line': 'bad_browser.text_1_line',
+		'#label_bad_browser_text_2_line': 'bad_browser.text_2_line',
 	},
 	init: function () {
 		this.setLanguageId(this.defaultLanguageId);
-		for(var index in this.strings) {
-			$('#languageSelect').append(
+		$('.languageSelect').empty ();
+		for(var language_ in this.strings) {
+			$('.languageSelect').append(
 				$('<option>')
-					.text(this.strings[index]['language.label'])
-					.val(index)
+					.text(this.strings[language_]['language.label'])
+					.val(language_)
 			);
 		}
-		$('#languageSelect')
+		$('.languageSelect')
 			.val(this.defaultLanguageId)
 			.on('change', function () {
-				language.setLanguageId(
-					$('#languageSelect').val()
-				);
+				var val = $(this).val ();
+				language.setLanguageId (val);
+				$('.languageSelect').val (val);
 				language.updateDOM();
 				resizeOnlineButtonPadding ();
-			});
+			})
+			.show ();
 		this.updateDOM();
 	},
 	updateDOM: function () {
@@ -102,7 +107,9 @@ var language = {
 			'error.join_fail_text.room_overload': 'Достигнут лимит игроков. Подождите пока комната освободится',
 			'error.join_fail_text.room_does_not_exist': 'Выбрана несуществующая комната',
 			'game.room_id': '#%id%',
-			'game.online_element': '%name%'
+			'game.online_element': '%name%',
+			'bad_browser.text_1_line': 'Вы используете устаревший браузер',
+			'bad_browser.text_2_line': 'Для работы сайта необходимо установить современный браузер'
 		},
 		'EN': {
 			'language.label': 'EN',
@@ -134,7 +141,9 @@ var language = {
 			'error.join_fail_text.room_overload': 'Maximum user count reached. Wait for room to be freed',
 			'error.join_fail_text.room_does_not_exist': 'Chosen room does not exist',
 			'game.room_id': '#%id%',
-			'game.online_element': '%name%'
+			'game.online_element': '%name%',
+			'bad_browser.text_1_line': 'Your browser is out of date',
+			'bad_browser.text_2_line': 'Please upgrade your browser to view this site'
 		}
 	}
 };

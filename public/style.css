@@ -18,6 +18,9 @@ html, body, .fullWrap {
 #gameTouchSurface {
 	cursor: url('cursor.png') 15 15, crosshair;
 }
+.languageSelect {
+	display: none;
+}
 #canvasWrap {
 	display: none;
 	position: relative;
