@@ -82,6 +82,33 @@ html, body, .fullWrap {
 	padding-left: 0px;
 }
 
+/* pure css tabs */
+.badge-primary {
+	background-color: #337ab7;
+	border-color: #2e6da4;
+	padding: 6px;
+}
+.badge-primary:hover {
+	color: #fff;
+	background-color: #286090;
+	border-color: #204d74;
+}
+.csstab_wrap [type=radio] {
+	display: none;
+}
+.csstab_content {
+	display: none;
+}
+.csstab_wrap [type=radio]:checked ~ .csstab_content {
+	z-index: 1;
+	display: block;
+}
+.block_100pc_wide {
+	display: block;
+	width: 100%;
+}
+
+
 /* bad browser css */
 #browsers a {
 	float: left;

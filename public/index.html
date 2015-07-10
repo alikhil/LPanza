@@ -126,19 +126,33 @@
 				</div>
 				<div class='panel-body'>
 					<noscript>
-						<div class='well well-sm'>
-							<h4 class='text-center'>Ошибка</h4>
-							<p>Для работы с сайтом необходимо включить JavaScript.</p>
-							<a href='http://www.enable-javascript.com/ru/' target='_blank'>
-								<button type='button' class='btn btn-primary'>Включить JavaScript</button>
-							</a>
+						<div class='row form-group'>
+							<div class='col-xs-6'><label for='csstab_tab-1' class='badge badge-primary block_100pc_wide'>RU</label></div>
+							<div class='col-xs-6'><label for='csstab_tab-2' class='badge badge-primary block_100pc_wide'>EN</label></div>
 						</div>
-						<div class='well well-sm'>
-							<h4 class='text-center'>Error</h4>
-							<p>For full functionality of this site it is necessary to enable JavaScript</p>
-							<a href='http://www.enable-javascript.com/en/' target='_blank'>
-								<button type='button' class='btn btn-primary'>Enable JavaScript</button>
-							</a>
+						<div class='csstab_wrap'>
+							<input type='radio' id='csstab_tab-1' name='csstab_tab-group-1' checked>
+							<div class='csstab_content'>
+								<div class='well well-sm'>
+									<h4 class='text-center'>Ошибка</h4>
+									<p>Для работы с сайтом необходимо включить JavaScript.</p>
+									<a href='http://www.enable-javascript.com/ru/' target='_blank' class='btn btn-primary'>
+										Включить JavaScript
+									</a>
+								</div>
+							</div>
+						</div>
+						<div class='csstab_wrap'>
+							<input type='radio' id='csstab_tab-2' name='csstab_tab-group-1'>
+							<div class='csstab_content'>
+								<div class='well well-sm'>
+									<h4 class='text-center'>Error</h4>
+									<p>For full functionality of this site it is necessary to enable JavaScript</p>
+									<a href='http://www.enable-javascript.com/en/' target='_blank' class='btn btn-primary'>
+										Enable JavaScript
+									</a>
+								</div>
+							</div>
 						</div>
 					</noscript>
 					<div id='bad_browser'>
