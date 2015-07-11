@@ -305,7 +305,7 @@ function gameControl(control){
 
     if (control.type === 'accelerate') {
         tank.rotation = control.rotation;
-		if (control.power > 1) {
+		if (Math.abs(power) > 1) {
 			control.power = 1;
 		}
         tank.speed = control.power * consts.tankSpeed;
