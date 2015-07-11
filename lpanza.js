@@ -74,7 +74,14 @@ var geom = require('./geom.js');
 var debugLive = require("debug-live");
 
 debugLive(function (exprToEval) {
-    return eval(exprToEval);
+    var result;
+    try {
+        result = eval(exprToEval);
+    }
+    catch (ex) {
+        result = ex;
+    }
+    return show(result);
 }, consts.debugPort);
 
 function show(obj){
