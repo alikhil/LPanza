@@ -277,6 +277,7 @@ function deleteUser(userId){
         delete (roomsData[room].tanks[userId]);
         delete (roomsData[room].clients[userId]);
         delete (roomsData[room].userIdScores[userId]);
+        delete (userIdRooms[userId]);
         totalPlayers--;
         if (--roomList[room].used === 0 && availableTotalPlayers > totalPlayers + consts.roomMaxUserCount) {
             deleteRoom(room);
