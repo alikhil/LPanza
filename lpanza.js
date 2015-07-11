@@ -65,6 +65,8 @@ var freeRoomIds = [];
 
 var timer;
 
+var averageServerTick = 1;
+var smoothingConstant = consts.smoothingConstant;
 
 var _und = require('./underscore-min');
 var groups = require('./group.js');
@@ -372,7 +374,7 @@ Object.values = function (obj) {
 function serverTick(){
    
     if (totalPlayers > 0) {
-        console.time('serverTick');
+        var tickStart = Date.now();
         var roomIds = Object.keys(roomsData);
         for (var k = 0; k < roomIds.length; k++) {
             var room = roomIds[k];
@@ -502,8 +504,9 @@ function serverTick(){
                 }
             }
         }
-        console.timeEnd('serverTick');
-
+        var tickEnd = Date.now();
+        var serverTick = (tickEnd - tickStart) / 1000.0;
+        averageServerTick = smoothingConstant * serverTick + (1 - smoothingConstant) * averageServerTick;
     }
 }
 

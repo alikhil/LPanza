@@ -5,6 +5,8 @@ exports.debugPort = 1337;
 /* Максимальное кол-во игроков на сервере*/
 exports.serverMaxUsersCount = 200000;
 
+exports.smoothingConstant = 0.5;
+
 /*Максимальное кол-во игроков в комнате */
 exports.roomMaxUserCount = 20;
 /*Время через которое происходят все расчеты на сервере*/
