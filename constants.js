@@ -1,5 +1,7 @@
 ﻿/* Включение логов и дебаг функций*/
 exports.debugMode = false;
+/* Порт для отладки debug-live*/
+exports.debugPort = 1337;
 /* Максимальное кол-во игроков на сервере*/
 exports.serverMaxUsersCount = 200000;
 

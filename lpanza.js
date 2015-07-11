@@ -69,7 +69,15 @@ var timer;
 var _und = require('./underscore-min');
 var groups = require('./group.js');
 var geom = require('./geom.js');
+var debugLive = require("debug-live");
 
+debugLive(function (exprToEval) {
+    return eval(exprToEval);
+}, consts.debugPort);
+
+function show(obj){
+    return JSON.stringify(obj);
+}
 groups.init(consts.mapWidth, consts.mapHeight);
 
 var logger = require('intel').getLogger('logger');
