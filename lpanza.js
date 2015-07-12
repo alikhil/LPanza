@@ -135,19 +135,13 @@ function userJoin(user) {
     user.userName = user.userName.trim();
     if (user.userName.length === 0) {
         sock.emit('game.join.fail', { reason : 'error.join_fail_text.name_empty' });
-        if (consts.debugMode)
-            console.log(user.userName + ' не смог подключиться');
     }
     if (user.userName.length > consts.maxUserNameLength) {
         sock.emit('game.join.fail', { reason : 'error.join_fail_text.name_too_long' });
-        if (consts.debugMode)
-            console.log(user.userName + ' не смог подключиться');
         return false;
     }
 	if(totalPlayers >= consts.serverMaxUsersCount){
 		sock.emit('game.join.fail', { reason : 'error.join_fail_text.max_user_count_exceeded'});
-		if(consts.debugMode)
-			console.log(user.userName + ' не смог подключиться');
 		return false;
     }
     var room = user.roomId;
@@ -206,12 +200,7 @@ function userJoin(user) {
     tank.moveVector = point_(0, 0);
 
     roomsData[room].tanks[userId] = tank;
-	if(consts.debugMode){
-		console.log('userIdNames: ', userIdNames);
-		console.log('userNames: ', userNames);
-		console.log('tanks: ', tanks);
-        console.log('bullets: ', bullets);
-	}
+	
 	sock.emit('game.join.ok', {
         paintRect : {
             width : consts.showAreaWidth,
@@ -261,7 +250,6 @@ function updateOnline(room){
 function userLeave(){
     var socket = this;
     var userId = getUserId(socket.id);
-    logger.info('User[%s] from room[%s] left the game', userIdNames[userId], socket.room);
     deleteUser(userId);
 }
 
@@ -269,8 +257,7 @@ function deleteUser(userId){
     if (userIdNames.hasOwnProperty(userId)) {
         var room = userIdRooms[userId];
         var uname = userIdNames[userId];
-        if (consts.debugMode)
-            console.log(uname + ' покинул сервер');
+        logger.info('User[%s] from room[%s] left the game',uname, room);
         removeFromArray(roomsData[room].userNames, uname);
         delete (userIdNames[userId]);
         delete (roomsData[room].tanks[userId]);
@@ -292,7 +279,7 @@ function gameControl(control){
     var sock = this;
 	var userId = getUserId(sock.id);
     if (!userIdNames.hasOwnProperty(userId)) {
-        console.log('Попытка получить данные от юзера которого нет');
+        logger.warn('Trying to control user that doesn\'t exist');
         return false;
     }
     var room = userIdRooms[userId];
@@ -410,9 +397,7 @@ function serverTick(){
                             var newPos = geom.addToPos(curObject.position, curObject.moveVector, 1);
                         }
                     catch (e) {
-                            console.log(e);
-                            console.log(curObject);
-                            console.log(groups);
+                            logger.error('Trying to move object: ' + show(e));
                         }
                         if (curObject.type === 'tank') {
                             curObject.position.x = 
