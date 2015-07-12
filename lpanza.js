@@ -476,12 +476,12 @@ function serverTick(){
                             if (group[j] !== undefined) {
                                 var curOb = objects[group[j]];
                                 if (!curOb.type.startsWith('deleted')) {
-                                    {
-                                        if (curOb.type === 'tank' && iObj.label.userId === curOb.label.userId)
-                                            repaintGroups[id].splice(0, 0, getPaintData(curOb));
-                                        else
-                                            repaintGroups[id].push(getPaintData(curOb));
-                                    }
+                                    
+                                    if (curOb.type === 'tank' && iObj.label.userId === curOb.label.userId)
+                                        repaintGroups[id].splice(0, 0, getPaintData(curOb));
+                                    else
+                                        repaintGroups[id].push(getPaintData(curOb));
+                                    
                                 }
                             }
                         }
