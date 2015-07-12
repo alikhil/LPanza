@@ -444,8 +444,8 @@ function serverTick(){
                                     );
                                     if (collision.collide && cur.label.userId != curObject.owner) {
                                         bulletOnTankHit(cur, curObject);
-                                        if (cur.type === 'deleted-tank') {
-
+                                        if (curObject.type === 'deleted-bullet') {
+                                            break;
                                         }
                                     }
                                 }
