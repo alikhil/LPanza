@@ -282,10 +282,11 @@ function deleteUser(userId){
         if (--roomList[room].used === 0 && availableTotalPlayers > totalPlayers + consts.roomMaxUserCount) {
             deleteRoom(room);
         }
+        updateOnline(room);
+        updateRating(room);
+        updateRoomList();
     }
-    updateOnline(room);
-    updateRating(room);
-    updateRoomList();
+    
 }
 
 function gameControl(control){
