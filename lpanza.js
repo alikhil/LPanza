@@ -522,6 +522,8 @@ function serverTick(){
 /*get average serverTick*/
 function getAST(){
     var sum = 0;
+    if (serverTicks.length === 0)
+        return 'no ticks';
     for (var i = 0; i < serverTicks.length; i++) {
         sum += serverTicks[i];
     }
