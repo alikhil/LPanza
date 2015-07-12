@@ -65,8 +65,7 @@ var freeRoomIds = [];
 
 var timer;
 
-var averageServerTick = 1;
-var smoothingConstant = consts.smoothingConstant;
+var serverTicks = [];
 
 var _und = require('./underscore-min');
 var groups = require('./group.js');
@@ -514,9 +513,19 @@ function serverTick(){
             }
         }
         var tickEnd = Date.now();
-        var serverTick = (tickEnd - tickStart) / 1000.0;
-        averageServerTick = smoothingConstant * serverTick + (1 - smoothingConstant) * averageServerTick;
+        var serverTick = (tickEnd - tickStart) / 1000;
+        if (serverTicks.length > consts.saveServerTickCount)
+            serverTicks.shift();
+        serverTicks.push(serverTick);
     }
+}
+/*get average serverTick*/
+function getAST(){
+    var sum = 0;
+    for (var i = 0; i < serverTicks.length; i++) {
+        sum += serverTicks[i];
+    }
+    return sum / serverTicks.length;
 }
 
 function clone(obj) {
