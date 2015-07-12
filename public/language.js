@@ -1,6 +1,7 @@
 var language = {
 	languageId: undefined,
 	defaultLanguageId: 'RU',
+	handlers: undefined,
 	DOM: {
 		'#label_score_score': 'game.score',
 		'#label_score_gameOver': 'game.game_over',
@@ -45,9 +46,25 @@ var language = {
 				$('.languageSelect').val (val);
 				language.updateDOM();
 				resizeOnlineButtonPadding ();
+				for (var i = 0; i < language.handlers.length; i ++) {
+					language.handlers[i]();
+				}
 			})
 			.show ();
+		this.handlers = [];
 		this.updateDOM();
+	},
+	on: function (event, handler) {
+		if (event === 'change') {
+			this.handlers.push (handler);
+		}
+	},
+	off: function (event) {
+		if (event === 'change') {
+			if (this.handlers.length > 0) {
+				this.handlers.pop ();
+			}
+		}
 	},
 	updateDOM: function () {
 		for(var index in this.DOM) {
@@ -109,7 +126,9 @@ var language = {
 			'game.room_id': '#%id%',
 			'game.online_element': '%name%',
 			'bad_browser.text_1_line': 'Вы используете устаревший браузер',
-			'bad_browser.text_2_line': 'Для работы сайта необходимо установить современный браузер'
+			'bad_browser.text_2_line': 'Для работы сайта необходимо установить современный браузер',
+			'share.score_title': 'Last Panzer - многопользовательская онлайн игра сражение танков',
+			'share.score_text': 'Last Panzer - Стреляй, уничтожай, будь первым'
 		},
 		'EN': {
 			'language.label': 'EN',
@@ -143,7 +162,9 @@ var language = {
 			'game.room_id': '#%id%',
 			'game.online_element': '%name%',
 			'bad_browser.text_1_line': 'Your browser is out of date',
-			'bad_browser.text_2_line': 'Please upgrade your browser to view this site'
+			'bad_browser.text_2_line': 'Please upgrade your browser to view this site',
+			'share.score_title': 'Last Panzer - multiplayer online tank battle game',
+			'share.score_text': 'Last Panzer - Shot, destroy, be winner'
 		}
 	}
 };

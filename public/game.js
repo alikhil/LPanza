@@ -995,14 +995,29 @@ var app = {
 		}
 	},
 	score: {
+		score: undefined,
 		init: function () {
 			this.hide();
 			$('#playAgainButton').on('click', this.hide);
+			language.on ('change', this.addShareButtons);
+		},
+		addShareButtons: function () {
+			var holder = $('#scoreShareButtons');
+			holder.empty ();
+			Share (
+				holder,
+				'http://lpanza.ru',
+				language.get ('share.score_title'),
+				language.get ('share.score_text'),
+				'http://lpanza.ru/logo.opengraph.jpg'
+			);
 		},
 		show: function (score) {
+			this.score = score;
 			$('#scoreText').text(score);
 			$('#gameOverForm').show ();
 			$('#menuModal').modal('show');
+			this.addShareButtons ();
 		},
 		hide: function () {
 			$('#gameOverForm').hide ();

@@ -82,6 +82,22 @@ html, body, .fullWrap {
 	padding-left: 0px;
 }
 
+.share_btn {
+	width: 32px;
+	height: 32px;
+	background: url('share.png') no-repeat;
+	float: left;
+	display: block;
+	margin: 1px;
+}
+
+#scoreShareButtons {
+	width: 170px;
+	height: 34px;
+	margin-left: auto;
+	margin-right: auto;
+}
+
 /* pure css tabs */
 .badge-primary {
 	background-color: #337ab7;
