@@ -383,7 +383,6 @@ function serverTick(){
                 }
             }
             var objects = Object.values(roomsData[room].tanks).concat(roomsData[room].bullets);
-            var deleteIds = [];
             var objectGroups = groups.getCollideGroups(objects);
             var moved = Array(objects.length);
             //группы для проверки на коллизию
@@ -446,9 +445,8 @@ function serverTick(){
                                     if (collision.collide && cur.label.userId != curObject.owner) {
                                         bulletOnTankHit(cur, curObject);
                                         if (cur.type === 'deleted-tank') {
-                                            deleteIds.push(group[h]);
+
                                         }
-                                        deleteIds.push(group[j]);
                                     }
                                 }
                             }
