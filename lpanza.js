@@ -135,6 +135,7 @@ function userJoin(user) {
     user.userName = user.userName.trim();
     if (user.userName.length === 0) {
         sock.emit('game.join.fail', { reason : 'error.join_fail_text.name_empty' });
+        return false;
     }
     if (user.userName.length > consts.maxUserNameLength) {
         sock.emit('game.join.fail', { reason : 'error.join_fail_text.name_too_long' });
