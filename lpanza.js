@@ -223,7 +223,7 @@ function userJoin(user) {
         logger.info('User[%s] connected to room[%s]', user.userName, room);
     }
     catch (e) {
-        logger.critical('On try userJoin: %s', show(e));
+        logger.critical('On try userJoin: %s', e);
         throw e;
     }
 }
@@ -405,7 +405,7 @@ function serverTick(){
                             var newPos = geom.addToPos(curObject.position, curObject.moveVector, 1);
                         }
                     catch (e) {
-                            logger.error('Trying to move object: ' + show(e));
+                            logger.error('Trying to move object: ' + e);
                         }
                         if (curObject.type === 'tank') {
                             curObject.position.x = 
