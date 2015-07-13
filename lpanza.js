@@ -130,96 +130,102 @@ function updateRoomList(sock){
         io.emit('room.list', { rooms : Object.values(roomList) });
 }
 function userJoin(user) {
-	var sock = this;
-	var userId = getUserId(sock.id);
-    user.userName = user.userName.trim();
-    if (user.userName.length === 0) {
-        sock.emit('game.join.fail', { reason : 'error.join_fail_text.name_empty' });
-        return false;
+    try {
+        var sock = this;
+        var userId = getUserId(sock.id);
+        user.userName = user.userName.trim();
+        if (user.userName.length === 0) {
+            sock.emit('game.join.fail', { reason : 'error.join_fail_text.name_empty' });
+            return false;
+        }
+        if (user.userName.length > consts.maxUserNameLength) {
+            sock.emit('game.join.fail', { reason : 'error.join_fail_text.name_too_long' });
+            return false;
+        }
+        if (totalPlayers >= consts.serverMaxUsersCount) {
+            sock.emit('game.join.fail', { reason : 'error.join_fail_text.max_user_count_exceeded' });
+            return false;
+        }
+        var room = user.roomId;
+        if (!roomList.hasOwnProperty(room)) {
+            sock.emit('game.join.fail', { reason : 'error.join_fail_text.room_does_not_exist' });
+            updateRoomList(sock);
+            return false;
+        }
+        if (roomList[room].used === roomList[room].total) {
+            sock.emit('game.join.fail', { reason : 'error.join_fail_text.room_overload' });
+            updateRoomList(sock);
+            return false;
+        }
+        if (userIdNames.hasOwnProperty(userId))
+            return false;
+        roomsData[room].clients[userId] = sock;
+        
+        sock.on('game.control', gameControl);
+        sock.on('disconnect', userLeave);
+        sock.on('game.ping', userPing);
+        
+        //таблицы юзера с его данными
+        roomsData[room].userIdScores[userId] = 0;
+        roomsData[room].userNames.push(user.userName);
+        
+        userIdNames[userId] = user.userName;
+        userIdRooms[userId] = room;
+        
+        roomList[room].used++;
+        if (++totalPlayers === availableTotalPlayers) {
+            createRoom();
+        }
+        sock.join(room);
+        sock.room = room;
+        
+        //Инициализация танка
+        var label = {};
+        label.hp = consts.tanksHP;
+        label.userName = user.userName;
+        label.userId = userId;
+        
+        var tank = {};
+        tank.rotation = getRandom(0, 7) * 45;
+        tank.type = 'tank';
+        tank.subtype = Object.keys(models.tank)[0];
+        tank.size = models.tank[tank.subtype].size;
+        var gun = {};
+        gun.timeToReload = 0;
+        
+        var turret = {};
+        turret.rotation = tank.rotation;
+        turret.gun = gun;
+        
+        tank.position = getRandomPosition();
+        tank.speed = 0;
+        tank.turret = turret;
+        tank.label = label;
+        tank.moveVector = point_(0, 0);
+        
+        roomsData[room].tanks[userId] = tank;
+        
+        sock.emit('game.join.ok', {
+            paintRect : {
+                width : consts.showAreaWidth,
+                height : consts.showAreaHeight
+            },
+            backgroundColor : consts.backgroundColor,
+            mapSize : {
+                width : consts.mapWidth,
+                height : consts.mapHeight
+            },
+            models : models
+        });
+        updateOnline(room);
+        updateRating(room);
+        updateRoomList();
+        logger.info('User[%s] connected to room[%s]', user.userName, room);
     }
-    if (user.userName.length > consts.maxUserNameLength) {
-        sock.emit('game.join.fail', { reason : 'error.join_fail_text.name_too_long' });
-        return false;
+    catch (e) {
+        logger.critical('On try userJoin: %s', show(e));
+        throw e;
     }
-	if(totalPlayers >= consts.serverMaxUsersCount){
-		sock.emit('game.join.fail', { reason : 'error.join_fail_text.max_user_count_exceeded'});
-		return false;
-    }
-    var room = user.roomId;
-    if (!roomList.hasOwnProperty(room)) {
-        sock.emit('game.join.fail', { reason : 'error.join_fail_text.room_does_not_exist' });
-        updateRoomList(sock);
-        return false;
-    }
-    if (roomList[room].used === roomList[room].total) {
-        sock.emit('game.join.fail', { reason : 'error.join_fail_text.room_overload' });
-        updateRoomList(sock);
-        return false;
-    }
-    if (userIdNames.hasOwnProperty(userId))
-        return false;
-    roomsData[room].clients[userId] = sock;
-	
-	sock.on('game.control', gameControl);
-    sock.on('disconnect', userLeave);
-    sock.on('game.ping', userPing);
-    
-    //таблицы юзера с его данными
-    roomsData[room].userIdScores[userId] = 0;
-    roomsData[room].userNames.push(user.userName);
-
-    userIdNames[userId] = user.userName;
-    userIdRooms[userId] = room;
-
-    roomList[room].used++;
-    if (++totalPlayers === availableTotalPlayers) {
-        createRoom();
-    }
-    sock.join(room);
-    sock.room = room;
-
-	//Инициализация танка
-	var label = {};
-	label.hp = consts.tanksHP;
-	label.userName = user.userName;
-    label.userId = userId;
-
-	var tank = { };
-	tank.rotation = getRandom(0,7) * 45;
-    tank.type = 'tank';
-    tank.subtype = Object.keys(models.tank)[0];
-    tank.size = models.tank[tank.subtype].size;
-    var gun = {};
-    gun.timeToReload = 0;
-
-    var turret = {};
-	turret.rotation = tank.rotation;
-    turret.gun = gun;
-	
-    tank.position = getRandomPosition();
-	tank.speed = 0;
-	tank.turret = turret;
-	tank.label = label;
-    tank.moveVector = point_(0, 0);
-
-    roomsData[room].tanks[userId] = tank;
-	
-	sock.emit('game.join.ok', {
-        paintRect : {
-            width : consts.showAreaWidth,
-            height : consts.showAreaHeight
-        },
-        backgroundColor : consts.backgroundColor,
-        mapSize : {
-            width : consts.mapWidth,
-            height : consts.mapHeight
-        },
-        models :  models 
-    });
-    updateOnline(room);
-    updateRating(room);
-    updateRoomList();
-    logger.info('User[%s] connected to room[%s]', user.userName, room);
 }
 
 function updateRating(room){
