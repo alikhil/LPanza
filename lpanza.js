@@ -116,8 +116,7 @@ var freeRoomIds = [];
 
 var timer;
 
-var averageServerTick = 1;
-var smoothingConstant = consts.smoothingConstant;
+var serverTicks = [];
 
 var _und = require('./underscore-min');
 var groups = require('./group.js');
@@ -182,104 +181,102 @@ function updateRoomList(sock){
         io.emit('room.list', { rooms : Object.values(roomList) });
 }
 function userJoin(user) {
-	var sock = this;
-	var userId = getUserId(sock.id);
-    user.userName = user.userName.trim();
-    if (user.userName.length === 0) {
-        sock.emit('game.join.fail', { reason : 'error.join_fail_text.name_empty' });
-        if (consts.debugMode)
-            console.log(user.userName + ' не смог подключиться');
+    try {
+        var sock = this;
+        var userId = getUserId(sock.id);
+        user.userName = user.userName.trim();
+        if (user.userName.length === 0) {
+            sock.emit('game.join.fail', { reason : 'error.join_fail_text.name_empty' });
+            return false;
+        }
+        if (user.userName.length > consts.maxUserNameLength) {
+            sock.emit('game.join.fail', { reason : 'error.join_fail_text.name_too_long' });
+            return false;
+        }
+        if (totalPlayers >= consts.serverMaxUsersCount) {
+            sock.emit('game.join.fail', { reason : 'error.join_fail_text.max_user_count_exceeded' });
+            return false;
+        }
+        var room = user.roomId;
+        if (!roomList.hasOwnProperty(room)) {
+            sock.emit('game.join.fail', { reason : 'error.join_fail_text.room_does_not_exist' });
+            updateRoomList(sock);
+            return false;
+        }
+        if (roomList[room].used === roomList[room].total) {
+            sock.emit('game.join.fail', { reason : 'error.join_fail_text.room_overload' });
+            updateRoomList(sock);
+            return false;
+        }
+        if (userIdNames.hasOwnProperty(userId))
+            return false;
+        roomsData[room].clients[userId] = sock;
+        
+        sock.on('game.control', gameControl);
+        sock.on('disconnect', userLeave);
+        sock.on('game.ping', userPing);
+        
+        //таблицы юзера с его данными
+        roomsData[room].userIdScores[userId] = 0;
+        roomsData[room].userNames.push(user.userName);
+        
+        userIdNames[userId] = user.userName;
+        userIdRooms[userId] = room;
+        
+        roomList[room].used++;
+        if (++totalPlayers === availableTotalPlayers) {
+            createRoom();
+        }
+        sock.join(room);
+        sock.room = room;
+        
+        //Инициализация танка
+        var label = {};
+        label.hp = consts.tanksHP;
+        label.userName = user.userName;
+        label.userId = userId;
+        
+        var tank = {};
+        tank.rotation = getRandom(0, 7) * 45;
+        tank.type = 'tank';
+        tank.subtype = Object.keys(models.tank)[1];
+        tank.size = models.tank[tank.subtype].size;
+        var gun = {};
+        gun.timeToReload = 0;
+        
+        var turret = {};
+        turret.rotation = tank.rotation;
+        turret.gun = gun;
+        
+        tank.position = getRandomPosition();
+        tank.speed = 0;
+        tank.turret = turret;
+        tank.label = label;
+        tank.moveVector = point_(0, 0);
+        
+        roomsData[room].tanks[userId] = tank;
+        
+        sock.emit('game.join.ok', {
+            paintRect : {
+                width : consts.showAreaWidth,
+                height : consts.showAreaHeight
+            },
+            backgroundColor : consts.backgroundColor,
+            mapSize : {
+                width : consts.mapWidth,
+                height : consts.mapHeight
+            },
+            models : models
+        });
+        updateOnline(room);
+        updateRating(room);
+        updateRoomList();
+        logger.info('User[%s] connected to room[%s]', user.userName, room);
     }
-    if (user.userName.length > consts.maxUserNameLength) {
-        sock.emit('game.join.fail', { reason : 'error.join_fail_text.name_too_long' });
-        if (consts.debugMode)
-            console.log(user.userName + ' не смог подключиться');
-        return false;
+    catch (e) {
+        logger.critical('On try userJoin: %s', e);
+        throw e;
     }
-	if(totalPlayers >= consts.serverMaxUsersCount){
-		sock.emit('game.join.fail', { reason : 'error.join_fail_text.max_user_count_exceeded'});
-		if(consts.debugMode)
-			console.log(user.userName + ' не смог подключиться');
-		return false;
-    }
-    var room = user.roomId;
-    if (!roomList.hasOwnProperty(room)) {
-        sock.emit('game.join.fail', { reason : 'error.join_fail_text.room_does_not_exist' });
-        updateRoomList(sock);
-        return false;
-    }
-    if (roomList[room].used === roomList[room].total) {
-        sock.emit('game.join.fail', { reason : 'error.join_fail_text.room_overload' });
-        updateRoomList(sock);
-        return false;
-    }
-    roomsData[room].clients[userId] = sock;
-	
-	sock.on('game.control', gameControl);
-    sock.on('disconnect', userLeave);
-    sock.on('game.ping', userPing);
-    
-    //таблицы юзера с его данными
-    roomsData[room].userIdScores[userId] = 0;
-    roomsData[room].userNames.push(user.userName);
-
-    userIdNames[userId] = user.userName;
-    userIdRooms[userId] = room;
-
-    roomList[room].used++;
-    if (++totalPlayers === availableTotalPlayers) {
-        createRoom();
-    }
-    sock.join(room);
-    sock.room = room;
-
-	//Инициализация танка
-	var label = {};
-	label.hp = consts.tanksHP;
-	label.userName = user.userName;
-    label.userId = userId;
-
-	var tank = { };
-	tank.rotation = getRandom(0,7) * 45;
-    tank.type = 'tank';
-    tank.subtype = Object.keys(models.tank)[1];
-    tank.size = models.tank[tank.subtype].size;
-    var gun = {};
-    gun.timeToReload = 0;
-
-    var turret = {};
-	turret.rotation = tank.rotation;
-    turret.gun = gun;
-	
-    tank.position = getRandomPosition();
-	tank.speed = 0;
-	tank.turret = turret;
-	tank.label = label;
-    tank.moveVector = point_(0, 0);
-
-    roomsData[room].tanks[userId] = tank;
-	if(consts.debugMode){
-		console.log('userIdNames: ', userIdNames);
-		console.log('userNames: ', userNames);
-		console.log('tanks: ', tanks);
-        console.log('bullets: ', bullets);
-	}
-	sock.emit('game.join.ok', {
-        paintRect : {
-            width : consts.showAreaWidth,
-            height : consts.showAreaHeight
-        },
-        backgroundColor : consts.backgroundColor,
-        mapSize : {
-            width : consts.mapWidth,
-            height : consts.mapHeight
-        },
-        models :  models 
-    });
-    updateOnline(room);
-    updateRating(room);
-    updateRoomList();
-    logger.info('User[%s] connected to room[%s]', user.userName, room);
 }
 
 function updateRating(room){
@@ -313,7 +310,6 @@ function updateOnline(room){
 function userLeave(){
     var socket = this;
     var userId = getUserId(socket.id);
-    logger.info('User[%s] from room[%s] left the game', userIdNames[userId], socket.room);
     deleteUser(userId);
 }
 
@@ -321,28 +317,29 @@ function deleteUser(userId){
     if (userIdNames.hasOwnProperty(userId)) {
         var room = userIdRooms[userId];
         var uname = userIdNames[userId];
-        if (consts.debugMode)
-            console.log(uname + ' покинул сервер');
+        logger.info('User[%s] from room[%s] left the game',uname, room);
         removeFromArray(roomsData[room].userNames, uname);
         delete (userIdNames[userId]);
         delete (roomsData[room].tanks[userId]);
         delete (roomsData[room].clients[userId]);
         delete (roomsData[room].userIdScores[userId]);
+        delete (userIdRooms[userId]);
         totalPlayers--;
         if (--roomList[room].used === 0 && availableTotalPlayers > totalPlayers + consts.roomMaxUserCount) {
             deleteRoom(room);
         }
+        updateOnline(room);
+        updateRating(room);
+        updateRoomList();
     }
-    updateOnline(room);
-    updateRating(room);
-    updateRoomList();
+    
 }
 
 function gameControl(control){
     var sock = this;
 	var userId = getUserId(sock.id);
     if (!userIdNames.hasOwnProperty(userId)) {
-        console.log('Попытка получить данные от юзера которого нет');
+        logger.warn('Trying to control user that doesn\'t exist');
         return false;
     }
     var room = userIdRooms[userId];
@@ -445,7 +442,6 @@ function serverTick(){
                 }
             }
             var objects = Object.values(roomsData[room].tanks).concat(roomsData[room].bullets);
-            var deleteIds = [];
             var objectGroups = groups.getCollideGroups(objects);
             var moved = Array(objects.length);
             //группы для проверки на коллизию
@@ -460,9 +456,7 @@ function serverTick(){
                             var newPos = geom.addToPos(curObject.position, curObject.moveVector, 1);
                         }
                     catch (e) {
-                            console.log(e);
-                            console.log(curObject);
-                            console.log(groups);
+                            logger.error('Trying to move object: ' + e);
                         }
                         if (curObject.type === 'tank') {
                             curObject.position.x = 
@@ -509,10 +503,9 @@ function serverTick(){
                                     );
                                     if (collision.collide && cur.label.userId != curObject.owner) {
                                         bulletOnTankHit(cur, curObject);
-                                        if (cur.type === 'deleted-tank') {
-                                            deleteIds.push(group[h]);
+                                        if (curObject.type === 'deleted-bullet') {
+                                            break;
                                         }
-                                        deleteIds.push(group[j]);
                                     }
                                 }
                             }
@@ -540,12 +533,12 @@ function serverTick(){
                             if (group[j] !== undefined) {
                                 var curOb = objects[group[j]];
                                 if (!curOb.type.startsWith('deleted')) {
-                                    {
-                                        if (curOb.type === 'tank' && iObj.label.userId === curOb.label.userId)
-                                            repaintGroups[id].splice(0, 0, getPaintData(curOb));
-                                        else
-                                            repaintGroups[id].push(getPaintData(curOb));
-                                    }
+                                    
+                                    if (curOb.type === 'tank' && iObj.label.userId === curOb.label.userId)
+                                        repaintGroups[id].splice(0, 0, getPaintData(curOb));
+                                    else
+                                        repaintGroups[id].push(getPaintData(curOb));
+                                    
                                 }
                             }
                         }
@@ -563,9 +556,21 @@ function serverTick(){
             }
         }
         var tickEnd = Date.now();
-        var serverTick = (tickEnd - tickStart) / 1000.0;
-        averageServerTick = smoothingConstant * serverTick + (1 - smoothingConstant) * averageServerTick;
+        var serverTick = (tickEnd - tickStart) / 1000;
+        if (serverTicks.length > consts.saveServerTickCount)
+            serverTicks.shift();
+        serverTicks.push(serverTick);
     }
+}
+/*get average serverTick*/
+function getAST(){
+    var sum = 0;
+    if (serverTicks.length === 0)
+        return 'no ticks';
+    for (var i = 0; i < serverTicks.length; i++) {
+        sum += serverTicks[i];
+    }
+    return sum / serverTicks.length;
 }
 
 function clone(obj) {
