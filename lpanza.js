@@ -156,6 +156,8 @@ function userJoin(user) {
         updateRoomList(sock);
         return false;
     }
+    if (userIdNames.hasOwnProperty(userId))
+        return false;
     roomsData[room].clients[userId] = sock;
 	
 	sock.on('game.control', gameControl);
