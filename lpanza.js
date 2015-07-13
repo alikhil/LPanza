@@ -288,7 +288,6 @@ function gameControl(control){
     var sock = this;
 	var userId = getUserId(sock.id);
     if (!userIdNames.hasOwnProperty(userId)) {
-        logger.warn('Trying to control user that doesn\'t exist');
         return false;
     }
     var room = userIdRooms[userId];
