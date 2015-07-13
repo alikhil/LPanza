@@ -31,11 +31,17 @@ loggers.config({
             'level': loggers.DEBUG,
             'file': 'server.log',
             'formatter': 'details'
+        },
+        'errors': {
+            'class': loggers.handlers.File,
+            'level': loggers.ERROR,
+            'file': 'server_errors.log',
+            'formatter': 'details'
         }
     },
     loggers: {
         'logger': {
-            'handlers': ['terminal','logfile'],
+            'handlers': ['terminal','logfile','errors'],
             'level': 'DEBUG',
             'handleExceptions': true,
             'exitOnError': false,
