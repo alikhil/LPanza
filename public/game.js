@@ -217,6 +217,7 @@ var game = {
 	mapSize: undefined,
 	paint: undefined,
 	mayShot: undefined,
+	timeToReloadLeftFraction: undefined,
 	init: function (packet) {
 		this.paintRect = packet.paintRect;
 		this.lastTankCenter = utils.point(0, 0);
@@ -230,6 +231,7 @@ var game = {
 		);
 		this.inProgress = true;
 		this.mayShot = false;
+		this.timeToReloadLeftFraction = 0;
 		this.paint = paint;
 		canvas.init();
 		controls.bind();
@@ -290,6 +292,9 @@ var rating = {
 	users: [],
 	init: function () {
 		$('#gameStatsRatingList').empty();
+		language.on ('change', function () {
+			rating.updateList ();
+		});
 	},
 	uninit: function () {
 		this.users.splice(0, this.users.length);
@@ -297,9 +302,14 @@ var rating = {
 	refresh: function (packet) {
 		this.users.splice(0, this.users.length);
 		this.users = packet.users;
-		$('#gameStatsRatingList').empty();
+		this.updateList ();
+		language.off ('change');
+	},
+	updateList: function () {
+		var element = $('#gameStatsRatingList')
+		element.empty();
 		for(var i = 0; i < this.users.length; i ++) {
-			$('#gameStatsRatingList').append(
+			element.append(
 				$('<li>')
 					.text(
 						language.get('game.rating_element')
@@ -318,6 +328,9 @@ var online = {
 		this.hide ();
 		$('#onlineListBackButton').on('click', this.hide);
 		$('#gameStatsOnlineButton').on('click', this.show);
+		language.on ('change', function () {
+			online.updateList ();
+		});
 	},
 	reset: function () {
 		this.users.splice(0, this.users.length);
