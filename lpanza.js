@@ -75,12 +75,12 @@ var debugLive = require("debug-live");
 debugLive(function (exprToEval) {
     var result;
     try {
-        result = eval(exprToEval);
+        result = show(eval(exprToEval));
     }
     catch (ex) {
         result = ex;
     }
-    return show(result);
+    return result;
 }, consts.debugPort);
 
 function show(obj){
