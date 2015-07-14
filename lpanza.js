@@ -21,8 +21,8 @@ var models = {
             },
 			'and_1': {
 				size: {
-					width: 67,
-					length: 96
+					width: 67.206957,
+					length: 96.555938
 				},
 				center: {
 					x: 0,
@@ -34,12 +34,12 @@ var models = {
 				},
 				hp: {
 					size: {
-						width: 36,
-						length: 4
+						width: 36.730,
+						length: 5.217
 					},
 					center: {
 						x: 0,
-						y: 36
+						y: -36.743
 					}
 				}
 			}
@@ -57,15 +57,15 @@ var models = {
             },
 			'and_1': {
 				size: {
-					width: 51,
-					length: 85
+					width: 50.826,
+					length: 84.038
 				},
 				center: {
 					x: 0,
-					y: -18
+					y: -16.607
 				},
 				reload: {
-					radius: 11,
+					radius: 11.493,
 					center: {
 						x: 0,
 						y: 0
@@ -86,8 +86,8 @@ var models = {
         },
 		'and_1': {
 			size: {
-				width: 8,
-				length: 12
+				width: 5.367,
+				length: 9.662
 			},
 			center: {
 				x: 0,
@@ -164,7 +164,11 @@ function createRoom(){
         userNames : [],
         tanks : [],
         bullets : [],
-        clients : {}
+        clients : {},
+		uids: {
+			bullet: 0,
+			tank: 0
+		}
     };
     logger.info('Room[%d] created', curRoomId);
 }
@@ -239,6 +243,7 @@ function userJoin(user) {
         var tank = {};
         tank.rotation = getRandom(0, 7) * 45;
         tank.type = 'tank';
+		tank.uid = roomsData[room].uids.tank ++;
         tank.subtype = Object.keys(models.tank)[1];
         tank.size = models.tank[tank.subtype].size;
         var gun = {};
@@ -381,6 +386,7 @@ function doShot(tank){
     var room = userIdRooms[userId];
     bullet.rotation = tank.turret.rotation;
     bullet.size = models.bullet[tank.subtype].size;
+    bullet.uid = roomsData[room].uids.bullet ++;
     var shotPos = tank.position;
     var model = models.tank[tank.subtype];
     var rel = geom.addToPos(model.turretCenter, model.center, -1);
