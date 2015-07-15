@@ -1,121 +1,28 @@
 var models = {
 	objects: {},
-	drawModel: function (model, position, rotation) {
-		var context = canvas.context,
-			angle = utils.angleDegToRad(rotation+180-90);
-		context.save();
-		context.translate(
-			position.x,
-			position.y
-		);
-		context.rotate(angle);
-
-		context.drawImage(
-			model.image,
-			-model.size.width/2
-				-model.center.x,
-			-model.size.length/2
-				-model.center.y
-		);
-
-		context.restore();
-	},
-	drawRect: function (size, color, offset, position, rotation) {
-		var context = canvas.context,
-			angle = utils.angleDegToRad(rotation+180-90);
-		context.save();
-		context.translate(
-			position.x,
-			position.y
-		);
-		context.rotate(angle);
-
-		context.fillStyle = color;
-		context.fillRect(
-			-size.width/2 +
-				offset.x,
-			-size.length/2 +
-				offset.y,
-			size.width,
-			size.length
-		);
-
-		context.restore();
-	},
-	drawCircleSector: function (radius, startAngle, endAngle, color, position, rotation) {
-		var context = canvas.context;
-
-		context.beginPath ();
-		context.fillStyle = color;
-		context.moveTo (
-			position.x,
-			position.y
-		);
-		context.arc (
-			position.x,
-			position.y,
-			radius,
-			utils.angleDegToRad(startAngle + rotation),
-			utils.angleDegToRad(endAngle + rotation)
-		);
-		context.fill ();
-	},
-	drawObject: function (object) {
-		var model = this.objects[object.type][object.subtype],
-			context = canvas.context,
-			angle = object.rotation;
-		if (object.type === 'tank') {
-			this.drawRect (
-				model.hp.size,
-				'#FF4040',
-				model.hp.center,
-				object.position,
-				angle
-			);
-			this.drawRect (
-				utils.sizeWL (
-					model.hp.size.width * object.label.hp / 10,
-					model.hp.size.length
-				),
-				'#40FF40',
-				utils.point (
-					model.hp.center.x +
-					-model.hp.size.width * (
-						10 -
-							object.label.hp
-					) / 20,
-					model.hp.center.y
-				),
-				object.position,
-				angle
-			);
-		}
-		if (object.type === 'turret') {
-			this.drawCircleSector (
-				model.reload.radius,
-				0,
-				360 * object.reload,
-				'#FFFF40',
-				object.position,
-				angle
-			);
-		}
-		this.drawModel(model, object.position, angle);
-	},
 	loadModels: function (models) {
+		var containerContainer = $('#containerContainer'),
+			container;
 		this.objects = models;
 		for(var type in this.objects) {
 			for(var subtype in this.objects[type]) {
-				this.objects[type][subtype].center.y *= -1;
+				/*this.objects[type][subtype].center.y *= -1;
+				if (type === 'turret') {
+					this.objects[type][subtype].reload.center.y *= -1;
+				}
 				if (type === 'tank') {
 					this.objects[type][subtype].turretCenter.y *= -1;
-				}
-				this.objects[type][subtype].image = new Image();
-				this.objects[type][subtype].image.src = type + '.' + subtype + '.texture.png';
+					this.objects[type][subtype].hp.center.y *= -1;
+				}*/
+				this.objects[type][subtype].container = $('#' + 'model_' + type + '_' + subtype + '_vector');
+				//container = $('<div>');
+				//container.attr ('id', 'model_'+type+'_'+subtype+'_vector');
+				//containerContainer.append (container);
+				//this.objects[type][subtype].container = container;
+				//$.ajaxSetup({async: false});
+				//this.objects[type][subtype].container.load (type + '.' + subtype + '.vex.svg');
 			}
 		}
-		paint.gridImage = new Image();
-		paint.gridImage.src = 'background.texture.jpg';
 	},
 	getRelativeTurretCenterPosition: function (tank) {
 		var turret = tank.turret,
@@ -152,39 +59,16 @@ var models = {
 			rotation: tank.turret.rotation,
 			type: 'turret',
 			subtype: tank.subtype,
-			reload: tank.label.reload
+			reload: tank.label.reload,
+			uid: tank.uid
 		};
 	}
 };
 var paint = {
 	objects: [],
-	label: {
-		font: '10px Arial'
-	},
-	joystickAlpha: 0.3,
-	color: {
-		map: {
-			empty: '#A0A0A0'
-		},
-		label: {
-			background: '#BFBFBF',
-			text: '#404040'
-		},
-		hp: {
-			active: '#20FF20',
-			background: '#FF2020'
-		},
-		joystick: {
-			inner: '#A0A0A0',
-			outer: '#a0a0a0',
-			active: '#FF6060'
-		},
-		border: '#202020'
-	},
+	drawn: {},
 	mapOffset: undefined,
 	drawRect: undefined,
-	gridStep: 512,
-	gridImage: undefined,
 	userScore: NaN,
 	onPaint: function (packet) {
 		var objects = [],
@@ -311,190 +195,85 @@ var paint = {
 		}
 	},
 	repaint: function () {
-		if(controls.useTouch) {
-			this.clearJoystick();
+		var newDrawn = {},
+			objects = this.objects,
+			orphanObjects = {},
+			id;
+		canvas.element.css (
+			'background-position',
+			(-this.mapOffset.x) + 'px' + ' ' +
+			(-this.mapOffset.y) + 'px'
+		);
+		for (var i in this.drawn) {
+			orphanObjects[i] = 0;
 		}
-		this.scaleAsMap();
-		this.drawEmpty();
-		this.drawBackground();
-		for(var index = 0; index < this.objects.length; index ++) {
-			models.drawObject(this.objects[index]);
-		}
-		for(var index = 0; index < this.objects.length; index ++) {
-			if (this.objects[index].type === 'tank') {
-				this.drawLabel(this.objects[index]);
+		for (var i = 0; i < objects.length; i ++) {
+			id = objects[i].type + objects[i].uid;
+			if (this.drawn.hasOwnProperty (id)) {
+				delete orphanObjects[id];
+			} else {
+				this.addObject (id, objects[i]);
 			}
+			this.updateObject (id, objects[i]);
+			newDrawn[id] = objects[i];
 		}
+		for (var i in orphanObjects) {
+			this.deleteObject (i);
+		}
+		this.drawn = newDrawn;
 		this.drawScore(this.userScore);
-		this.scaleAsScreen();
-		if(controls.useTouch) {
-			this.drawJoystick();
-		}
-	},
-	drawEmpty: function () {
-		var context = canvas.context;
-		context.beginPath();
-		context.fillStyle = this.color.map.empty;
-		context.fillRect(
-			0, 0,
-			game.paintRect.width,
-			game.paintRect.height
-		);
-	},
-	drawBackground: function () {
-		var context = canvas.context;
-		context.save();
-		context.beginPath();
-		context.rect(
-			this.drawRect.left,
-			this.drawRect.top,
-			this.drawRect.right -
-				this.drawRect.left,
-			this.drawRect.bottom -
-				this.drawRect.top
-		);
-		context.clip();
-		for(var positionX = this.drawRect.left -
-				(this.drawRect.left +
-				this.mapOffset.x) %
-				this.gridStep;
-			positionX < this.drawRect.right;
-			positionX += this.gridStep) {
-			for(var positionY = this.drawRect.top -
-					(this.drawRect.top +
-					this.mapOffset.y) %
-					this.gridStep;
-				positionY < this.drawRect.bottom;
-				positionY += this.gridStep) {
-				context.drawImage(paint.gridImage, positionX, positionY);
-			}
-		}
-		context.restore();
-	},
-	scaleAsMap: function () {
-		var ratio = canvas.renderSize.width/
-			game.paintRect.width,
-			offset = canvas.renderOffset,
-			context = canvas.context;
-		context.save();
-		context.translate(
-			offset.x,
-			offset.y
-		);
-		context.beginPath();
-		context.rect(
-			0,
-			0,
-			canvas.renderSize.width,
-			canvas.renderSize.height
-		);
-		context.clip();
-		context.scale(
-			ratio,
-			ratio
-		);
-	},
-	scaleAsScreen: function () {
-		var context = canvas.context;
-		context.restore();
-	},
-	clearJoystick: function () {
-		canvas.context.clearRect(
-			0, 0, canvas.size.width, canvas.size.height
-		);
-	},
-	drawLabel: function (tank) {
-		var context = canvas.context,
-			text = tank.label.userName +
-				' [' + tank.label.hp + ' \u2764]',
-			model = models.objects[tank.type][tank.subtype];
-		context.textAlign = 'center';
-		context.font = this.label.font;
-		context.fillStyle = this.color.label.text;
-		context.fillText(
-			text,
-			tank.position.x,
-			tank.position.y - model.size.length*3/4
-		);
 	},
 	drawScore: function (score) {
 		$('#gameStatsScore').text(score);
 	},
-	drawJoystick: function () {
-		var context = canvas.context,
-			oldAlpha,
-			a, b, d, al = 10, r = 4, R = swipe.threshold;
-		if (swipe.joyIs) {
-			a = controls.touch.touches.first[swipe.joy];
-			b = controls.touch.touches.current[swipe.joy];
-			d = utils.vectorLength (b.x - a.x, b.y - a.y);
-			context.save ();
-			context.translate (a.x, a.y);
-			context.rotate (utils.angleDegToRad (controls.acceleration.rotation-90));
-			oldAlpha = context.globalAlpha;
-			context.globalAlpha = this.joystickAlpha;
-			context.beginPath ();
-			context.strokeStyle = '#FFFF40';
-			context.lineCap = 'round';
-			context.lineJoin = 'round';
-			context.lineWidth = r;
-			context.arc (0, 0, R, 0, 2*Math.PI);
-			context.moveTo(0, 0);
-			context.lineTo(0, d);
-			context.lineTo(-al, d - al);
-			context.moveTo(0, d);
-			context.lineTo(al, d - al);
-			context.stroke ();
-			context.globalAlpha = oldAlpha;
-			context.restore ();
-		}
+	drawLabel: function () {
 	},
-	drawCircleObject: function (position, radius, color) {
-		var context = canvas.context;
-		context.beginPath();
-		context.strokeStyle = this.color.border;
-		context.fillStyle = color;
-		context.arc(
-			position.x,
-			position.y,
-			radius,
-			0,
-			Math.PI*2
+	addObject: function (id, object) {
+		var element = $('<div>'),
+			model = models.objects[object.type][object.subtype];
+		element
+			.attr ('id', id)
+			.addClass ('absolute_position')
+			.css (utils.CSSPrefixes (
+				'transform-origin',
+				(model.size.width/2 -
+					model.center.x) +
+					'px' +
+				' ' +
+				(model.size.length/2 -
+					model.center.y) +
+					'px'
+			));
+		console.log ('add', id, object);
+		canvas.element.append (element);
+		element = $('#' + id);
+		element.html (
+			models.objects[object.type][object.subtype].container.html()
 		);
-		context.stroke();
-		context.fill();
 	},
-	drawJoystickActiveSector: function () {
-		var context = canvas.context,
-			atAngle = utils.angleDegToRad(
-				controls.acceleration.rotation
-			),
-			angle = utils.angleDegToRad(
-				joystick.activeAngle
-			);
-		context.beginPath();
-		context.strokeStyle = this.color.border;
-		context.fillStyle = this.color.joystick.active;
-		context.arc(
-			joystick.center.x,
-			joystick.center.y,
-			joystick.radius.outer,
-			atAngle -
-				angle/2,
-			atAngle +
-				angle/2
-		);
-		context.arc(
-			joystick.center.x,
-			joystick.center.y,
-			joystick.radius.inner,
-			atAngle +
-				angle/2,
-			atAngle -
-				angle/2,
-			true
-		);
-		context.stroke();
-		context.fill();
+	updateObject: function (id, object) {
+		var element = $('#' + id),
+			model = models.objects[object.type][object.subtype];
+		//console.log ('upd', id, object);
+		element
+			.css (utils.CSSPrefixes (
+				'transform',
+				'translate(-50%, -50%) ' +
+				'translate(' +
+					model.center.x + 'px' + ', ' +
+					model.center.y + 'px' +
+				') ' +
+				'translate(' +
+					object.position.x + 'px' + ', ' +
+					object.position.y + 'px' +
+				') ' +
+				'rotate(' +
+					(object.rotation + 90) + 'deg' +
+				')'
+			))
+	},
+	deleteObject: function (id) {
+		console.log ('del', id);
+		$('#' + id).remove ();
 	}
 };

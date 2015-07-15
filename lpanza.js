@@ -5,20 +5,6 @@ var gameSocket;
 var consts = require('./constants.js');
 var models = {
         'tank': {
-            'КВ-1': {
-                size: {
-                    width: consts.tankWidth,		
-                    length: consts.tankWidth
-                },		
-                center: {
-                    x: 0,		
-                    y: 0
-                },		
-                turretCenter: {
-                    x: 0,		
-                    y: 0
-                }
-            },
 			'and_1': {
 				size: {
 					width: 67.206957,
@@ -45,16 +31,6 @@ var models = {
 			}
         },		
         'turret': {
-            'КВ-1': {
-                size: {
-                    width: 25,		
-                    length: 50
-                },		
-                center: {
-                    x: 0,		
-                    y: -12.5
-                }
-            },
 			'and_1': {
 				size: {
 					width: 50.826,
@@ -74,16 +50,6 @@ var models = {
 			}
     },
     'bullet' : {
-        'КВ-1': {
-            size: {
-                width: consts.bulletWidth,		
-                length: consts.bulletLength
-            },		
-            center: {
-                x: 0,		
-                y: 0
-            }
-        },
 		'and_1': {
 			size: {
 				width: 5.367,
@@ -244,7 +210,7 @@ function userJoin(user) {
         tank.rotation = getRandom(0, 7) * 45;
         tank.type = 'tank';
 		tank.uid = roomsData[room].uids.tank ++;
-        tank.subtype = Object.keys(models.tank)[1];
+        tank.subtype = Object.keys(models.tank)[0];
         tank.size = models.tank[tank.subtype].size;
         var gun = {};
         gun.timeToReload = 0;

@@ -14,6 +14,13 @@ html, body, .fullWrap {
 	display: block;
 	margin-left: auto;
 	margin-right: auto;
+	position: relative;
+	outline: 1px dashed black;
+	overflow: hidden;
+	background: url('background.texture.jpg');
+}
+.absolute_position {
+	position: absolute;
 }
 #gameTouchSurface {
 	cursor: url('cursor.png') 15 15, crosshair;
@@ -27,6 +34,7 @@ html, body, .fullWrap {
 }
 .gameOverlay {
 	position: fixed;
+	z-index: 100;
 	opacity: 0.7;
 	filter: alpha(70);
 
@@ -96,6 +104,10 @@ html, body, .fullWrap {
 	height: 34px;
 	margin-left: auto;
 	margin-right: auto;
+}
+
+.hidden {
+	display: none;
 }
 
 /* pure css tabs */

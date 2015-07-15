@@ -8,7 +8,6 @@ var language = {
 		'#playAgainButton': 'game.play_again',
 		'#label_game_rating': 'game.rating',
 		'#label_game_online': 'game.online',
-		'#gameCanvas': 'app.no_canvas',
 		'#label_error_error': 'app.error',
 		'#label_error_dismiss': 'app.back',
 		'#feedbackShowButton': 'app.feedback',
