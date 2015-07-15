@@ -32,8 +32,8 @@ exports.distanceFromWall = 30;
 
 
 /*Размеры танка*/
-exports.tankWidth = 50;
-exports.tankLength = 50;
+exports.tankWidth = 67;
+exports.tankLength = 96;
 /*Радиус башни[устарело]*/
 exports.tankTurretRadius = 9;
 /*Параметры пушки[устарели-теперь пушка часть башни]*/
