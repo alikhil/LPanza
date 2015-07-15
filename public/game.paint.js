@@ -73,9 +73,19 @@ var models = {
 				angle
 			);
 			this.drawRect (
-				model.hp.size,
+				utils.sizeWL (
+					model.hp.size.width * object.label.hp / 10,
+					model.hp.size.length
+				),
 				'#40FF40',
-				model.hp.center,
+				utils.point (
+					model.hp.center.x +
+					-model.hp.size.width * (
+						10 -
+							object.label.hp
+					) / 20,
+					model.hp.center.y
+				),
 				object.position,
 				angle
 			);
