@@ -17,6 +17,7 @@
   <PropertyGroup Condition="'$(Configuration)' == 'Release'" />
   <ItemGroup>
     <Content Include="package.json" />
+    <Compile Include="constants.js" />
     <Compile Include="geom.js" />
     <Compile Include="group.js" />
     <Compile Include="index.js" />
