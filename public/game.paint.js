@@ -1,3 +1,14 @@
+(function () {
+	var old_createElement = document.createElement,
+		tags = ['svg', 'g', 'circle', 'rect', 'path', 'polygon', 'line'];
+	document.createElement = function (tag) {
+		return tags.indexOf (tag) != -1 ?
+				document.createElementNS ('http://www.w3.org/2000/svg', tag)
+			:
+				old_createElement.call (document, tag);
+	}
+}) ();
+
 var models = {
 	objects: {},
 	loadModels: function (models) {
@@ -6,14 +17,14 @@ var models = {
 		this.objects = models;
 		for(var type in this.objects) {
 			for(var subtype in this.objects[type]) {
-				/*this.objects[type][subtype].center.y *= -1;
+				this.objects[type][subtype].center.y *= -1;
 				if (type === 'turret') {
 					this.objects[type][subtype].reload.center.y *= -1;
 				}
 				if (type === 'tank') {
 					this.objects[type][subtype].turretCenter.y *= -1;
 					this.objects[type][subtype].hp.center.y *= -1;
-				}*/
+				}
 				this.objects[type][subtype].container = $('#' + 'model_' + type + '_' + subtype + '_vector');
 				//container = $('<div>');
 				//container.attr ('id', 'model_'+type+'_'+subtype+'_vector');
@@ -50,18 +61,34 @@ var models = {
 			)
 		);
 	},
-	turret: function (tank) {
-		return {
-			position: utils.addVector(
-				tank.position,
-				models.getRelativeTurretCenterPosition(tank)
-			),
-			rotation: tank.turret.rotation,
-			type: 'turret',
-			subtype: tank.subtype,
-			reload: tank.label.reload,
-			uid: tank.uid
-		};
+	addObject: function (id, object) {
+		var svg = canvas.element,
+			code = $('<g>');
+		code.attr ('id', id);
+		if (object.type === 'tank') {
+			code.attr ('class', 'tank');
+		}
+		code.append (this.addTexture (object));
+		if (object.type === 'tank') {
+			code.append (this.addTurret (object));
+		}
+		canvas.element.append (code);
+	},
+	addTexture: function (object) {
+		return $('#' + 'model_' + object.type + '_' + object.subtype + '_vector')[0]
+			.children[0]
+			.children[0]
+			.cloneNode (true);
+	},
+	addTurret: function (object) {
+		return $('<g>')
+			.append (
+				this.addTexture ({
+					'type': 'turret',
+					'subtype': object.subtype
+				})
+			)
+			.attr ('class', 'turret');
 	}
 };
 var paint = {
@@ -72,7 +99,6 @@ var paint = {
 	userScore: NaN,
 	onPaint: function (packet) {
 		var objects = [],
-			objectsCount,
 			offset,
 			index,
 			first;
@@ -133,9 +159,8 @@ var paint = {
 		controls.wantSingleShot = false;
 		game.timeToReloadLeftFraction = packet.user.reload;
 
-		objectsCount = objects.length;
 		first = true;
-		for(index = 0; index < objectsCount; index ++) {
+		for(index = 0; index < objects.length; index ++) {
 			if(objects[index].type === 'tank') {
 				if (first) {
 					objects[index].label.reload = game.timeToReloadLeftFraction;
@@ -145,16 +170,9 @@ var paint = {
 				}
 			}
 		}
-		for(index = 0; index < objectsCount; index ++) {
+		for(index = 0; index < objects.length; index ++) {
 			objects[index].position.x -= offset.x;
 			objects[index].position.y -= offset.y;
-			if(objects[index].type === 'tank') {
-				objects.push (
-					models.turret (
-						objects[index]
-					)
-				);
-			}
 		}
 		this.objects = objects;
 		this.mapOffset = offset;
@@ -229,48 +247,61 @@ var paint = {
 	drawLabel: function () {
 	},
 	addObject: function (id, object) {
-		var element = $('<div>'),
-			model = models.objects[object.type][object.subtype];
-		element
-			.attr ('id', id)
-			.addClass ('absolute_position')
-			.css (utils.CSSPrefixes (
-				'transform-origin',
-				(model.size.width/2 -
-					model.center.x) +
-					'px' +
-				' ' +
-				(model.size.length/2 -
-					model.center.y) +
-					'px'
-			));
-		console.log ('add', id, object);
-		canvas.element.append (element);
-		element = $('#' + id);
-		element.html (
-			models.objects[object.type][object.subtype].container.html()
-		);
+		models.addObject (id, object);
 	},
 	updateObject: function (id, object) {
 		var element = $('#' + id),
 			model = models.objects[object.type][object.subtype];
 		//console.log ('upd', id, object);
 		element
-			.css (utils.CSSPrefixes (
+			.attr (
 				'transform',
-				'translate(-50%, -50%) ' +
 				'translate(' +
-					model.center.x + 'px' + ', ' +
-					model.center.y + 'px' +
-				') ' +
+					(-model.size.width/2) + ' ' +
+					(-model.size.length/2) +
+				')' + ' ' +
 				'translate(' +
-					object.position.x + 'px' + ', ' +
-					object.position.y + 'px' +
-				') ' +
+					model.center.x + ' ' +
+					model.center.y +
+				')' + ' ' +
+				'translate(' +
+					object.position.x + ' ' +
+					object.position.y +
+				')' + ' ' +
 				'rotate(' +
-					(object.rotation + 90) + 'deg' +
+					(object.rotation + 90) + ' ' +
+					(model.center.x+model.size.width/2) + ' ' +
+					(model.center.y+model.size.length/2) +
 				')'
-			))
+			);
+		if (object.type === 'tank') {
+			var model2 = models.objects['turret'][object.subtype]
+			element.find ('.turret')
+				.attr (
+					'transform',
+					'translate(' +
+						(model.size.width/2) + ' ' +
+						(model.size.length/2) +
+					')' + ' ' +
+					'translate(' +
+						(model.turretCenter.x) + ' ' +
+						(model.turretCenter.y) +
+					')' + ' ' +
+					'translate(' +
+						(-model2.size.width/2) + ' ' +
+						(-model2.size.length/2) +
+					')' + ' ' +
+					'translate(' +
+						(-model2.center.x) + ' ' +
+						(-model2.center.y) +
+					')' + ' ' +
+					'rotate(' +
+						(object.turret.rotation-object.rotation) + ' ' +
+						(model2.center.x+model2.size.width/2) + ' ' +
+						(model2.center.y+model2.size.length/2) +
+					')'
+				);
+		}
 	},
 	deleteObject: function (id) {
 		console.log ('del', id);

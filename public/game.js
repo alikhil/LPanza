@@ -162,8 +162,8 @@ var canvas = {
 			);
 		}
 		this.element
-			.css('width', game.paintRect.width)
-			.css('height', game.paintRect.height)
+			.attr('width', game.paintRect.width)
+			.attr('height', game.paintRect.height)
 			.css (utils.CSSPrefixes (
 				'transform',
 				'scale' + '(' +
