@@ -4,6 +4,7 @@ exports.getRandom = getRandom;
 exports.getUserId = getUserId;
 exports.removeFromArray = removeFromArray;
 exports.positionComparator = positionComparator;
+exports.ratingCmp = ratingCmp;
 
 var consts = require('./constants.js');
 
@@ -32,6 +33,10 @@ function removeFromArray(array, val) {
             return false;
         }
     }
+}
+
+function ratingCmp(a, b){
+    return a.score == b.score ? 0 : a.score > b.score ? -1 : 1;
 }
 
 function positionComparator(a, b) {

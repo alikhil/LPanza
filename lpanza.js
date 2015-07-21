@@ -272,7 +272,7 @@ function updateRating(room){
         for (var i = 0; i < keys.length; i++) {
             rating.push({ userName : userIdNames[keys[i]], score : roomsData[room].userIdScores[keys[i]] });
         }
-        rating.sort(ratingCmp);
+        rating.sort(util.ratingCmp);
         rating = rating.slice(0, consts.ratingShowUsersCount);
         io.sockets.in(room).emit('game.rating', { users : rating });
     }
@@ -408,9 +408,6 @@ function size_(width, length){
     return { width : width, length : length };
 }
 
-function ratingCmp(a, b){
-    return a.score == b.score ? 0 : a.score > b.score ? -1 : 1;
-}
 
 if (typeof String.prototype.startsWith != 'function') {
     String.prototype.startsWith = function (str) {
