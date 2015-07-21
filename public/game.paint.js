@@ -17,90 +17,14 @@ var models = {
 			-model.size.length/2
 				-model.center.y
 		);
-
-		context.restore();
-	},
-	drawRect: function (size, color, offset, position, rotation) {
-		var context = canvas.context,
-			angle = utils.angleDegToRad(rotation+180-90);
-		context.save();
-		context.translate(
-			position.x,
-			position.y
-		);
-		context.rotate(angle);
-
-		context.fillStyle = color;
-		context.fillRect(
-			-size.width/2 +
-				offset.x,
-			-size.length/2 +
-				offset.y,
-			size.width,
-			size.length
-		);
-
-		context.restore();
-	},
-	drawCircleSector: function (radius, startAngle, endAngle, color, position, rotation) {
-		var context = canvas.context;
-
-		context.beginPath ();
-		context.fillStyle = color;
-		context.moveTo (
-			position.x,
-			position.y
-		);
-		context.arc (
-			position.x,
-			position.y,
-			radius,
-			utils.angleDegToRad(startAngle + rotation),
-			utils.angleDegToRad(endAngle + rotation)
-		);
-		context.fill ();
 	},
 	drawObject: function (object) {
 		var model = this.objects[object.type][object.subtype],
 			context = canvas.context,
 			angle = object.rotation;
-		if (object.type === 'tank') {
-			this.drawRect (
-				model.hp.size,
-				'#FF4040',
-				model.hp.center,
-				object.position,
-				angle
-			);
-			this.drawRect (
-				utils.sizeWL (
-					model.hp.size.width * object.label.hp / 10,
-					model.hp.size.length
-				),
-				'#40FF40',
-				utils.point (
-					model.hp.center.x +
-					-model.hp.size.width * (
-						10 -
-							object.label.hp
-					) / 20,
-					model.hp.center.y
-				),
-				object.position,
-				angle
-			);
-		}
-		if (object.type === 'turret') {
-			this.drawCircleSector (
-				model.reload.radius,
-				0,
-				360 * object.reload,
-				'#FFFF40',
-				object.position,
-				angle
-			);
-		}
 		this.drawModel(model, object.position, angle);
+
+		context.restore ();
 	},
 	loadModels: function (models) {
 		this.objects = models;
@@ -151,8 +75,7 @@ var models = {
 			),
 			rotation: tank.turret.rotation,
 			type: 'turret',
-			subtype: tank.subtype,
-			reload: tank.label.reload
+			subtype: tank.subtype
 		};
 	}
 };
@@ -190,8 +113,7 @@ var paint = {
 		var objects = [],
 			objectsCount,
 			offset,
-			index,
-			first;
+			index;
 		//console.log(JSON.stringify(packet));
 		this.objects.splice(0, this.objects.length);
 		objects = packet.objects;
@@ -247,20 +169,8 @@ var paint = {
 			game.input.shot();
 		}
 		controls.wantSingleShot = false;
-		game.timeToReloadLeftFraction = packet.user.reload;
 
 		objectsCount = objects.length;
-		first = true;
-		for(index = 0; index < objectsCount; index ++) {
-			if(objects[index].type === 'tank') {
-				if (first) {
-					objects[index].label.reload = game.timeToReloadLeftFraction;
-					first = false;
-				} else {
-					objects[index].label.reload = 0;
-				}
-			}
-		}
 		for(index = 0; index < objectsCount; index ++) {
 			objects[index].position.x -= offset.x;
 			objects[index].position.y -= offset.y;
@@ -408,13 +318,27 @@ var paint = {
 			text = tank.label.userName +
 				' [' + tank.label.hp + ' \u2764]',
 			model = models.objects[tank.type][tank.subtype];
+		context.fillStyle = this.color.hp.background;
+		context.fillRect(
+			tank.position.x - model.size.width/2,
+			tank.position.y - model.size.length*3/4,
+			model.size.width,
+			model.size.length/8
+		);
+		context.fillStyle = this.color.hp.active;
+		context.fillRect(
+			tank.position.x - model.size.width/2,
+			tank.position.y - model.size.length*3/4,
+			model.size.width*tank.label.hp/10,
+			model.size.length/8
+		);
 		context.textAlign = 'center';
 		context.font = this.label.font;
 		context.fillStyle = this.color.label.text;
 		context.fillText(
 			text,
 			tank.position.x,
-			tank.position.y - model.size.length*3/4
+			tank.position.y - model.size.length
 		);
 	},
 	drawScore: function (score) {

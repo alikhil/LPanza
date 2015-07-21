@@ -217,7 +217,6 @@ var game = {
 	mapSize: undefined,
 	paint: undefined,
 	mayShot: undefined,
-	timeToReloadLeftFraction: undefined,
 	init: function (packet) {
 		this.paintRect = packet.paintRect;
 		this.lastTankCenter = utils.point(0, 0);
@@ -231,7 +230,6 @@ var game = {
 		);
 		this.inProgress = true;
 		this.mayShot = false;
-		this.timeToReloadLeftFraction = 0;
 		this.paint = paint;
 		canvas.init();
 		controls.bind();
