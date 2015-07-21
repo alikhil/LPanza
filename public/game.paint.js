@@ -67,6 +67,7 @@ var models = {
 		code.attr ('id', id);
 		if (object.type === 'tank') {
 			code.attr ('class', 'tank');
+			code.append (this.addHP (object));
 		}
 		code.append (this.addTexture (object));
 		if (object.type === 'tank') {
@@ -89,6 +90,47 @@ var models = {
 				})
 			)
 			.attr ('class', 'turret');
+	},
+	addHP: function (object) {
+		var model = models.objects[object.type][object.subtype];
+		return $('<g>')
+			.append (
+				this.addRectangle (model.hp.size, model.hp.center)
+					.attr ('class', 'hp_back')
+			)
+			.append (
+				this.addRectangle (
+						utils.sizeWL (
+							model.hp.size.width * object.label.hp/10,
+							model.hp.size.length
+						),
+						utils.point (
+							model.hp.center.x - model.hp.size.width * (10 - object.label.hp) / 20,
+							model.hp.center.y
+						)
+					)
+					.attr ('class', 'hp_front')
+			)
+			.attr (
+				'transform',
+				'translate(' +
+					(model.size.width/2) + ' ' +
+					(model.size.length/2) +
+				')' + ' ' +
+				'translate(' +
+					model.center.x + ' ' +
+					model.center.y +
+				')'
+			)
+			.attr ('class', 'hp');
+	},
+	addRectangle: function (size, position) {
+		return $('<rect>')
+			.attr ('x', position.x-size.width/2)
+			.attr ('y', position.y-size.length/2)
+			.attr ('width', size.width)
+			.attr ('height', size.length)
+			.attr ('class', 'hp');
 	}
 };
 var paint = {

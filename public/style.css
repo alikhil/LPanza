@@ -90,6 +90,14 @@ html, body, .fullWrap {
 	padding-left: 0px;
 }
 
+#gameCanvas .hp_back {
+	fill: #FF4040;
+}
+
+#gameCanvas .hp_front {
+	fill: #40FF40;
+}
+
 .share_btn {
 	width: 32px;
 	height: 32px;
