@@ -1,7 +1,7 @@
 /* Вспомогательные функции */
 exports.getRandomPosition = getRandomPosition;
 exports.getRandom = getRandom;
-exports.getUserId - getUserId;
+exports.getUserId = getUserId;
 exports.removeFromArray = removeFromArray;
 exports.positionComparator = positionComparator;
 
