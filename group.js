@@ -13,10 +13,10 @@ var objects = [];
 // дерево фенвик 2D
 var tree = [];
 
-exports.init = function (maxWidthL, maxHeightL){
-    maxWidth = maxWidthL;
-    maxHeight = maxHeightL;
-}
+var consts = require('./constants.js');
+
+maxWidth = consts.mapWidth;
+maxHeight = consts.mapHeight;
 
 var _und = require("./underscore-min");
 

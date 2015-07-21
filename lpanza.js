@@ -86,7 +86,6 @@ debugLive(function (exprToEval) {
 function show(obj){
     return JSON.stringify(obj);
 }
-groups.init(consts.mapWidth, consts.mapHeight);
 
 var logger = require('intel').getLogger('logger');
 
