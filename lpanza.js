@@ -1,6 +1,8 @@
+/**
+ *  Объявления 
+ */
 var io;
 var gameSocket;
-//
 
 var consts = require('./constants.js');
 var models = {
@@ -70,9 +72,11 @@ var serverTicks = [];
 var _und = require('./underscore-min');
 var groups = require('./group.js');
 var geom = require('./geom.js');
-var debugLive = require("debug-live");
 var util = require('./util.js');
 
+var logger = require('intel').getLogger('logger');
+
+var debugLive = require("debug-live");
 debugLive(function (exprToEval) {
     var result;
     try {
@@ -87,9 +91,9 @@ debugLive(function (exprToEval) {
 function show(obj){
     return JSON.stringify(obj);
 }
-
-var logger = require('intel').getLogger('logger');
-
+/**
+ * Выносимые функции
+ */
 exports.initGame = function(sio, socket){
     io = sio;
     gameSocket = socket;
@@ -104,31 +108,9 @@ exports.startServer = function (){
     createRoom();
 }
 
-function createRoom(){
-    availableTotalPlayers += consts.roomMaxUserCount;
-    var room = freeRoomIds.length > 0 ? freeRoomIds.shift() : ++curRoomId;
-    roomList[room] = { used : 0, total : consts.roomMaxUserCount, id : room };
-    roomsData[room] = {
-        userIdScores : {},
-        userNames : [],
-        tanks : [],
-        bullets : [],
-        clients : {}
-    };
-    logger.info('Room[%d] created', curRoomId);
-}
-function deleteRoom(room){
-    availableTotalPlayers -= consts.roomMaxUserCount;
-    delete (roomsData[room]);
-    delete (roomList[room]);
-    logger.info('Room[%d] deleted', curRoomId);
-}
-function updateRoomList(sock){
-    if (sock !== undefined)
-        sock.emit('room.list', { rooms : Object.values(roomList) });
-    else
-        io.emit('room.list', { rooms : Object.values(roomList) });
-}
+/**
+ * Функцияя привязанные к событиями
+ */
 function userJoin(user) {
     try {
         var sock = this;
@@ -227,63 +209,6 @@ function userJoin(user) {
         throw e;
     }
 }
-
-function updateRating(room){
-    if (io !== undefined && roomsData.hasOwnProperty(room) && roomsData[room].userNames.length > 0) {
-        var rating = [];
-        var keys = Object.keys(roomsData[room].userIdScores);
-        
-        for (var i = 0; i < keys.length; i++) {
-            rating.push({ userName : userIdNames[keys[i]], score : roomsData[room].userIdScores[keys[i]] });
-        }
-        rating.sort(ratingCmp);
-        rating = rating.slice(0, consts.ratingShowUsersCount);
-        io.sockets.in(room).emit('game.rating', { users : rating });
-    }
-}
-
-function ratingCmp(a, b){
-    return a.score == b.score ? 0 : a.score > b.score ? -1 : 1;
-}
-
-function userPing(data){
-    var sock = this;
-    sock.emit('game.ping', data);
-}
-
-function updateOnline(room){
-    if(roomsData.hasOwnProperty(room) )
-        io.sockets.in(room).emit('game.online', { users : roomsData[room].userNames });
-}
-
-function userLeave(){
-    var socket = this;
-    var userId = util.getUserId(socket.id);
-    deleteUser(userId);
-}
-
-function deleteUser(userId){
-    if (userIdNames.hasOwnProperty(userId)) {
-        var room = userIdRooms[userId];
-        var uname = userIdNames[userId];
-        logger.info('User[%s] from room[%s] left the game',uname, room);
-        util.removeFromArray(roomsData[room].userNames, uname);
-        delete (userIdNames[userId]);
-        delete (roomsData[room].tanks[userId]);
-        delete (roomsData[room].clients[userId]);
-        delete (roomsData[room].userIdScores[userId]);
-        delete (userIdRooms[userId]);
-        totalPlayers--;
-        if (--roomList[room].used === 0 && availableTotalPlayers > totalPlayers + consts.roomMaxUserCount) {
-            deleteRoom(room);
-        }
-        updateOnline(room);
-        updateRating(room);
-        updateRoomList();
-    }
-    
-}
-
 function gameControl(control){
     var sock = this;
 	var userId = util.getUserId(sock.id);
@@ -317,9 +242,70 @@ function gameTest () {
 	}
 }
 
+function userLeave(){
+    var socket = this;
+    var userId = util.getUserId(socket.id);
+    deleteUser(userId);
+}
+
+function userPing(data){
+    var sock = this;
+    sock.emit('game.ping', data);
+}
 /**
- * Стреляем танком
- * */
+ * Вспомогательные функции
+ */
+ 
+ function updateRoomList(sock){
+    if (sock !== undefined)
+        sock.emit('room.list', { rooms : Object.values(roomList) });
+    else
+        io.emit('room.list', { rooms : Object.values(roomList) });
+}
+
+
+function updateRating(room){
+    if (io !== undefined && roomsData.hasOwnProperty(room) && roomsData[room].userNames.length > 0) {
+        var rating = [];
+        var keys = Object.keys(roomsData[room].userIdScores);
+        
+        for (var i = 0; i < keys.length; i++) {
+            rating.push({ userName : userIdNames[keys[i]], score : roomsData[room].userIdScores[keys[i]] });
+        }
+        rating.sort(ratingCmp);
+        rating = rating.slice(0, consts.ratingShowUsersCount);
+        io.sockets.in(room).emit('game.rating', { users : rating });
+    }
+}
+ 
+ function updateOnline(room){
+    if(roomsData.hasOwnProperty(room) )
+        io.sockets.in(room).emit('game.online', { users : roomsData[room].userNames });
+}
+
+
+
+function deleteUser(userId){
+    if (userIdNames.hasOwnProperty(userId)) {
+        var room = userIdRooms[userId];
+        var uname = userIdNames[userId];
+        logger.info('User[%s] from room[%s] left the game',uname, room);
+        util.removeFromArray(roomsData[room].userNames, uname);
+        delete (userIdNames[userId]);
+        delete (roomsData[room].tanks[userId]);
+        delete (roomsData[room].clients[userId]);
+        delete (roomsData[room].userIdScores[userId]);
+        delete (userIdRooms[userId]);
+        totalPlayers--;
+        if (--roomList[room].used === 0 && availableTotalPlayers > totalPlayers + consts.roomMaxUserCount) {
+            deleteRoom(room);
+        }
+        updateOnline(room);
+        updateRating(room);
+        updateRoomList();
+    }
+    
+}
 function doShot(tank){
     var bullet = {};
     if (tank.turret.gun.timeToReload > 0) {
@@ -356,9 +342,77 @@ function doShot(tank){
             }
         }, 50);
 }
+ 
+ function pushTanksAway (tank1, tank2, rotation, distance) {
+	var v = geom.moveVector(rotation, distance/2);
+	tank1.position = geom.addToPos(tank1.position, v, 1);
+	tank2.position = geom.addToPos(tank2.position, v, -1);
+}
+
+
+function bulletOnTankHit(tank, bullet){
+        
+    tank.label.hp -= consts.damagePerShot;
+    var userId = tank.label.userId;
+    var room = userIdRooms[userId];
+    if(roomsData[room].userIdScores[bullet.owner] !== undefined)
+            roomsData[room].userIdScores[bullet.owner] += consts.scoreForHit;
+    if (tank.label.hp == 0){
+        tank.type = 'deleted-tank';
+            roomsData[room].clients[userId].emit('game.over', { score : roomsData[room].userIdScores[userId] });
+        if (roomsData[room].userIdScores[bullet.owner] !== undefined)
+                roomsData[room].userIdScores[bullet.owner] += consts.scoreForKill;
+        deleteUser(tank.label.userId);
+    }
+    updateRating(room);
+    bullet.type = 'deleted-bullet';
+    util.removeFromArray(roomsData[room].bullets, bullet);
+}
+
+function getPaintData(object){
+    var newObj = JSON.parse(JSON.stringify(object));
+    if (object.type === 'tank') {
+        delete (newObj.size);
+        delete (newObj.speed);
+        delete (newObj.moveVector);
+        delete (newObj.label.userId);
+        delete (newObj.turret.gun.timeToReload);
+    }
+    if (object.type === 'bullet') {
+        delete (newObj.size);
+        delete (newObj.speed);
+        delete (newObj.moveVector);
+        delete (newObj.owner);
+    }
+    return newObj;
+}
+
+/*get average serverTick*/
+function getAST(){
+    var sum = 0;
+    if (serverTicks.length === 0)
+        return 'no ticks';
+    for (var i = 0; i < serverTicks.length; i++) {
+        sum += serverTicks[i];
+    }
+    return sum / serverTicks.length;
+}
+
+
+
+function point_(x, y){
+    return { x : x, y : y };
+}
+
+function size_(width, length){
+    return { width : width, length : length };
+}
+
+function ratingCmp(a, b){
+    return a.score == b.score ? 0 : a.score > b.score ? -1 : 1;
+}
 
 if (typeof String.prototype.startsWith != 'function') {
-    // see below for better implementation!
     String.prototype.startsWith = function (str) {
         return str !== undefined && this.indexOf(str) === 0;
     };
@@ -373,7 +427,33 @@ Object.values = function (obj) {
     }
     return vals;
 }
-//пока не буду отслеживать колизии танков и снарядов
+ 
+ /**
+  * Румы
+  */
+function createRoom(){
+    availableTotalPlayers += consts.roomMaxUserCount;
+    var room = freeRoomIds.length > 0 ? freeRoomIds.shift() : ++curRoomId;
+    roomList[room] = { used : 0, total : consts.roomMaxUserCount, id : room };
+    roomsData[room] = {
+        userIdScores : {},
+        userNames : [],
+        tanks : [],
+        bullets : [],
+        clients : {}
+    };
+    logger.info('Room[%d] created', curRoomId);
+}
+function deleteRoom(room){
+    availableTotalPlayers -= consts.roomMaxUserCount;
+    delete (roomsData[room]);
+    delete (roomList[room]);
+    logger.info('Room[%d] deleted', curRoomId);
+}
+
+/**
+ * Игровой цикл
+ */
 function serverTick(){
    
     if (totalPlayers > 0) {
@@ -510,74 +590,6 @@ function serverTick(){
         serverTicks.push(serverTick);
     }
 }
-/*get average serverTick*/
-function getAST(){
-    var sum = 0;
-    if (serverTicks.length === 0)
-        return 'no ticks';
-    for (var i = 0; i < serverTicks.length; i++) {
-        sum += serverTicks[i];
-    }
-    return sum / serverTicks.length;
-}
 
-
-function pushTanksAway (tank1, tank2, rotation, distance) {
-	var v = geom.moveVector(rotation, distance/2);
-	tank1.position = geom.addToPos(tank1.position, v, 1);
-	tank2.position = geom.addToPos(tank2.position, v, -1);
-}
-
-/**
- * При попадании пули в танк
- * */
-
-function bulletOnTankHit(tank, bullet){
-        
-    tank.label.hp -= consts.damagePerShot;
-    var userId = tank.label.userId;
-    var room = userIdRooms[userId];
-    if(roomsData[room].userIdScores[bullet.owner] !== undefined)
-            roomsData[room].userIdScores[bullet.owner] += consts.scoreForHit;
-    if (tank.label.hp == 0){
-        tank.type = 'deleted-tank';
-            roomsData[room].clients[userId].emit('game.over', { score : roomsData[room].userIdScores[userId] });
-        if (roomsData[room].userIdScores[bullet.owner] !== undefined)
-                roomsData[room].userIdScores[bullet.owner] += consts.scoreForKill;
-        deleteUser(tank.label.userId);
-    }
-    updateRating(room);
-    bullet.type = 'deleted-bullet';
-    util.removeFromArray(roomsData[room].bullets, bullet);
-}
-
-function getPaintData(object){
-    // TODO сделать объект только с нужными свойствами
-    var newObj = JSON.parse(JSON.stringify(object));
-    if (object.type === 'tank') {
-        delete (newObj.size);
-        delete (newObj.speed);
-        delete (newObj.moveVector);
-        delete (newObj.label.userId);
-        delete (newObj.turret.gun.timeToReload);
-    }
-    if (object.type === 'bullet') {
-        delete (newObj.size);
-        delete (newObj.speed);
-        delete (newObj.moveVector);
-        delete (newObj.owner);
-    }
-    return newObj;
-}
-
-// HelperFunctions
-/**Создаем объект точку*/
-function point_(x, y){
-    return { x : x, y : y };
-}
-/**Создаем объект size*/
-function size_(width, length){
-    return { width : width, length : length };
-}
 
 
