@@ -18,31 +18,7 @@ var models = {
                     x: 0,		
                     y: 0
                 }
-            },
-			'and_1': {
-				size: {
-					width: 67,
-					length: 96
-				},
-				center: {
-					x: 0,
-					y: 0
-				},
-				turretCenter: {
-					x: 0,
-					y: 0
-				},
-				hp: {
-					size: {
-						width: 36,
-						length: 4
-					},
-					center: {
-						x: 0,
-						y: 36
-					}
-				}
-			}
+            }
         },		
         'turret': {
             'КВ-1': {
@@ -54,24 +30,7 @@ var models = {
                     x: 0,		
                     y: -12.5
                 }
-            },
-			'and_1': {
-				size: {
-					width: 51,
-					length: 85
-				},
-				center: {
-					x: 0,
-					y: -18
-				},
-				reload: {
-					radius: 11,
-					center: {
-						x: 0,
-						y: 0
-					}
-				}
-			}
+            }
     },
     'bullet' : {
         'КВ-1': {
@@ -83,17 +42,7 @@ var models = {
                 x: 0,		
                 y: 0
             }
-        },
-		'and_1': {
-			size: {
-				width: 8,
-				length: 12
-			},
-			center: {
-				x: 0,
-				y: 0
-			}
-		}
+        }
     }
 
     
@@ -239,7 +188,7 @@ function userJoin(user) {
         var tank = {};
         tank.rotation = getRandom(0, 7) * 45;
         tank.type = 'tank';
-        tank.subtype = Object.keys(models.tank)[1];
+        tank.subtype = Object.keys(models.tank)[0];
         tank.size = models.tank[tank.subtype].size;
         var gun = {};
         gun.timeToReload = 0;
