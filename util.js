@@ -1,5 +1,5 @@
 /* Вспомогательные функции */
-exports.gerRandomPosition = gerRandomPosition;
+exports.getRandomPosition = getRandomPosition;
 exports.getRandom = getRandom;
 exports.getUserId - getUserId;
 exports.removeFromArray = removeFromArray;
