@@ -71,6 +71,7 @@ var _und = require('./underscore-min');
 var groups = require('./group.js');
 var geom = require('./geom.js');
 var debugLive = require("debug-live");
+var util = require('./util.js');
 
 debugLive(function (exprToEval) {
     var result;
@@ -92,7 +93,7 @@ var logger = require('intel').getLogger('logger');
 exports.initGame = function(sio, socket){
     io = sio;
     gameSocket = socket;
-	var userId = getUserId(socket.id);
+	var userId = util.getUserId(socket.id);
     updateRoomList(socket);
     gameSocket.on('game.join', userJoin);
     gameSocket.on('game.test', gameTest);
@@ -131,7 +132,7 @@ function updateRoomList(sock){
 function userJoin(user) {
     try {
         var sock = this;
-        var userId = getUserId(sock.id);
+        var userId = util.getUserId(sock.id);
         user.userName = user.userName.trim();
         if (user.userName.length === 0) {
             sock.emit('game.join.fail', { reason : 'error.join_fail_text.name_empty' });
@@ -185,7 +186,7 @@ function userJoin(user) {
         label.userId = userId;
         
         var tank = {};
-        tank.rotation = getRandom(0, 7) * 45;
+        tank.rotation = util.getRandom(0, 7) * 45;
         tank.type = 'tank';
         tank.subtype = Object.keys(models.tank)[0];
         tank.size = models.tank[tank.subtype].size;
@@ -196,7 +197,7 @@ function userJoin(user) {
         turret.rotation = tank.rotation;
         turret.gun = gun;
         
-        tank.position = getRandomPosition();
+        tank.position = util.getRandomPosition();
         tank.speed = 0;
         tank.turret = turret;
         tank.label = label;
@@ -257,7 +258,7 @@ function updateOnline(room){
 
 function userLeave(){
     var socket = this;
-    var userId = getUserId(socket.id);
+    var userId = util.getUserId(socket.id);
     deleteUser(userId);
 }
 
@@ -266,7 +267,7 @@ function deleteUser(userId){
         var room = userIdRooms[userId];
         var uname = userIdNames[userId];
         logger.info('User[%s] from room[%s] left the game',uname, room);
-        removeFromArray(roomsData[room].userNames, uname);
+        util.removeFromArray(roomsData[room].userNames, uname);
         delete (userIdNames[userId]);
         delete (roomsData[room].tanks[userId]);
         delete (roomsData[room].clients[userId]);
@@ -285,7 +286,7 @@ function deleteUser(userId){
 
 function gameControl(control){
     var sock = this;
-	var userId = getUserId(sock.id);
+	var userId = util.getUserId(sock.id);
     if (!userIdNames.hasOwnProperty(userId)) {
         return false;
     }
@@ -494,7 +495,7 @@ function serverTick(){
             }
             var clientsIds = Object.keys(io.engine.clients);
             for (var i = 0; i < clientsIds.length; i++) {
-                var uid = getUserId(clientsIds[i]);
+                var uid = util.getUserId(clientsIds[i]);
                 if (repaintGroups[uid] !== undefined) {
                     if (roomsData[room].clients.hasOwnProperty(uid)) {
                         roomsData[room].clients[uid].emit('game.paint', { user : reloadData[uid], objects : repaintGroups[uid] });
@@ -520,14 +521,6 @@ function getAST(){
     return sum / serverTicks.length;
 }
 
-function clone(obj) {
-    if (null == obj || "object" != typeof obj) return obj;
-    var copy = obj.constructor();
-    for (var attr in obj) {
-        if (obj.hasOwnProperty(attr)) copy[attr] = obj[attr];
-    }
-    return copy;
-}
 
 function pushTanksAway (tank1, tank2, rotation, distance) {
 	var v = geom.moveVector(rotation, distance/2);
@@ -555,7 +548,7 @@ function bulletOnTankHit(tank, bullet){
     }
     updateRating(room);
     bullet.type = 'deleted-bullet';
-    removeFromArray(roomsData[room].bullets, bullet);
+    util.removeFromArray(roomsData[room].bullets, bullet);
 }
 
 function getPaintData(object){
@@ -585,51 +578,6 @@ function point_(x, y){
 /**Создаем объект size*/
 function size_(width, length){
     return { width : width, length : length };
-}
-
-function positionComparator(a, b) {
-    if (a.position.y == b.position.y) {
-        if (a.position.x == b.position.x)
-            return 0;
-        return a.position.x < b.position.x ? -1 : 1;
-    }
-    return a.position.y < b.position.y ? -1 : 1;
-
-}
-
-/**
-	Пока просто рандом, потом будем выбирать по менее заселенной местности
-*/
-
-function getRandomPosition(){
-	var pos = { };
-	pos.x = getRandom(consts.distanceFromWall,consts.mapWidth - consts.distanceFromWall);
-	pos.y = getRandom(consts.distanceFromWall,consts.mapHeight - consts.distanceFromWall);
-	return pos;
-}
-
-
-
-function getRandom(min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-function getRandomColor(){
-	return [ getRandom(0,255), getRandom(0,255), getRandom(0,255) ];
-}
-
-function getUserId(socketId){
-	return socketId.toString().substr(0,5);
-}
-
-
-function removeFromArray(array, val) {
-    for (var i = array.length - 1; i >= 0; i--) {
-        if (array[i] === val) {
-            array.splice(i, 1);
-            return false;
-        }
-    }
 }
 
 
