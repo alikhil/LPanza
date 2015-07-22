@@ -9,6 +9,49 @@
 	}
 }) ();
 
+var transform = {
+	rotate: function (angle, size, center) {
+		return '' +
+			'rotate(' +
+				angle + ' ' +
+				(size.width/2+center.x) + ' ' +
+				(size.length/2-center.y) +
+			')';
+	},
+	relative: function (position) {
+		return '' +
+			'translate(' +
+				position.x + ' ' +
+				position.y +
+			')';
+	},
+	inParent: function (size, center) {
+		return '' +
+			this.relative (
+				utils.point (
+					size.width/2,
+					size.length/2
+				)
+			) + ' ' +
+			this.relative (
+				utils.point (
+					-center.x,
+					-center.y
+				)
+			);
+
+	},
+	toCenter: function (size, center) {
+		return '' +
+			this.relative (
+				utils.point (
+					-size.width/2,
+					-size.length/2
+				)
+			) + ' ' +
+			this.relative (center);
+	}
+};
 var models = {
 	objects: {},
 	loadModels: function (models) {
@@ -17,14 +60,6 @@ var models = {
 		this.objects = models;
 		for(var type in this.objects) {
 			for(var subtype in this.objects[type]) {
-				this.objects[type][subtype].center.y *= -1;
-				if (type === 'turret') {
-					this.objects[type][subtype].reload.center.y *= -1;
-				}
-				if (type === 'tank') {
-					this.objects[type][subtype].turretCenter.y *= -1;
-					this.objects[type][subtype].hp.center.y *= -1;
-				}
 				this.objects[type][subtype].container = $('#' + 'model_' + type + '_' + subtype + '_vector');
 				//container = $('<div>');
 				//container.attr ('id', 'model_'+type+'_'+subtype+'_vector');
@@ -98,7 +133,14 @@ var models = {
 		var model = models.objects[object.type][object.subtype];
 		return $('<g>')
 			.append (
-				this.addRectangle (model.hp.size, model.hp.center)
+				this
+					.addRectangle (
+						model.hp.size,
+						utils.point (
+							model.hp.size.width/2,
+							model.hp.size.length/2
+						)
+					)
 					.attr ('class', 'hp_back')
 			)
 			.append (
@@ -108,22 +150,25 @@ var models = {
 							model.hp.size.length
 						),
 						utils.point (
-							model.hp.center.x - model.hp.size.width * (10 - object.label.hp) / 20,
-							model.hp.center.y
+							model.hp.size.width/2,
+							model.hp.size.length/2
 						)
 					)
 					.attr ('class', 'hp_front')
 			)
 			.attr (
 				'transform',
-				'translate(' +
-					(model.size.width/2) + ' ' +
-					(model.size.length/2) +
-				')' + ' ' +
-				'translate(' +
-					model.center.x + ' ' +
-					model.center.y +
-				')'
+				transform.inParent (
+					model.size,
+					model.hp.center
+				) + ' ' +
+				transform.toCenter (
+					model.hp.size,
+					utils.point (
+						0,
+						0
+					)
+				)
 			)
 			.attr ('class', 'hp');
 	},
@@ -159,18 +204,20 @@ var models = {
 			)
 			.attr (
 				'transform',
-				'translate(' +
-					(model.size.width/2) + ' ' +
-					(model.size.length/2) +
-				')' + ' ' +
-				'translate(' +
-					(-model.reload.radius) + ' ' +
-					(-model.reload.radius) +
-				')' + ' ' +
-				'translate(' +
-					model.reload.center.x + ' ' +
-					model.reload.center.y +
-				')'
+				transform.inParent (
+					model.size,
+					model.reload.center
+				) + ' ' +
+				transform.toCenter (
+					utils.sizeWL (
+						2*model.reload.radius,
+						2*model.reload.radius
+					),
+					utils.point (
+						0,
+						0
+					)
+				)
 			)
 			.attr ('class', 'reload');
 	},
@@ -353,23 +400,18 @@ var paint = {
 		element
 			.attr (
 				'transform',
-				'translate(' +
-					(-model.size.width/2) + ' ' +
-					(-model.size.length/2) +
-				')' + ' ' +
-				'translate(' +
-					model.center.x + ' ' +
-					model.center.y +
-				')' + ' ' +
-				'translate(' +
-					object.position.x + ' ' +
-					object.position.y +
-				')' + ' ' +
-				'rotate(' +
-					(object.rotation + 90) + ' ' +
-					(model.center.x+model.size.width/2) + ' ' +
-					(model.center.y+model.size.length/2) +
-				')'
+				transform.toCenter (
+					model.size,
+					model.center
+				) + ' ' +
+				transform.relative (
+					object.position
+				) + ' ' +
+				transform.rotate (
+					object.rotation + 90,
+					model.size,
+					model.center
+				)
 			);
 		if (object.type === 'tank') {
 			var model2 = models.objects['turret'][object.subtype];
@@ -378,27 +420,19 @@ var paint = {
 			element.find ('.turret')
 				.attr (
 					'transform',
-					'translate(' +
-						(model.size.width/2) + ' ' +
-						(model.size.length/2) +
-					')' + ' ' +
-					'translate(' +
-						(model.turretCenter.x) + ' ' +
-						(model.turretCenter.y) +
-					')' + ' ' +
-					'translate(' +
-						(-model2.size.width/2) + ' ' +
-						(-model2.size.length/2) +
-					')' + ' ' +
-					'translate(' +
-						(-model2.center.x) + ' ' +
-						(-model2.center.y) +
-					')' + ' ' +
-					'rotate(' +
-						(object.turret.rotation-object.rotation) + ' ' +
-						(model2.center.x+model2.size.width/2) + ' ' +
-						(model2.center.y+model2.size.length/2) +
-					')'
+					transform.inParent (
+						model.size,
+						model.turretCenter
+					) + ' ' +
+					transform.toCenter (
+						model2.size,
+						model2.center
+					) + ' ' +
+					transform.rotate (
+						object.turret.rotation-object.rotation,
+						model2.size,
+						model2.center
+					)
 				);
 		}
 	},
