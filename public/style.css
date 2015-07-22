@@ -98,6 +98,14 @@ html, body, .fullWrap {
 	fill: #40FF40;
 }
 
+#gameCanvas .reload_back {
+	fill: #404040;
+}
+
+#gameCanvas .reload_front {
+	fill: #FFFF40;
+}
+
 .share_btn {
 	width: 32px;
 	height: 32px;

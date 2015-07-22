@@ -44,7 +44,7 @@ var models = {
 					radius: 11.493,
 					center: {
 						x: 0,
-						y: 0
+						y: -16.607
 					}
 				}
 			}

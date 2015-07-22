@@ -84,6 +84,9 @@ var models = {
 	addTurret: function (object) {
 		return $('<g>')
 			.append (
+				this.addReload (object)
+			)
+			.append (
 				this.addTexture ({
 					'type': 'turret',
 					'subtype': object.subtype
@@ -129,8 +132,60 @@ var models = {
 			.attr ('x', position.x-size.width/2)
 			.attr ('y', position.y-size.length/2)
 			.attr ('width', size.width)
-			.attr ('height', size.length)
-			.attr ('class', 'hp');
+			.attr ('height', size.length);
+	},
+	addReload: function (object) {
+		var model = models.objects['turret'][object.subtype],
+			radius = model.reload.radius,
+			angleA = 270,
+			angleB = angleA + 360 * object.label.reload,
+			longArc = (Math.abs (angleA - angleB) <= 180) ? 0 : 1,
+			xa = radius*(1+Math.cos(utils.angleDegToRad(angleA))),
+			ya = radius*(1+Math.sin(utils.angleDegToRad(angleA))),
+			xb = radius*(1+Math.cos(utils.angleDegToRad(angleB))),
+			yb = radius*(1+Math.sin(utils.angleDegToRad(angleB)));
+		return $('<g>')
+			.append (
+				$('<circle>')
+					.attr ('class', 'reload_back')
+					.attr ('cx', radius)
+					.attr ('cy', radius)
+					.attr ('r', radius)
+			)
+			.append (
+				$('<path>')
+					.attr ('class', 'reload_front')
+					.attr ('d', "M" + radius + "," + radius + " L" + xa + "," + ya + ", A" + radius + "," + radius + " 0 " + longArc + ",1 " + xb + "," + yb + " z")
+			)
+			.attr (
+				'transform',
+				'translate(' +
+					(model.size.width/2) + ' ' +
+					(model.size.length/2) +
+				')' + ' ' +
+				'translate(' +
+					(-model.reload.radius) + ' ' +
+					(-model.reload.radius) +
+				')' + ' ' +
+				'translate(' +
+					model.reload.center.x + ' ' +
+					model.reload.center.y +
+				')'
+			)
+			.attr ('class', 'reload');
+	},
+	updateReload: function (id, object) {
+		$('#' + id)
+			.find ('.reload')
+			.replaceWith (
+				this.addReload (object)
+			);
+	},
+	updateHP: function (id, object) {
+		var model = models.objects[object.type][object.subtype];
+		$('#' + id)
+			.find ('.hp_front')
+			.attr ('width', model.hp.size.width * object.label.hp/10)
 	}
 };
 var paint = {
@@ -317,7 +372,9 @@ var paint = {
 				')'
 			);
 		if (object.type === 'tank') {
-			var model2 = models.objects['turret'][object.subtype]
+			var model2 = models.objects['turret'][object.subtype];
+			models.updateReload (id, object);
+			models.updateHP (id, object);
 			element.find ('.turret')
 				.attr (
 					'transform',
