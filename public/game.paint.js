@@ -166,7 +166,8 @@ var models = {
 							model.hp.size.length
 						),
 						utils.point (
-							model.hp.size.width/2,
+							model.hp.size.width *
+								object.label.hp / 20,
 							model.hp.size.length/2
 						)
 					)
