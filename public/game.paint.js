@@ -1,6 +1,6 @@
 (function () {
 	var old_createElement = document.createElement,
-		tags = ['svg', 'g', 'circle', 'rect', 'path', 'polygon', 'line'];
+		tags = ['svg', 'g', 'circle', 'rect', 'path', 'polygon', 'line', 'text'];
 	document.createElement = function (tag) {
 		return tags.indexOf (tag) != -1 ?
 				document.createElementNS ('http://www.w3.org/2000/svg', tag)
@@ -107,8 +107,24 @@ var models = {
 		code.append (this.addTexture (object));
 		if (object.type === 'tank') {
 			code.append (this.addTurret (object));
+			code.append (this.addLabel (object));
 		}
 		canvas.element.append (code);
+	},
+	addLabel: function (object) {
+		var model = models.objects[object.type][object.subtype],
+			element = $('<text>');
+		element
+			.attr ('x', 0)
+			.attr ('y', -utils.vectorLength (model.size.width, model.size.length) / 2)
+			.attr ('text-anchor', 'middle')
+			.attr ('class', 'label')
+			.append (
+				document.createTextNode (
+					''
+				)
+			);
+		return element;
 	},
 	addTexture: function (object) {
 		return $('#' + 'model_' + object.type + '_' + object.subtype + '_vector')[0]
@@ -232,7 +248,25 @@ var models = {
 		var model = models.objects[object.type][object.subtype];
 		$('#' + id)
 			.find ('.hp_front')
-			.attr ('width', model.hp.size.width * object.label.hp/10)
+			.attr ('width', model.hp.size.width * object.label.hp/10);
+	},
+	updateLabel: function (id, object) {
+		var model = models.objects[object.type][object.subtype],
+			element = $('#' + id).find ('.label');
+		element
+			.attr (
+				'transform',
+				transform.inParent (
+					model.size,
+					utils.point (0, 0)
+				) + ' ' +
+				transform.rotate (
+					-object.rotation - 90,
+					utils.sizeWL (0, 0),
+					utils.point (0, 0)
+				)
+			);
+		element[0].childNodes[0].data = object.label.userName + ' [' + object.label.hp + ' \u2764]';
 	}
 };
 var paint = {
@@ -388,8 +422,6 @@ var paint = {
 	drawScore: function (score) {
 		$('#gameStatsScore').text(score);
 	},
-	drawLabel: function () {
-	},
 	addObject: function (id, object) {
 		models.addObject (id, object);
 	},
@@ -417,6 +449,7 @@ var paint = {
 			var model2 = models.objects['turret'][object.subtype];
 			models.updateReload (id, object);
 			models.updateHP (id, object);
+			models.updateLabel (id, object);
 			element.find ('.turret')
 				.attr (
 					'transform',

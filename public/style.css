@@ -106,6 +106,10 @@ html, body, .fullWrap {
 	fill: #FFFF40;
 }
 
+#gameCanvas .label {
+	fill: #404040;
+}
+
 .share_btn {
 	width: 32px;
 	height: 32px;
