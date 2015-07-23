@@ -191,6 +191,7 @@ var canvas = {
 			'left': this.renderOffset.x,
 			'top': this.renderOffset.y
 		});
+		paint.updateFonts (game.paintRect.width / this.renderSize.width);
 	}
 };
 function scrollToTop () {

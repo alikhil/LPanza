@@ -118,7 +118,7 @@ var models = {
 			.attr ('x', 0)
 			.attr ('y', -utils.vectorLength (model.size.width, model.size.length) / 2)
 			.attr ('text-anchor', 'middle')
-			.attr ('class', 'label')
+			.attr ('class', 'label_')
 			.append (
 				document.createTextNode (
 					''
@@ -253,7 +253,7 @@ var models = {
 	},
 	updateLabel: function (id, object) {
 		var model = models.objects[object.type][object.subtype],
-			element = $('#' + id).find ('.label');
+			element = $('#' + id).find ('.label_');
 		element
 			.attr (
 				'transform',
@@ -273,6 +273,9 @@ var models = {
 var paint = {
 	objects: [],
 	drawn: {},
+	font: {
+		label: 16
+	},
 	mapOffset: undefined,
 	drawRect: undefined,
 	userScore: NaN,
@@ -473,5 +476,15 @@ var paint = {
 	deleteObject: function (id) {
 		console.log ('del', id);
 		$('#' + id).remove ();
+	},
+	updateFonts: function (scale) {
+		$('#fontStyles')
+			.html (
+				'#gameCanvas .label_ {' +
+					'font-size:' +
+						(this.font.label * scale) + 'px' +
+						';' +
+				'}'
+			);
 	}
 };
