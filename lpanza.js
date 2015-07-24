@@ -227,6 +227,7 @@ function gameControl(control){
 			control.power = 1;
 		}
         tank.speed = control.power * consts.tankSpeed;
+        tank.rotation -= tank.rotation % 45;            
         tank.moveVector = geom.moveVector(tank.rotation, tank.speed);
     }
 	
