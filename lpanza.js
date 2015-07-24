@@ -112,6 +112,10 @@ function userJoin(user) {
     try {
         var sock = this;
         var userId = util.getUserId(sock.id);
+        if(typeof user.userName !== 'string'){
+            sock.emit('game.join.fail', { reason : 'error.join_fail_text.name_empty' });
+            return false;
+        }
         user.userName = user.userName.trim();
         if (user.userName.length === 0) {
             sock.emit('game.join.fail', { reason : 'error.join_fail_text.name_empty' });
