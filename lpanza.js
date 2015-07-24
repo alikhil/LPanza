@@ -212,6 +212,7 @@ function userJoin(user) {
 		tank.uid = roomsData[room].uids.tank ++;
         tank.subtype = Object.keys(models.tank)[0];
         tank.size = models.tank[tank.subtype].size;
+        tank.color = getRandom(1, consts.tankColorCount);
         var gun = {};
         gun.timeToReload = 0;
         

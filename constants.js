@@ -7,6 +7,8 @@ exports.serverMaxUsersCount = 200000;
 
 exports.saveServerTickCount = 20;
 
+/*Кол-во цветов цветов в палитре танков */
+exports.tankColorCount = 7;
 /*Максимальное кол-во игроков в комнате */
 exports.roomMaxUserCount = 20;
 /*Время через которое происходят все расчеты на сервере*/
