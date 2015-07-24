@@ -489,20 +489,6 @@ function roomTick(room){
                     logger.error('Trying to move object: ' + e);
                 }
                 if (curObject.type === 'tank') {
-                    curObject.position.x = 
-                (newPos.x < curObject.size.width / 2) ? 
-                    curObject.size.width / 2 : 
-                    (newPos.x > consts.mapWidth - curObject.size.width / 2) ? 
-                        consts.mapWidth - curObject.size.width / 2 : 
-                        newPos.x;
-                    
-                    curObject.position.y = 
-                (newPos.y < curObject.size.length / 2) ?
-                    curObject.size.length / 2 :
-                    (newPos.y > consts.mapHeight - curObject.size.length / 2) ?
-                     consts.mapHeight - curObject.size.length / 2 : 
-                     newPos.y;
-                    
                     for (var h = 0; h < group.length; h++) {
                         var cur = objects[group[h]];
                         if (cur.type === 'tank') {
@@ -520,6 +506,19 @@ function roomTick(room){
                             }
                         }
                     }
+                    curObject.position.x = 
+                (newPos.x < curObject.size.width / 2) ? 
+                    curObject.size.width / 2 : 
+                    (newPos.x > consts.mapWidth - curObject.size.width / 2) ? 
+                        consts.mapWidth - curObject.size.width / 2 : 
+                        newPos.x;
+                    
+                    curObject.position.y = 
+                (newPos.y < curObject.size.length / 2) ?
+                    curObject.size.length / 2 :
+                    (newPos.y > consts.mapHeight - curObject.size.length / 2) ?
+                     consts.mapHeight - curObject.size.length / 2 : 
+                     newPos.y;
                 }
                 
                 if (curObject.type === 'bullet') {
