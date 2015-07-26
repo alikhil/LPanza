@@ -183,8 +183,8 @@ function makeVector(a, b) {
  * */
 function getRect(center, size, rotation) {
     
-    var forward = moveVector(rotation, size.width / 2);
-    var right = moveVector(rotation - 90, size.length / 2);
+    var forward = moveVector(rotation, size.length / 2);
+    var right = moveVector(rotation - 90, size.width / 2);
     
     var forwardRight = addToPos(addToPos(center, forward, 1), right, 1);
     var forwardLeft = addToPos(addToPos(center, forward, 1), right, -1);

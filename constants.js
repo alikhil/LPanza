@@ -48,7 +48,7 @@ exports.scoreForKill = 10;
 /*Очки за попадание*/
 exports.scoreForHit = 1;
 /*Максимальная длина объекта*/
-exports.maxWidthLength = exports.tankWidth;
+exports.maxWidthLength = 100;
 /*Время на перезарядку*/
 exports.tankReloadTime = 2000;
 /*Кол-во игроков показываемых в рейтинге*/
