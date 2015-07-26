@@ -122,7 +122,8 @@ var canvas = {
 	),
 	init: function () {
 		this.element = $('#gameCanvas');
-		canvas.resize();
+		this.element.empty ();
+		this.resize ();
 		$(window).on('resize', function () {
 			canvas.resize();
 		});
@@ -251,6 +252,7 @@ var game = {
 		this.mayShot = false;
 		this.timeToReloadLeftFraction = 0;
 		this.paint = paint;
+		paint.joystickDrawn = false;
 		canvas.init();
 		controls.bind();
 		models.loadModels(packet.models);
@@ -701,7 +703,7 @@ function resizeOnlineButtonPadding () {
 }
 var swipe = {
 	aimIs: undefined,
-	joyIs: undefined,
+	joyIs: false,
 	aimFix: undefined,
 	joy: undefined,
 	aim: undefined,

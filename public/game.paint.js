@@ -271,6 +271,59 @@ var models = {
 				)
 			);
 		element[0].childNodes[0].data = object.label.userName + ' [' + object.label.hp + ' \u2764]';
+	},
+	addJoystick: function () {
+		var code = $('<g>'),
+			scale = game.paintRect.width / canvas.renderSize.width,
+			center = controls.touch.touches.first[swipe.joy];
+		center = utils.point (
+			(center.x - canvas.renderOffset.x) * scale,
+			(center.y - canvas.renderOffset.y) * scale
+		);
+		code
+			.attr ('id', 'joystick')
+			.attr ('class', 'joystick')
+			.append (
+				$('<circle>')
+					.attr ('cx', 0)
+					.attr ('cy', 0)
+					.attr ('r', swipe.threshold * scale)
+			)
+			.append (
+				$('<path>')
+			)
+			.attr (
+				'transform',
+				transform.relative (center)
+			);
+		canvas.element.append (code);
+	},
+	removeJoystick: function () {
+		$('#joystick').remove ();
+	},
+	updateJoystick: function () {
+		var a = controls.touch.touches.first[swipe.joy],
+			b = controls.touch.touches.current[swipe.joy],
+			scale = game.paintRect.width / canvas.renderSize.width,
+			d = utils.vectorLength (b.x - a.x, b.y - a.y) * scale,
+			al = paint.joystick.length * scale;
+		$('#joystick')
+			.find ('path')
+			.attr ('d', 'M0,0 L0,' + d + ' l-' + al + ',-' + al + ' m' + al + ',' + al + ' l' + al + ',-' + al + ' z')
+			.attr (
+				'transform',
+				transform.rotate (
+					controls.acceleration.rotation-90,
+					utils.sizeWL (
+						0,
+						0
+					),
+					utils.point (
+						0,
+						0
+					)
+				)
+			);
 	}
 };
 var paint = {
@@ -279,9 +332,14 @@ var paint = {
 	font: {
 		label: 16
 	},
+	joystick: {
+		width: 4,
+		length: 10
+	},
 	mapOffset: undefined,
 	drawRect: undefined,
 	userScore: NaN,
+	joystickDrawn: undefined,
 	onPaint: function (packet) {
 		var objects = [],
 			offset,
@@ -402,6 +460,18 @@ var paint = {
 			objects = this.objects,
 			orphanObjects = {},
 			id;
+		if (swipe.joyIs) {
+			if (!this.joystickDrawn) {
+				models.addJoystick ();
+				this.joystickDrawn = true;
+			}
+			models.updateJoystick ();
+		} else {
+			if (this.joystickDrawn) {
+				models.removeJoystick ();
+			}
+			this.joystickDrawn = false;
+		}
 		canvas.element.css (
 			'background-position',
 			(-this.mapOffset.x) + 'px' + ' ' +
@@ -486,6 +556,11 @@ var paint = {
 				'#gameCanvas .label_ {' +
 					'font-size:' +
 						(this.font.label * scale) + 'px' +
+						';' +
+				'}' + ' ' +
+				'#gameCanvas .joystick {' +
+					'stroke-width:' +
+						(this.joystick.width * scale) +
 						';' +
 				'}'
 			);

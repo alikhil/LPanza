@@ -1,3 +1,13 @@
+#gameCanvas .joystick {
+	fill: none;
+	stroke: yellow;
+	stroke-miterlimit: 0;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: 0.3;
+    filter: alpha (30);
+}
+
 #gameCanvas .tank, #gameCanvas .turret {
 	stroke: #000000;
 	stroke-miterlimit: 10;
@@ -101,7 +111,7 @@
 }
 
 #gameCanvas .label_ {
-	fill: #a0a0a0;
+	fill: #404040;
 }
 #gameCanvas .label_back {
 	fill: #404040;
