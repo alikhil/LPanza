@@ -101,10 +101,13 @@ var models = {
 			code = $('<g>');
 		code.attr ('id', id);
 		if (object.type === 'tank') {
-			code.attr ('class', 'tank');
+			code.attr ('class', 'tank color_' + object.color);
 			code.append (this.addHP (object));
 		}
-		code.append (this.addTexture (object));
+		code.append (
+			$(this.addTexture (object))
+				.attr ('class', object.type)
+		);
 		if (object.type === 'tank') {
 			code.append (this.addTurret (object));
 			code.append (this.addLabel (object));

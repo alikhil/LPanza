@@ -1,0 +1,112 @@
+#gameCanvas .tank, #gameCanvas .turret {
+	stroke: #000000;
+	stroke-miterlimit: 10;
+}
+#gameCanvas .label_ {
+	stroke: none;
+}
+#gameCanvas .strokeWhite {
+	stroke: #ffffff;
+}
+
+#gameCanvas .tank .fill_4 {
+	fill: #000000;
+}
+#gameCanvas .tank .fill_5 {
+	fill: #FFFFFF;
+}
+
+#gameCanvas .tank.color_1 .fill_1 {
+	fill: #FF6666;
+}
+#gameCanvas .tank.color_1 .fill_2 {
+	fill: #F8CACB;
+}
+#gameCanvas .tank.color_1 .fill_3 {
+	fill: #FF0000;
+}
+
+#gameCanvas .tank.color_2 .fill_1 {
+	fill: #FF9900;
+}
+#gameCanvas .tank.color_2 .fill_2 {
+	fill: #F8CA66;
+}
+#gameCanvas .tank.color_2 .fill_3 {
+	fill: #FF6600;
+}
+
+#gameCanvas .tank.color_3 .fill_1 {
+	fill: #FFFF66;
+}
+#gameCanvas .tank.color_3 .fill_2 {
+	fill: #F8FFCC;
+}
+#gameCanvas .tank.color_3 .fill_3 {
+	fill: #FFFF00;
+}
+
+#gameCanvas .tank.color_4 .fill_1 {
+	fill: #66FFFF;
+}
+#gameCanvas .tank.color_4 .fill_2 {
+	fill: #CCFFFF;
+}
+#gameCanvas .tank.color_4 .fill_3 {
+	fill: #00FFFF;
+}
+
+#gameCanvas .tank.color_5 .fill_1 {
+	fill: #3366FF;
+}
+#gameCanvas .tank.color_5 .fill_2 {
+	fill: #6699FF;
+}
+#gameCanvas .tank.color_5 .fill_3 {
+	fill: #0000FF;
+}
+
+#gameCanvas .tank.color_6 .fill_1 {
+	fill: #CC66FF;
+}
+#gameCanvas .tank.color_6 .fill_2 {
+	fill: #FF99FF;
+}
+#gameCanvas .tank.color_6 .fill_3 {
+	fill: #CC00FF;
+}
+
+#gameCanvas .tank.color_7 .fill_1 {
+	fill: #66FF66;
+}
+#gameCanvas .tank.color_7 .fill_2 {
+	fill: #CCFF99;
+}
+#gameCanvas .tank.color_7 .fill_3 {
+	fill: #00FF00;
+}
+
+#gameCanvas .hp_back {
+	fill: #FF4040;
+}
+#gameCanvas .hp_front {
+	fill: #40FF40;
+}
+
+#gameCanvas .reload_back {
+	fill: #404040;
+}
+#gameCanvas .reload_front {
+	fill: #FFFF40;
+}
+
+#gameCanvas .label_ {
+	fill: #a0a0a0;
+}
+#gameCanvas .label_back {
+	fill: #404040;
+}
+
+#gameCanvas .bullet {
+	fill: #333333;
+}
