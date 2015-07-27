@@ -9,8 +9,8 @@ var models = {
         'tank': {
 			'and_1': {
 				size: {
-					width: 67.206957,
-					length: 96.555938
+					width: 67.206957 * consts.texturesScale,
+					length: 96.555938 * consts.texturesScale
 				},
 				center: {
 					x: 0,
@@ -22,12 +22,12 @@ var models = {
 				},
 				hp: {
 					size: {
-						width: 36.730,
-						length: 5.217
+						width: 36.730 * consts.texturesScale,
+						length: 5.217 * consts.texturesScale
 					},
 					center: {
 						x: 0,
-						y: -36.743
+						y: -36.743 * consts.texturesScale
 					}
 				}
 			}
@@ -35,18 +35,18 @@ var models = {
         'turret': {
 			'and_1': {
 				size: {
-					width: 50.826,
-					length: 84.038
+					width: 50.826 * consts.texturesScale,
+					length: 84.038 * consts.texturesScale
 				},
 				center: {
 					x: 0,
-					y: -16.607
+					y: -16.607 * consts.texturesScale
 				},
 				reload: {
-					radius: 11.493,
+					radius: 11.493 * consts.texturesScale,
 					center: {
 						x: 0,
-						y: -16.607
+						y: -16.607 * consts.texturesScale
 					}
 				}
 			}
@@ -54,8 +54,8 @@ var models = {
     'bullet' : {
 		'and_1': {
 			size: {
-				width: 5.367,
-				length: 9.662
+				width: 5.367 * consts.texturesScale,
+				length: 9.662 * consts.texturesScale
 			},
 			center: {
 				x: 0,
