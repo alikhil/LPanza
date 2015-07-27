@@ -61,6 +61,9 @@ var models = {
 		for(var type in this.objects) {
 			for(var subtype in this.objects[type]) {
 				this.objects[type][subtype].container = $('#' + 'model_' + type + '_' + subtype + '_vector');
+				$(this.objects[type][subtype].container[0].childNodes[1])
+					.attr ('width', this.objects[type][subtype].size.width)
+					.attr ('height', this.objects[type][subtype].size.length);
 				//container = $('<div>');
 				//container.attr ('id', 'model_'+type+'_'+subtype+'_vector');
 				//containerContainer.append (container);
@@ -131,7 +134,6 @@ var models = {
 	},
 	addTexture: function (object) {
 		return $('#' + 'model_' + object.type + '_' + object.subtype + '_vector')[0]
-			.children[0]
 			.children[0]
 			.cloneNode (true);
 	},
