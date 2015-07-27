@@ -496,6 +496,10 @@ var paint = {
 		this.drawn = newDrawn;
 		this.drawScore(this.userScore);
 	},
+	reset: function () {
+		this.objects = [];
+		this.repaint ();
+	},
 	drawScore: function (score) {
 		$('#gameStatsScore').text(score);
 	},

@@ -262,6 +262,7 @@ var game = {
 	uninit: function () {
 		this.inProgress = false;
 		controls.unbind();
+		paint.reset ();
 		canvas.uninit();
 		ping.uninit();
 		rating.uninit();
