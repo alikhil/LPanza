@@ -1,12 +1,14 @@
 ﻿/*Было много функций, поэтому решил вынести в отдельный файл*/
 
+var consts = require('./constants.js');
+
 var maxWidth; // = 3000;
 var maxHeight; // = 3000;
 
 var objectsCount; // = 300;
 
-var ceilWidthСollision = 50;
-var ceilHeightCollistion = 50;
+var ceilWidthСollision = consts.maxWidthLength;
+var ceilHeightCollistion = consts.maxWidthLength;
 
 var objects = [];
 

@@ -13,6 +13,7 @@
 		<script src='http://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js'></script>
 		<script src='http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js'></script>
 		<link href='style.css' rel='stylesheet' type='text/css' />
+		<link href='colors.css' rel='stylesheet' type='text/css' />
 		<script src='language.js'></script>
 		<script src='Share.js'></script>
 		<script src='game.paint.js'></script>
@@ -162,7 +163,7 @@
 							<h4 class='text-center' id='scoreText'></h4>
 							<div class='text-center form-group' id='scoreShareButtons'></div>
 							<div class='text-center'>
-								<button type='button' class='button' id='playAgainButton'></button>
+								<button type='button' class='btn btn-primary' id='playAgainButton'></button>
 							</div>
 						</div>
 						<div id='onlineListForm'>
@@ -215,11 +216,70 @@
 				</ul>
 			</div>
 			<div class='gameOverlay gameOverlayBottomRight'><span id='gameStatsPing'></span></div>
+			<svg id='gameCanvas' width='0' height='0'></svg>
 			<div class='gameOverlay' id='gameTouchSurface'></div>
-			<canvas width='0' height='0' id='gameCanvas'></canvas>
 			<div class='topMost gameOverlay gameOverlayTopRight' id='gameStatsOnlineButton_element'><button type='button' class='btn btn-primary' id='gameStatsOnlineButton'><span id='label_game_online'></span> <span class='badge' id='gameStatsOnlineCount'>?</span></button></div>
+			<div id='containerContainer' class='hidden'>
+				<div id='model_tank_and_1_vector'>
+<svg height="96.556" width="67.207001">
+	<g transform="translate(0,-955.80628)">
+		<g transform="translate(0.184679,955.43758)">
+			<g transform="translate(-19.784679,-289.15937)">
+				<g>
+					<g>
+						<path d="m 69.002,290.278 -31.596,0 c 0,0 -17.306,-1.615 -17.306,13.63 0,8.662 0,81.676 0,81.676 l 12.23,0 0,-17.284 41.747,0 0,17.284 12.23,0 c 0,0 0,-66.431 0,-81.676 0,-15.245 -17.305,-13.63 -17.305,-13.63 z" class="fill_1" />
+						<path class="fill_2" d="m 38.974609,681.99805 0,11.46875 41.748047,0 0,-11.46875 -41.748047,0 z m 2.888672,3.625 35.730469,0 0,4.21679 -35.730469,0 0,-4.21679 z" transform="translate(-6.6438921, -313.69778)" />
+						<g>
+							<path d="m 53.204,290.028 c -11.48,0 -20.873,10.27 -20.873,22.822 l 0,28.686 c 0,12.552 9.393,-1.331 20.873,-1.331 11.48,0 20.873,13.883 20.873,1.331 l 0,-28.686 c 0,-12.552 -9.393,-22.822 -20.873,-22.822 z" class="fill_2" />
+							<path d="m 53.204,290.028 c -11.48,0 -20.873,10.27 -20.873,22.822 l 0,20.635 c 0,12.552 9.393,6.72 20.873,6.72 11.48,0 20.873,5.832 20.873,-6.72 l 0,-20.635 c 0,-12.552 -9.393,-22.822 -20.873,-22.822 z" style="fill: none;" />
+						</g>
+					</g>
+					<g />
+					<g />
+					<g>
+						<rect height="3.2309999" width="6.1479998"  y="300.77802" x="62.425999" class="fill_3" />
+						<rect height="3.2309999" width="6.1479998" y="300.77802" x="37.833" class="fill_3" />
+					</g>
+				</g>
+			</g>
+			<circle r="22.968" cy="48.746593" cx="33.419319" />
+			<g transform="translate(-19.784679,-289.15937)">
+				<line class='strokeWhite' y2="339.36099" x2="53.203999" y1="335.22699" x1="53.203999" style="fill: none;" />
+				<line class='strokeWhite' y2="337.29401" x2="51.137001" y1="337.29401" x1="55.271" style="fill: none;" />
+			</g>
+		</g>
+	</g>
+</svg>
+				</div>
+				<div id='model_turret_and_1_vector'>
+<svg height="84.038002" width="50.826">
+	<g transform="translate(0,-968.32421)">
+		<g transform="translate(-37.084844,725.71171)">
+			<g  transform="translate(9.501035,55.840633)">
+				<g>
+					<g transform="translate(-0.20719284, -0.00612336)">
+						<g transform="translate(2.2374728e-8, 3.3445285e-6)">
+							<rect class="fill_3" x="47.979" y="187.278" width="10.45" height="18.48" />
+						</g>
+						<path class="fill_3" d="m 60.593,221.605 0,2.11 c 0,4.081 -3.308,7.389 -7.389,7.389 -4.081,0 -7.389,-3.308 -7.389,-7.389 l 0,-2.11 c -10.151,3.148 -17.524,12.612 -17.524,23.798 0,13.759 11.154,24.913 24.913,24.913 13.759,0 24.913,-11.154 24.913,-24.913 0,-11.185 -7.373,-20.649 -17.524,-23.798 z m -7.389,35.291 c -6.347,0 -11.493,-5.145 -11.493,-11.492 0,-6.347 5.145,-11.493 11.493,-11.493 6.348,0 11.493,5.145 11.493,11.493 -0.001,6.347 -5.146,11.492 -11.493,11.492 z" /> <path class="fill_5" d="m 53.204,233.911 c -6.347,0 -11.493,5.145 -11.493,11.493 0,6.347 5.145,11.492 11.493,11.492 6.348,0 11.493,-5.145 11.493,-11.492 -0.001,-6.347 -5.146,-11.493 -11.493,-11.493 z m -7.998,11.593 c 0,-1.005 0.193,-1.962 0.531,-2.848 l 3.039,1.754 c -0.086,0.351 -0.137,0.716 -0.137,1.094 0,0.378 0.051,0.743 0.137,1.094 l -3.039,1.754 c -0.338,-0.886 -0.531,-1.843 -0.531,-2.848 z m 6.731,7.888 C 49.954,253.076 48.213,252.039 47,250.548 l 3.042,-1.756 c 0.527,0.507 1.174,0.887 1.895,1.095 l 0,3.505 z m 0,-12.271 c -0.721,0.208 -1.369,0.589 -1.895,1.095 L 47,240.46 c 1.213,-1.491 2.954,-2.527 4.937,-2.844 l 0,3.505 z m 2.534,-3.505 c 1.983,0.316 3.724,1.353 4.937,2.844 l -3.042,1.756 c -0.527,-0.507 -1.174,-0.887 -1.895,-1.095 l 0,-3.505 z m 0,15.776 0,-3.505 c 0.721,-0.208 1.369,-0.589 1.895,-1.095 l 3.042,1.756 c -1.214,1.491 -2.955,2.528 -4.937,2.844 z m 6.199,-5.04 -3.039,-1.754 c 0.086,-0.351 0.137,-0.716 0.137,-1.094 0,-0.378 -0.051,-0.743 -0.137,-1.094 l 3.039,-1.754 c 0.338,0.886 0.531,1.843 0.531,2.848 10e-4,1.005 -0.193,1.962 -0.531,2.848 z" /> <path class="fill_3" d="m 45.815,205.274 0,16.332 0,2.11 c 0,4.081 3.308,7.389 7.389,7.389 4.081,0 7.389,-3.308 7.389,-7.389 l 0,-2.11 0,-16.332 -14.778,0 z" />
+					</g>
+				</g>
+			</g>
+		</g>
+	</g>
+</svg>
+				</div>
+				<div id='model_bullet_and_1_vector'>
+<svg height="9.6619997" width="5.3660002">
+	<g transform="translate(0,-1042.7002)">
+		<polygon transform="translate(-486.138,1008.5982)" points="488.821,34.102 486.138,37.268 486.138,43.764 491.504,43.764 491.504,37.268 " />
+	</g>
+</svg>
+				</div>
+			</div>
 		</div>
 
 		<div id='screenSizeHack'></div>
+		<style id='fontStyles'></style>
 	</body>
 </html>

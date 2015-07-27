@@ -7,44 +7,61 @@ var gameSocket;
 var consts = require('./constants.js');
 var models = {
         'tank': {
-            'КВ-1': {
-                size: {
-                    width: consts.tankWidth,		
-                    length: consts.tankWidth
-                },		
-                center: {
-                    x: 0,		
-                    y: 0
-                },		
-                turretCenter: {
-                    x: 0,		
-                    y: 0
-                }
-            }
+			'and_1': {
+				size: {
+					width: 67.206957,
+					length: 96.555938
+				},
+				center: {
+					x: 0,
+					y: 0
+				},
+				turretCenter: {
+					x: 0,
+					y: 0
+				},
+				hp: {
+					size: {
+						width: 36.730,
+						length: 5.217
+					},
+					center: {
+						x: 0,
+						y: -36.743
+					}
+				}
+			}
         },		
         'turret': {
-            'КВ-1': {
-                size: {
-                    width: 25,		
-                    length: 50
-                },		
-                center: {
-                    x: 0,		
-                    y: -12.5
-                }
-            }
+			'and_1': {
+				size: {
+					width: 50.826,
+					length: 84.038
+				},
+				center: {
+					x: 0,
+					y: -16.607
+				},
+				reload: {
+					radius: 11.493,
+					center: {
+						x: 0,
+						y: -16.607
+					}
+				}
+			}
     },
     'bullet' : {
-        'КВ-1': {
-            size: {
-                width: consts.bulletWidth,		
-                length: consts.bulletLength
-            },		
-            center: {
-                x: 0,		
-                y: 0
-            }
-        }
+		'and_1': {
+			size: {
+				width: 5.367,
+				length: 9.662
+			},
+			center: {
+				x: 0,
+				y: 0
+			}
+		}
     }
 
     
@@ -171,8 +188,10 @@ function userJoin(user) {
         var tank = {};
         tank.rotation = util.getRandom(0, 7) * 45;
         tank.type = 'tank';
+		tank.uid = roomsData[room].uids.tank ++;
         tank.subtype = Object.keys(models.tank)[0];
         tank.size = models.tank[tank.subtype].size;
+        tank.color = util.getRandom(1, consts.tankColorCount);
         var gun = {};
         gun.timeToReload = 0;
         
@@ -318,6 +337,7 @@ function doShot(tank){
     var room = userIdRooms[userId];
     bullet.rotation = tank.turret.rotation;
     bullet.size = models.bullet[tank.subtype].size;
+    bullet.uid = roomsData[room].uids.bullet ++;
     var shotPos = tank.position;
     var model = models.tank[tank.subtype];
     var rel = geom.addToPos(model.turretCenter, model.center, -1);
@@ -441,7 +461,11 @@ function createRoom(){
         userNames : [],
         tanks : [],
         bullets : [],
-        clients : {}
+        clients : {},
+        uids: {
+            bullet: 0,
+            tank: 0
+        }
     };
     logger.info('Room[%d] created', curRoomId);
 }

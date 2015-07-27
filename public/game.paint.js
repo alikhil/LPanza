@@ -1,45 +1,74 @@
+(function () {
+	var old_createElement = document.createElement,
+		tags = ['svg', 'g', 'circle', 'rect', 'path', 'polygon', 'line', 'text'];
+	document.createElement = function (tag) {
+		return tags.indexOf (tag) != -1 ?
+				document.createElementNS ('http://www.w3.org/2000/svg', tag)
+			:
+				old_createElement.call (document, tag);
+	}
+}) ();
+
+var transform = {
+	rotate: function (angle, size, center) {
+		return '' +
+			'rotate(' +
+				angle + ' ' +
+				(size.width/2+center.x) + ' ' +
+				(size.length/2-center.y) +
+			')';
+	},
+	relative: function (position) {
+		return '' +
+			'translate(' +
+				position.x + ' ' +
+				position.y +
+			')';
+	},
+	inParent: function (size, center) {
+		return '' +
+			this.relative (
+				utils.point (
+					size.width/2,
+					size.length/2
+				)
+			) + ' ' +
+			this.relative (
+				utils.point (
+					-center.x,
+					-center.y
+				)
+			);
+
+	},
+	toCenter: function (size, center) {
+		return '' +
+			this.relative (
+				utils.point (
+					-size.width/2,
+					-size.length/2
+				)
+			) + ' ' +
+			this.relative (center);
+	}
+};
 var models = {
 	objects: {},
-	drawModel: function (model, position, rotation) {
-		var context = canvas.context,
-			angle = utils.angleDegToRad(rotation+180-90);
-		context.save();
-		context.translate(
-			position.x,
-			position.y
-		);
-		context.rotate(angle);
-
-		context.drawImage(
-			model.image,
-			-model.size.width/2
-				-model.center.x,
-			-model.size.length/2
-				-model.center.y
-		);
-	},
-	drawObject: function (object) {
-		var model = this.objects[object.type][object.subtype],
-			context = canvas.context,
-			angle = object.rotation;
-		this.drawModel(model, object.position, angle);
-
-		context.restore ();
-	},
 	loadModels: function (models) {
+		var containerContainer = $('#containerContainer'),
+			container;
 		this.objects = models;
 		for(var type in this.objects) {
 			for(var subtype in this.objects[type]) {
-				this.objects[type][subtype].center.y *= -1;
-				if (type === 'tank') {
-					this.objects[type][subtype].turretCenter.y *= -1;
-				}
-				this.objects[type][subtype].image = new Image();
-				this.objects[type][subtype].image.src = type + '.' + subtype + '.texture.png';
+				this.objects[type][subtype].container = $('#' + 'model_' + type + '_' + subtype + '_vector');
+				//container = $('<div>');
+				//container.attr ('id', 'model_'+type+'_'+subtype+'_vector');
+				//containerContainer.append (container);
+				//this.objects[type][subtype].container = container;
+				//$.ajaxSetup({async: false});
+				//this.objects[type][subtype].container.load (type + '.' + subtype + '.vex.svg');
 			}
 		}
-		paint.gridImage = new Image();
-		paint.gridImage.src = 'background.texture.jpg';
 	},
 	getRelativeTurretCenterPosition: function (tank) {
 		var turret = tank.turret,
@@ -67,53 +96,255 @@ var models = {
 			)
 		);
 	},
-	turret: function (tank) {
-		return {
-			position: utils.addVector(
-				tank.position,
-				models.getRelativeTurretCenterPosition(tank)
-			),
-			rotation: tank.turret.rotation,
-			type: 'turret',
-			subtype: tank.subtype
-		};
+	addObject: function (id, object) {
+		var svg = canvas.element,
+			code = $('<g>');
+		code.attr ('id', id);
+		if (object.type === 'tank') {
+			code.attr ('class', 'tank color_' + object.color);
+			code.append (this.addHP (object));
+		}
+		code.append (
+			$(this.addTexture (object))
+				.attr ('class', object.type)
+		);
+		if (object.type === 'tank') {
+			code.append (this.addTurret (object));
+			code.append (this.addLabel (object));
+		}
+		canvas.element.append (code);
+	},
+	addLabel: function (object) {
+		var model = models.objects[object.type][object.subtype],
+			element = $('<text>');
+		element
+			.attr ('x', 0)
+			.attr ('y', -utils.vectorLength (model.size.width, model.size.length) / 2)
+			.attr ('text-anchor', 'middle')
+			.attr ('class', 'label_')
+			.append (
+				document.createTextNode (
+					''
+				)
+			);
+		return element;
+	},
+	addTexture: function (object) {
+		return $('#' + 'model_' + object.type + '_' + object.subtype + '_vector')[0]
+			.children[0]
+			.children[0]
+			.cloneNode (true);
+	},
+	addTurret: function (object) {
+		return $('<g>')
+			.append (
+				this.addReload (object)
+			)
+			.append (
+				this.addTexture ({
+					'type': 'turret',
+					'subtype': object.subtype
+				})
+			)
+			.attr ('class', 'turret');
+	},
+	addHP: function (object) {
+		var model = models.objects[object.type][object.subtype];
+		return $('<g>')
+			.append (
+				this
+					.addRectangle (
+						model.hp.size,
+						utils.point (
+							model.hp.size.width/2,
+							model.hp.size.length/2
+						)
+					)
+					.attr ('class', 'hp_back')
+			)
+			.append (
+				this.addRectangle (
+						utils.sizeWL (
+							model.hp.size.width * object.label.hp/10,
+							model.hp.size.length
+						),
+						utils.point (
+							model.hp.size.width *
+								object.label.hp / 20,
+							model.hp.size.length/2
+						)
+					)
+					.attr ('class', 'hp_front')
+			)
+			.attr (
+				'transform',
+				transform.inParent (
+					model.size,
+					model.hp.center
+				) + ' ' +
+				transform.toCenter (
+					model.hp.size,
+					utils.point (
+						0,
+						0
+					)
+				)
+			)
+			.attr ('class', 'hp');
+	},
+	addRectangle: function (size, position) {
+		return $('<rect>')
+			.attr ('x', position.x-size.width/2)
+			.attr ('y', position.y-size.length/2)
+			.attr ('width', size.width)
+			.attr ('height', size.length);
+	},
+	addReload: function (object) {
+		var model = models.objects['turret'][object.subtype],
+			radius = model.reload.radius,
+			angleA = 270,
+			angleB = angleA + 360 * object.label.reload,
+			longArc = (Math.abs (angleA - angleB) <= 180) ? 0 : 1,
+			xa = radius*(1+Math.cos(utils.angleDegToRad(angleA))),
+			ya = radius*(1+Math.sin(utils.angleDegToRad(angleA))),
+			xb = radius*(1+Math.cos(utils.angleDegToRad(angleB))),
+			yb = radius*(1+Math.sin(utils.angleDegToRad(angleB)));
+		return $('<g>')
+			.append (
+				$('<circle>')
+					.attr ('class', 'reload_back')
+					.attr ('cx', radius)
+					.attr ('cy', radius)
+					.attr ('r', radius)
+			)
+			.append (
+				$('<path>')
+					.attr ('class', 'reload_front')
+					.attr ('d', "M" + radius + "," + radius + " L" + xa + "," + ya + ", A" + radius + "," + radius + " 0 " + longArc + ",1 " + xb + "," + yb + " z")
+			)
+			.attr (
+				'transform',
+				transform.inParent (
+					model.size,
+					model.reload.center
+				) + ' ' +
+				transform.toCenter (
+					utils.sizeWL (
+						2*model.reload.radius,
+						2*model.reload.radius
+					),
+					utils.point (
+						0,
+						0
+					)
+				)
+			)
+			.attr ('class', 'reload');
+	},
+	updateReload: function (id, object) {
+		$('#' + id)
+			.find ('.reload')
+			.replaceWith (
+				this.addReload (object)
+			);
+	},
+	updateHP: function (id, object) {
+		var model = models.objects[object.type][object.subtype];
+		$('#' + id)
+			.find ('.hp_front')
+			.attr ('width', model.hp.size.width * object.label.hp/10);
+	},
+	updateLabel: function (id, object) {
+		var model = models.objects[object.type][object.subtype],
+			element = $('#' + id).find ('.label_');
+		element
+			.attr (
+				'transform',
+				transform.inParent (
+					model.size,
+					utils.point (0, 0)
+				) + ' ' +
+				transform.rotate (
+					-object.rotation - 90,
+					utils.sizeWL (0, 0),
+					utils.point (0, 0)
+				)
+			);
+		element[0].childNodes[0].data = object.label.userName + ' [' + object.label.hp + ' \u2764]';
+	},
+	addJoystick: function () {
+		var code = $('<g>'),
+			scale = game.paintRect.width / canvas.renderSize.width,
+			center = controls.touch.touches.first[swipe.joy];
+		center = utils.point (
+			(center.x - canvas.renderOffset.x) * scale,
+			(center.y - canvas.renderOffset.y) * scale
+		);
+		code
+			.attr ('id', 'joystick')
+			.attr ('class', 'joystick')
+			.append (
+				$('<circle>')
+					.attr ('cx', 0)
+					.attr ('cy', 0)
+					.attr ('r', swipe.threshold * scale)
+			)
+			.append (
+				$('<path>')
+			)
+			.attr (
+				'transform',
+				transform.relative (center)
+			);
+		canvas.element.append (code);
+	},
+	removeJoystick: function () {
+		$('#joystick').remove ();
+	},
+	updateJoystick: function () {
+		var a = controls.touch.touches.first[swipe.joy],
+			b = controls.touch.touches.current[swipe.joy],
+			scale = game.paintRect.width / canvas.renderSize.width,
+			d = utils.vectorLength (b.x - a.x, b.y - a.y) * scale,
+			al = paint.joystick.length * scale;
+		$('#joystick')
+			.find ('path')
+			.attr ('d', 'M0,0 L0,' + d + ' l-' + al + ',-' + al + ' m' + al + ',' + al + ' l' + al + ',-' + al + ' z')
+			.attr (
+				'transform',
+				transform.rotate (
+					controls.acceleration.rotation-90,
+					utils.sizeWL (
+						0,
+						0
+					),
+					utils.point (
+						0,
+						0
+					)
+				)
+			);
 	}
 };
 var paint = {
 	objects: [],
-	label: {
-		font: '10px Arial'
+	drawn: {},
+	font: {
+		label: 16
 	},
-	joystickAlpha: 0.3,
-	color: {
-		map: {
-			empty: '#A0A0A0'
-		},
-		label: {
-			background: '#BFBFBF',
-			text: '#404040'
-		},
-		hp: {
-			active: '#20FF20',
-			background: '#FF2020'
-		},
-		joystick: {
-			inner: '#A0A0A0',
-			outer: '#a0a0a0',
-			active: '#FF6060'
-		},
-		border: '#202020'
+	joystick: {
+		width: 4,
+		length: 10
 	},
 	mapOffset: undefined,
 	drawRect: undefined,
-	gridStep: 512,
-	gridImage: undefined,
 	userScore: NaN,
+	joystickDrawn: undefined,
 	onPaint: function (packet) {
 		var objects = [],
-			objectsCount,
 			offset,
-			index;
+			index,
+			first;
 		//console.log(JSON.stringify(packet));
 		this.objects.splice(0, this.objects.length);
 		objects = packet.objects;
@@ -169,18 +400,22 @@ var paint = {
 			game.input.shot();
 		}
 		controls.wantSingleShot = false;
+		game.timeToReloadLeftFraction = packet.user.reload;
 
-		objectsCount = objects.length;
-		for(index = 0; index < objectsCount; index ++) {
+		first = true;
+		for(index = 0; index < objects.length; index ++) {
+			if(objects[index].type === 'tank') {
+				if (first) {
+					objects[index].label.reload = game.timeToReloadLeftFraction;
+					first = false;
+				} else {
+					objects[index].label.reload = 0;
+				}
+			}
+		}
+		for(index = 0; index < objects.length; index ++) {
 			objects[index].position.x -= offset.x;
 			objects[index].position.y -= offset.y;
-			if(objects[index].type === 'tank') {
-				objects.push (
-					models.turret (
-						objects[index]
-					)
-				);
-			}
 		}
 		this.objects = objects;
 		this.mapOffset = offset;
@@ -221,204 +456,113 @@ var paint = {
 		}
 	},
 	repaint: function () {
-		if(controls.useTouch) {
-			this.clearJoystick();
-		}
-		this.scaleAsMap();
-		this.drawEmpty();
-		this.drawBackground();
-		for(var index = 0; index < this.objects.length; index ++) {
-			models.drawObject(this.objects[index]);
-		}
-		for(var index = 0; index < this.objects.length; index ++) {
-			if (this.objects[index].type === 'tank') {
-				this.drawLabel(this.objects[index]);
+		var newDrawn = {},
+			objects = this.objects,
+			orphanObjects = {},
+			id;
+		if (swipe.joyIs) {
+			if (!this.joystickDrawn) {
+				models.addJoystick ();
+				this.joystickDrawn = true;
 			}
+			models.updateJoystick ();
+		} else {
+			if (this.joystickDrawn) {
+				models.removeJoystick ();
+			}
+			this.joystickDrawn = false;
 		}
+		canvas.element.css (
+			'background-position',
+			(-this.mapOffset.x) + 'px' + ' ' +
+			(-this.mapOffset.y) + 'px'
+		);
+		for (var i in this.drawn) {
+			orphanObjects[i] = 0;
+		}
+		for (var i = 0; i < objects.length; i ++) {
+			id = objects[i].type + objects[i].uid;
+			if (this.drawn.hasOwnProperty (id)) {
+				delete orphanObjects[id];
+			} else {
+				this.addObject (id, objects[i]);
+			}
+			this.updateObject (id, objects[i]);
+			newDrawn[id] = objects[i];
+		}
+		for (var i in orphanObjects) {
+			this.deleteObject (i);
+		}
+		this.drawn = newDrawn;
 		this.drawScore(this.userScore);
-		this.scaleAsScreen();
-		if(controls.useTouch) {
-			this.drawJoystick();
-		}
-	},
-	drawEmpty: function () {
-		var context = canvas.context;
-		context.beginPath();
-		context.fillStyle = this.color.map.empty;
-		context.fillRect(
-			0, 0,
-			game.paintRect.width,
-			game.paintRect.height
-		);
-	},
-	drawBackground: function () {
-		var context = canvas.context;
-		context.save();
-		context.beginPath();
-		context.rect(
-			this.drawRect.left,
-			this.drawRect.top,
-			this.drawRect.right -
-				this.drawRect.left,
-			this.drawRect.bottom -
-				this.drawRect.top
-		);
-		context.clip();
-		for(var positionX = this.drawRect.left -
-				(this.drawRect.left +
-				this.mapOffset.x) %
-				this.gridStep;
-			positionX < this.drawRect.right;
-			positionX += this.gridStep) {
-			for(var positionY = this.drawRect.top -
-					(this.drawRect.top +
-					this.mapOffset.y) %
-					this.gridStep;
-				positionY < this.drawRect.bottom;
-				positionY += this.gridStep) {
-				context.drawImage(paint.gridImage, positionX, positionY);
-			}
-		}
-		context.restore();
-	},
-	scaleAsMap: function () {
-		var ratio = canvas.renderSize.width/
-			game.paintRect.width,
-			offset = canvas.renderOffset,
-			context = canvas.context;
-		context.save();
-		context.translate(
-			offset.x,
-			offset.y
-		);
-		context.beginPath();
-		context.rect(
-			0,
-			0,
-			canvas.renderSize.width,
-			canvas.renderSize.height
-		);
-		context.clip();
-		context.scale(
-			ratio,
-			ratio
-		);
-	},
-	scaleAsScreen: function () {
-		var context = canvas.context;
-		context.restore();
-	},
-	clearJoystick: function () {
-		canvas.context.clearRect(
-			0, 0, canvas.size.width, canvas.size.height
-		);
-	},
-	drawLabel: function (tank) {
-		var context = canvas.context,
-			text = tank.label.userName +
-				' [' + tank.label.hp + ' \u2764]',
-			model = models.objects[tank.type][tank.subtype];
-		context.fillStyle = this.color.hp.background;
-		context.fillRect(
-			tank.position.x - model.size.width/2,
-			tank.position.y - model.size.length*3/4,
-			model.size.width,
-			model.size.length/8
-		);
-		context.fillStyle = this.color.hp.active;
-		context.fillRect(
-			tank.position.x - model.size.width/2,
-			tank.position.y - model.size.length*3/4,
-			model.size.width*tank.label.hp/10,
-			model.size.length/8
-		);
-		context.textAlign = 'center';
-		context.font = this.label.font;
-		context.fillStyle = this.color.label.text;
-		context.fillText(
-			text,
-			tank.position.x,
-			tank.position.y - model.size.length
-		);
 	},
 	drawScore: function (score) {
 		$('#gameStatsScore').text(score);
 	},
-	drawJoystick: function () {
-		var context = canvas.context,
-			oldAlpha,
-			a, b, d, al = 10, r = 4, R = swipe.threshold;
-		if (swipe.joyIs) {
-			a = controls.touch.touches.first[swipe.joy];
-			b = controls.touch.touches.current[swipe.joy];
-			d = utils.vectorLength (b.x - a.x, b.y - a.y);
-			context.save ();
-			context.translate (a.x, a.y);
-			context.rotate (utils.angleDegToRad (controls.acceleration.rotation-90));
-			oldAlpha = context.globalAlpha;
-			context.globalAlpha = this.joystickAlpha;
-			context.beginPath ();
-			context.strokeStyle = '#FFFF40';
-			context.lineCap = 'round';
-			context.lineJoin = 'round';
-			context.lineWidth = r;
-			context.arc (0, 0, R, 0, 2*Math.PI);
-			context.moveTo(0, 0);
-			context.lineTo(0, d);
-			context.lineTo(-al, d - al);
-			context.moveTo(0, d);
-			context.lineTo(al, d - al);
-			context.stroke ();
-			context.globalAlpha = oldAlpha;
-			context.restore ();
+	addObject: function (id, object) {
+		models.addObject (id, object);
+	},
+	updateObject: function (id, object) {
+		var element = $('#' + id),
+			model = models.objects[object.type][object.subtype];
+		//console.log ('upd', id, object);
+		element
+			.attr (
+				'transform',
+				transform.toCenter (
+					model.size,
+					model.center
+				) + ' ' +
+				transform.relative (
+					object.position
+				) + ' ' +
+				transform.rotate (
+					object.rotation + 90,
+					model.size,
+					model.center
+				)
+			);
+		if (object.type === 'tank') {
+			var model2 = models.objects['turret'][object.subtype];
+			models.updateReload (id, object);
+			models.updateHP (id, object);
+			models.updateLabel (id, object);
+			element.find ('.turret')
+				.attr (
+					'transform',
+					transform.inParent (
+						model.size,
+						model.turretCenter
+					) + ' ' +
+					transform.toCenter (
+						model2.size,
+						model2.center
+					) + ' ' +
+					transform.rotate (
+						object.turret.rotation-object.rotation,
+						model2.size,
+						model2.center
+					)
+				);
 		}
 	},
-	drawCircleObject: function (position, radius, color) {
-		var context = canvas.context;
-		context.beginPath();
-		context.strokeStyle = this.color.border;
-		context.fillStyle = color;
-		context.arc(
-			position.x,
-			position.y,
-			radius,
-			0,
-			Math.PI*2
-		);
-		context.stroke();
-		context.fill();
+	deleteObject: function (id) {
+		console.log ('del', id);
+		$('#' + id).remove ();
 	},
-	drawJoystickActiveSector: function () {
-		var context = canvas.context,
-			atAngle = utils.angleDegToRad(
-				controls.acceleration.rotation
-			),
-			angle = utils.angleDegToRad(
-				joystick.activeAngle
+	updateFonts: function (scale) {
+		$('#fontStyles')
+			.html (
+				'#gameCanvas .label_ {' +
+					'font-size:' +
+						(this.font.label * scale) + 'px' +
+						';' +
+				'}' + ' ' +
+				'#gameCanvas .joystick {' +
+					'stroke-width:' +
+						(this.joystick.width * scale) +
+						';' +
+				'}'
 			);
-		context.beginPath();
-		context.strokeStyle = this.color.border;
-		context.fillStyle = this.color.joystick.active;
-		context.arc(
-			joystick.center.x,
-			joystick.center.y,
-			joystick.radius.outer,
-			atAngle -
-				angle/2,
-			atAngle +
-				angle/2
-		);
-		context.arc(
-			joystick.center.x,
-			joystick.center.y,
-			joystick.radius.inner,
-			atAngle +
-				angle/2,
-			atAngle -
-				angle/2,
-			true
-		);
-		context.stroke();
-		context.fill();
 	}
 };

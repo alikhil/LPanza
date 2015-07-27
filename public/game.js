@@ -54,6 +54,13 @@ var utils = {
 			bVector.x + aVector.x,
 			bVector.y + aVector.y
 		);
+	},
+	CSSPrefixes: function (property, value) {
+		var prefixes = ['', '-ms-', '-webkit-', '-moz-', '-o-'], t = {};
+		for (var i = 0; i < prefixes.length; i ++) {
+			t[prefixes[i] + property] = value;
+		}
+		return t;
 	}
 };
 var socket = {
@@ -101,7 +108,6 @@ var socket = {
 };
 var canvas = {
 	element: undefined,
-	context: undefined,
 	renderSize: utils.sizeWH(
 		NaN,
 		NaN
@@ -110,21 +116,20 @@ var canvas = {
 		NaN,
 		NaN
 	),
-	size: utils.sizeWH(
+	screenSize: utils.sizeWH(
 		NaN,
 		NaN
 	),
 	init: function () {
 		this.element = $('#gameCanvas');
-		this.context = canvas.element[0].getContext('2d');
-		canvas.resize();
+		this.element.empty ();
+		this.resize ();
 		$(window).on('resize', function () {
 			canvas.resize();
 		});
 		window.setTimeout(function () {
 			scrollToTop();
 			canvas.resize();
-			paint.repaint();
 		}, 250);
 	},
 	uninit: function () {
@@ -142,38 +147,52 @@ var canvas = {
 		parentElement
 			.width(screenSizeHackElement.offsetLeft + 1)
 			.height(screenSizeHackElement.offsetTop + 1);
-		this.size.width = parent.offsetWidth;
-		this.size.height = parent.offsetHeight;
+		this.screenSize.width = parent.offsetWidth;
+		this.screenSize.height = parent.offsetHeight;
 		
-		this.renderSize.width = this.size.width;
+		this.renderSize.width = this.screenSize.width;
 		this.renderSize.height = this.renderSize.width*(
 			game.paintRect.height/
 			game.paintRect.width
 		);
-		if(this.renderSize.height > this.size.height) {
-			this.renderSize.height = this.size.height;
+		if(this.renderSize.height > this.screenSize.height) {
+			this.renderSize.height = this.screenSize.height;
 			this.renderSize.width = this.renderSize.height*(
 				game.paintRect.width/
 				game.paintRect.height
 			);
 		}
 		this.element
-			.attr('width', this.size.width)
-			.attr('height', this.size.height);
+			.attr('width', game.paintRect.width)
+			.attr('height', game.paintRect.height)
+			.css (utils.CSSPrefixes (
+				'transform',
+				'scale' + '(' +
+					this.renderSize.width / game.paintRect.width + ',' +
+					this.renderSize.height / game.paintRect.height + ')'
+			))
+			.css (utils.CSSPrefixes (
+				'transform-origin',
+				'0px 0px'
+			));
 		this.renderOffset.x = (
-			this.size.width -
+			this.screenSize.width -
 			this.renderSize.width
 		)/2;
 		this.renderOffset.y = (
-			this.size.height -
+			this.screenSize.height -
 			this.renderSize.height
 		)/2;
+		this.element
+			.css ('margin-top', this.renderOffset.y)
+			.css ('margin-left', this.renderOffset.x);
 		$('#gameTouchSurface').css ({
 			'width': this.renderSize.width,
 			'height': this.renderSize.height,
 			'left': this.renderOffset.x,
 			'top': this.renderOffset.y
 		});
+		paint.updateFonts (game.paintRect.width / this.renderSize.width);
 	}
 };
 function scrollToTop () {
@@ -231,6 +250,7 @@ var game = {
 		this.inProgress = true;
 		this.mayShot = false;
 		this.paint = paint;
+		paint.joystickDrawn = false;
 		canvas.init();
 		controls.bind();
 		models.loadModels(packet.models);
@@ -681,7 +701,7 @@ function resizeOnlineButtonPadding () {
 }
 var swipe = {
 	aimIs: undefined,
-	joyIs: undefined,
+	joyIs: false,
 	aimFix: undefined,
 	joy: undefined,
 	aim: undefined,

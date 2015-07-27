@@ -7,6 +7,8 @@ exports.serverMaxUsersCount = 200000;
 
 exports.saveServerTickCount = 20;
 
+/*Кол-во цветов цветов в палитре танков */
+exports.tankColorCount = 7;
 /*Максимальное кол-во игроков в комнате */
 exports.roomMaxUserCount = 20;
 /*Время через которое происходят все расчеты на сервере*/
@@ -46,7 +48,7 @@ exports.scoreForKill = 10;
 /*Очки за попадание*/
 exports.scoreForHit = 1;
 /*Максимальная длина объекта*/
-exports.maxWidthLength = exports.tankWidth;
+exports.maxWidthLength = 100;
 /*Время на перезарядку*/
 exports.tankReloadTime = 2000;
 /*Кол-во игроков показываемых в рейтинге*/
