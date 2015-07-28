@@ -13,6 +13,7 @@ exports.scalarMult = scalarMult;
 exports.vectorsAreParallel = vectorsAreParallel;
 
 exports.TDA_rectanglesIntersect = TDA_rectanglesIntersect;
+exports.rectangleInsideMap = rectangleInsideMap;
 
 /**
  * Теорема о разделяющих осях
@@ -22,6 +23,55 @@ function radToDeg (angle) {
 }
 function degToRad (angle) {
 	return Math.PI*(angle/180);
+}
+function rectangleInsideMap (rect, mapSize) {
+	var points = getRect (
+			rect.position,
+			rect.size,
+			rect.rotation
+		),
+		t,
+		rangeIn,
+		rangeOut,
+		result = {
+			in: true,
+			delta: {
+				x: 0,
+				y: 0
+			}
+		};
+	t = {
+		x: [],
+		y: []
+	};
+	for(var i in points) {
+		t.x.push (points[i].x);
+		t.y.push (points[i].y);
+	}
+	points = t;
+	rangeOut = {
+		x: {
+			left: 0,
+			right: mapSize.width
+		},
+		y: {
+			left: 0,
+			right: mapSize.height
+		}
+	};
+	for (var i in rangeOut) {
+		rangeIn = {
+			left: Math.min.apply (null, points[i]),
+			right: Math.max.apply (null, points[i])
+		};
+		if (rangeIn.left < rangeOut[i].left) {
+			result.delta[i] = rangeOut[i].left - rangeIn.left;
+		} else if (rangeIn.right > rangeOut[i].right) {
+			result.delta[i] = rangeOut[i].right - rangeIn.right;
+		}
+		result.in &= result.delta[i] == 0;
+	}
+	return result;
 }
 function TDA_rectanglesIntersect (rect1, rect2) {
 	var axes = [

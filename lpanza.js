@@ -488,10 +488,13 @@ function roomTick(room){
     var tickStart = Date.now();
  
     for (var i = roomsData[room].bullets.length - 1; i >= 0; i--) {
-        if (roomsData[room].bullets[i].position.x > consts.mapWidth || 
-        roomsData[room].bullets[i].position.y > consts.mapHeight || 
-        roomsData[room].bullets[i].position.x < 0 ||
-        roomsData[room].bullets[i].position.y < 0) {
+        var inside = geom.rectangleInsideMap (
+                roomsData[room].bullets[i], {
+                    width: consts.mapWidth,
+                    height: consts.mapHeight,
+                }
+            );
+        if (!inside.in) {
             roomsData[room].bullets.splice(i, 1);
         }
     }
@@ -530,19 +533,19 @@ function roomTick(room){
                             }
                         }
                     }
-                    curObject.position.x = 
-                (newPos.x < curObject.size.width / 2) ? 
-                    curObject.size.width / 2 : 
-                    (newPos.x > consts.mapWidth - curObject.size.width / 2) ? 
-                        consts.mapWidth - curObject.size.width / 2 : 
-                        newPos.x;
-                    
-                    curObject.position.y = 
-                (newPos.y < curObject.size.length / 2) ?
-                    curObject.size.length / 2 :
-                    (newPos.y > consts.mapHeight - curObject.size.length / 2) ?
-                     consts.mapHeight - curObject.size.length / 2 : 
-                     newPos.y;
+                    curObject.position.x = newPos.x;
+                    curObject.position.y = newPos.y;
+
+                    var inside = geom.rectangleInsideMap (
+                        curObject, {
+                            width: consts.mapWidth,
+                            height: consts.mapHeight,
+                        }
+                    );
+                    if (!inside.in) {
+                        curObject.position.x += inside.delta.x;
+                        curObject.position.y += inside.delta.y;
+                    }
                 }
                 
                 if (curObject.type === 'bullet') {
