@@ -119,17 +119,25 @@ var models = {
 	},
 	addLabel: function (object) {
 		var model = models.objects[object.type][object.subtype],
-			element = $('<text>');
+			element = $('<g>');
 		element
-			.attr ('x', 0)
-			.attr ('y', -utils.vectorLength (model.size.width, model.size.length) / 2)
-			.attr ('text-anchor', 'middle')
-			.attr ('class', 'label_')
 			.append (
-				document.createTextNode (
-					''
-				)
-			);
+				$('<rect>')
+					.attr ('class', 'label_back')
+			)
+			.append (
+				$('<text>')
+					.attr ('x', 0)
+					.attr ('y', -utils.vectorLength (model.size.width, model.size.length) / 2)
+					.attr ('text-anchor', 'middle')
+					.append (
+						document.createTextNode (
+							''
+						)
+					)
+					.attr ('class', 'label_front')
+			)
+			.attr ('class', 'label_');
 		return element;
 	},
 	addTexture: function (object) {
@@ -258,8 +266,12 @@ var models = {
 	},
 	updateLabel: function (id, object) {
 		var model = models.objects[object.type][object.subtype],
-			element = $('#' + id).find ('.label_');
-		element
+			text = $('#' + id).find ('.label_front'),
+			back = $('#' + id).find ('.label_back'),
+			size,
+			scale = game.paintRect.width / canvas.renderSize.width,
+			padding = paint.labelPadding * scale;
+		text
 			.attr (
 				'transform',
 				transform.inParent (
@@ -272,7 +284,28 @@ var models = {
 					utils.point (0, 0)
 				)
 			);
-		element[0].childNodes[0].data = object.label.userName + ' [' + object.label.hp + ' \u2764]';
+		text[0].childNodes[0].data = object.label.userName + ' [' + object.label.hp + ' \u2764]';
+		size = utils.sizeWH (
+			text[0].offsetWidth,
+			text[0].offsetHeight
+		);
+		back
+			.attr (
+				'transform',
+				transform.inParent (
+					model.size,
+					utils.point (0, 0)
+				) + ' ' +
+				transform.rotate (
+					-object.rotation - 90,
+					utils.sizeWL (0, 0),
+					utils.point (0, 0)
+				)
+			)
+			.attr ('x', -size.width / 2 - padding)
+			.attr ('y', -size.height + parseInt (text.attr ('y')))
+			.attr ('width', size.width + 2 * padding)
+			.attr ('height', size.height + 2 * padding);
 	},
 	addJoystick: function () {
 		var code = $('<g>'),
@@ -334,6 +367,7 @@ var paint = {
 	font: {
 		label: 16
 	},
+	labelPadding: 5,
 	joystick: {
 		width: 4,
 		length: 10
@@ -559,7 +593,7 @@ var paint = {
 	updateFonts: function (scale) {
 		$('#fontStyles')
 			.html (
-				'#gameCanvas .label_ {' +
+				'#gameCanvas .label_front {' +
 					'font-size:' +
 						(this.font.label * scale) + 'px' +
 						';' +

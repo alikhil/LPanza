@@ -8,12 +8,22 @@
     filter: alpha (30);
 }
 
+.gameOverlay {
+	background: #808080;
+	color: #f0f0f0;
+}
+#gameTouchSurface, #gameStatsOnlineButton_element {
+	background: none;
+}
+
 #gameCanvas .tank, #gameCanvas .turret {
 	stroke: #000000;
 	stroke-miterlimit: 10;
 }
 #gameCanvas .label_ {
 	stroke: none;
+	opacity: 0.7;
+	filter: alpha(70);
 }
 #gameCanvas .strokeWhite {
 	stroke: #ffffff;
@@ -110,11 +120,11 @@
 	fill: #FFFF40;
 }
 
-#gameCanvas .label_ {
-	fill: #404040;
+#gameCanvas .label_front {
+	fill: #f0f0f0;
 }
 #gameCanvas .label_back {
-	fill: #404040;
+	fill: #808080;
 }
 
 #gameCanvas .bullet {

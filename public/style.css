@@ -37,6 +37,15 @@ html, body, .fullWrap {
 	opacity: 0.7;
 	filter: alpha(70);
 }
+.gameOverlayBottomLeft, .gameOverlayBottomRight {
+	padding: 5px 10px;
+}
+.gameOverlayTopRight {
+	padding: 10px;
+}
+#gameStatsRatingList {
+	margin-bottom: 0px;
+}
 .gameOverlay, #gameCanvas .label_ {
 	-webkit-touch-callout: none;
 	-webkit-user-select: none;
@@ -62,7 +71,7 @@ html, body, .fullWrap {
 }
 .gameOverlayBottomLeft {
 	left: 10px;
-	bottom: 0px;
+	bottom: 10px;
 }
 .gameOverlayTopRight {
 	right: 10px;
@@ -82,9 +91,6 @@ html, body, .fullWrap {
 .inline_to_right_text {
 	float: right;
 	display: block;
-}
-#gameStatsScore, #label_game_score {
-	color: #FF2020;
 }
 .no_left_padding {
 	padding-left: 0px;
