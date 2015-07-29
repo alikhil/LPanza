@@ -1051,8 +1051,9 @@ var app = {
 				holder,
 				'http://lpanza.ru',
 				language.get ('share.score_title'),
-				language.get ('share.score_text'),
-				'http://lpanza.ru/logo.opengraph.jpg'
+				language.get ('share.score_text')
+					.replace ('%score%', this.score),
+				'http://lpanza.ru/logo.opengraph.png'
 			);
 		},
 		show: function (score) {

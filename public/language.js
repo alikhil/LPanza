@@ -126,8 +126,8 @@ var language = {
 			'game.online_element': '%name%',
 			'bad_browser.text_1_line': 'Вы используете устаревший браузер',
 			'bad_browser.text_2_line': 'Для работы сайта необходимо установить современный браузер',
-			'share.score_title': 'Last Panzer - многопользовательская онлайн игра сражение танков',
-			'share.score_text': 'Last Panzer - Стреляй, уничтожай, будь первым'
+			'share.score_title': 'Last Panzer',
+			'share.score_text': 'Я набрал %score% очков в игре Last Panzer, сколько наберешь ты?'
 		},
 		'EN': {
 			'language.label': 'EN',
@@ -162,8 +162,8 @@ var language = {
 			'game.online_element': '%name%',
 			'bad_browser.text_1_line': 'Your browser is out of date',
 			'bad_browser.text_2_line': 'Please upgrade your browser to view this site',
-			'share.score_title': 'Last Panzer - multiplayer online tank battle game',
-			'share.score_text': 'Last Panzer - Shot, destroy, be winner'
+			'share.score_title': 'Last Panzer',
+			'share.score_text': 'I have scored %score% points playing Last Panzer game, how much can you?'
 		}
 	}
 };
