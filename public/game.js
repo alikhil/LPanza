@@ -108,6 +108,14 @@ var socket = {
 };
 var canvas = {
 	element: undefined,
+	layers: {
+		ground: undefined,
+		tank: undefined,
+		bullet: undefined,
+		turret: undefined,
+		label: undefined,
+		joystick: undefined
+	},
 	renderSize: utils.sizeWH(
 		NaN,
 		NaN
@@ -122,7 +130,10 @@ var canvas = {
 	),
 	init: function () {
 		this.element = $('#gameCanvas');
-		this.element.empty ();
+		for (var i in this.layers) {
+			this.layers[i] = $('#layer_' + i);
+			this.layers[i].empty ();
+		}
 		this.resize ();
 		$(window).on('resize', function () {
 			canvas.resize();

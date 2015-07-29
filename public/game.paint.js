@@ -54,6 +54,10 @@ var transform = {
 };
 var models = {
 	objects: {},
+	layers: {
+		tank: 'tank',
+		bullet: 'bullet'
+	},
 	loadModels: function (models) {
 		var containerContainer = $('#containerContainer'),
 			container;
@@ -100,7 +104,7 @@ var models = {
 		);
 	},
 	addObject: function (id, object) {
-		var svg = canvas.element,
+		var element = $('#layer_' + this.layers[object.type]),
 			code = $('<g>');
 		code.attr ('id', id);
 		if (object.type === 'tank') {
@@ -112,51 +116,61 @@ var models = {
 				.attr ('class', object.type)
 		);
 		if (object.type === 'tank') {
-			code.append (this.addTurret (object));
-			code.append (this.addLabel (object));
+			this.addTurret (id, object);
+			this.addLabel (id, object);
 		}
-		canvas.element.append (code);
+		element.append (code);
 	},
-	addLabel: function (object) {
-		var model = models.objects[object.type][object.subtype],
-			element = $('<g>');
-		element
-			.append (
-				$('<rect>')
-					.attr ('class', 'label_back')
-			)
-			.append (
-				$('<text>')
-					.attr ('x', 0)
-					.attr ('y', -utils.vectorLength (model.size.width, model.size.length) / 2)
-					.attr ('text-anchor', 'middle')
-					.append (
-						document.createTextNode (
-							''
+	addLabel: function (id, object) {
+		var model = models.objects[object.type][object.subtype];
+		canvas.layers.label.append (
+			$('<g>')
+				.attr ('id', 'label_' + id)
+				.append (
+					$('<g>')
+						.append (
+							$('<rect>')
+								.attr ('class', 'label_back')
 						)
-					)
-					.attr ('class', 'label_front')
-			)
-			.attr ('class', 'label_');
-		return element;
+						.append (
+							$('<text>')
+								.attr ('x', 0)
+								.attr ('y', -utils.vectorLength (model.size.width, model.size.length) / 2)
+								.attr ('text-anchor', 'middle')
+								.append (
+									document.createTextNode (
+										''
+									)
+								)
+								.attr ('class', 'label_front')
+						)
+						.attr ('class', 'label_')
+				)
+		);
 	},
 	addTexture: function (object) {
 		return $('#' + 'model_' + object.type + '_' + object.subtype + '_vector')[0]
 			.children[0]
 			.cloneNode (true);
 	},
-	addTurret: function (object) {
-		return $('<g>')
-			.append (
-				this.addReload (object)
-			)
-			.append (
-				this.addTexture ({
-					'type': 'turret',
-					'subtype': object.subtype
-				})
-			)
-			.attr ('class', 'turret');
+	addTurret: function (id, object) {
+		canvas.layers.turret.append (
+			$('<g>')
+				.attr ('id', 'turret_' + id)
+				.append (
+					$('<g>')
+						.append (
+							this.addReload (object)
+						)
+						.append (
+							this.addTexture ({
+								'type': 'turret',
+								'subtype': object.subtype
+							})
+						)
+						.attr ('class', 'turret tank color_' + object.color)
+				)
+		);
 	},
 	addHP: function (object) {
 		var model = models.objects[object.type][object.subtype];
@@ -252,7 +266,7 @@ var models = {
 			.attr ('class', 'reload');
 	},
 	updateReload: function (id, object) {
-		$('#' + id)
+		$('#turret_' + id)
 			.find ('.reload')
 			.replaceWith (
 				this.addReload (object)
@@ -266,8 +280,8 @@ var models = {
 	},
 	updateLabel: function (id, object) {
 		var model = models.objects[object.type][object.subtype],
-			text = $('#' + id).find ('.label_front'),
-			back = $('#' + id).find ('.label_back'),
+			text = $('#label_' + id).find ('.label_front'),
+			back = $('#label_' + id).find ('.label_back'),
 			size,
 			scale = game.paintRect.width / canvas.renderSize.width,
 			padding = paint.labelPadding * scale;
@@ -331,7 +345,7 @@ var models = {
 				'transform',
 				transform.relative (center)
 			);
-		canvas.element.append (code);
+		canvas.layers.joystick.append (code);
 	},
 	removeJoystick: function () {
 		$('#joystick').remove ();
@@ -535,6 +549,7 @@ var paint = {
 	reset: function () {
 		this.objects = [];
 		this.repaint ();
+		this.joystickDrawn = false;
 	},
 	drawScore: function (score) {
 		$('#gameStatsScore').text(score);
@@ -546,6 +561,11 @@ var paint = {
 		var element = $('#' + id),
 			model = models.objects[object.type][object.subtype];
 		//console.log ('upd', id, object);
+		if (object.type === 'tank') {
+			element = element
+				.add ($('#label_' + id))
+				.add ($('#turret_' + id));
+		}
 		element
 			.attr (
 				'transform',
@@ -567,7 +587,7 @@ var paint = {
 			models.updateReload (id, object);
 			models.updateHP (id, object);
 			models.updateLabel (id, object);
-			element.find ('.turret')
+			$('#turret_' + id).find ('.turret')
 				.attr (
 					'transform',
 					transform.inParent (
