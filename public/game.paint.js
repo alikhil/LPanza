@@ -609,6 +609,11 @@ var paint = {
 	deleteObject: function (id) {
 		console.log ('del', id);
 		$('#' + id).remove ();
+		if (id.substr (0, 4) === 'tank') {
+			$('#label_' + id).remove ();
+			$('#turret_' + id).remove ()
+		}
+
 	},
 	updateFonts: function (scale) {
 		$('#fontStyles')
