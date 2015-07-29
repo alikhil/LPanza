@@ -5,7 +5,8 @@ exports.getUserId = getUserId;
 exports.removeFromArray = removeFromArray;
 exports.positionComparator = positionComparator;
 exports.ratingCmp = ratingCmp;
-
+exports.point = point_;
+exports.size = size_;
 var consts = require('./constants.js');
 
 /**
@@ -48,3 +49,11 @@ function positionComparator(a, b) {
     return a.position.y < b.position.y ? -1 : 1;
 }
 
+
+function point_(x, y){
+    return { x : x, y : y };
+}
+
+function size_(width, length){
+    return { width : width, length : length };
+}
