@@ -366,8 +366,8 @@ function doShot(tank){
         }, 50);
 }
  
- function pushTanksAway (tank1, tank2, rotation, distance) {
-	var v = geom.moveVector(rotation, distance/2);
+ function pushTanksAway (tank1, tank2, collision) {
+	var v = geom.moveVector(collision.rotation, collision.distance/2);
 	tank1.position = geom.addToPos(tank1.position, v, 1);
 	tank2.position = geom.addToPos(tank2.position, v, -1);
 }
@@ -498,7 +498,6 @@ function roomTick(room){
             for (var i = 0; i < objects.length; i ++) {
                 var obj = objects[i];
                 if (obj.hasOwnProperty ('moveVector')) {
-                    moveObject (obj);
                     obj.position = geom.addToPos(obj.position, obj.moveVector, 1);
                 }
             }
@@ -517,10 +516,16 @@ function roomTick(room){
                             collision = geom.TDA_rectanglesIntersect (objA, objB);
                         if (collision) {
                             if (objA.type === 'bullet') {
-                                swap (objA, objB);
+                                var t = objA;
+                                objA = objB;
+                                objB = t;
+                                collision.rotation += 180;
                             }
                             if (objB.type === 'tank') {
-                                swap (objA, objB);
+                                var t = objA;
+                                objA = objB;
+                                objB = t;
+                                collision.rotation += 180;
                             }
                             if (objA.type === 'tank') {
                                 if (objB.type === 'tank') {
@@ -530,7 +535,7 @@ function roomTick(room){
                                         collision
                                     );
                                 } else if (objB.type === 'bullet') {
-                                    if (curObject.type !== 'deleted-bullet') {
+                                    if (objB.type !== 'deleted-bullet') {
                                         bulletOnTankHit (objA, objB);
                                     }
                                 } // else if (objB.type === 'obstacle') {pushTank (...)}
@@ -552,10 +557,17 @@ function roomTick(room){
                     );
                 if (outOfMap) {
                     if (obj.type === 'bullet') {
-                        roomsData[room].bullets.splice(i, 1);
+                        obj.type = 'deleted-bullet';
                     } else if (obj.type === 'tank') {
                         obj.position = geom.addToPos (obj.position, outOfMap.delta,  1);
                     }
+                }
+            }
+
+            // delete deleted bullets
+            for (var i = roomsData[room].bullets.length - 1; i >= 0; i --) {
+                if (obj.type === 'deleted-bullet') {
+                    roomsData[room].bullets.splice(i, 1);
                 }
             }
             
@@ -614,7 +626,7 @@ function roomTick(room){
     }
     serverTicks.push (serverTick);
     if (!roomsTimers[room]) {
-        setTimeout (serverTick, timeToSleep);
+        setTimeout (roomTick, timeToSleep, room);
     } else {
         delete roomsTimers[room];
     }

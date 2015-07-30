@@ -71,7 +71,7 @@ function rectangleInsideMap (rect, mapSize) {
 		}
 		result.in &= result.delta[i] == 0;
 	}
-	if (!result.in) {
+	if (result.in) {
 		result = false;
 	}
 	return result;
