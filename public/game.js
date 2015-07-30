@@ -324,6 +324,7 @@ var rating = {
 		$('#gameStatsRatingList').empty();
 		language.on ('change', function () {
 			rating.updateList ();
+			resizeOnlineButtonPadding ();
 		});
 	},
 	uninit: function () {
@@ -333,6 +334,7 @@ var rating = {
 		this.users.splice(0, this.users.length);
 		this.users = packet.users;
 		this.updateList ();
+		resizeOnlineButtonPadding ();
 		language.off ('change');
 	},
 	updateList: function () {
@@ -706,10 +708,25 @@ var controls = {
 	}
 };
 function resizeOnlineButtonPadding () {
-	var p = $('#gameStatsOnlineButton_placeholder'),
-		e = $('#gameStatsOnlineButton_element');
-	p.width(e.width());
-	p.height(e.height());
+	var button = $('#gameStatsOnlineButton'),
+		list = $('#gameStatsRatingList'),
+		listContainer = $('#gameStatsRating'),
+		buttonContainer = $('#gameStatsOnlineButton_element'),
+		buttonPlaceholder = $('#gameStatsOnlineButton_placeholder'),
+		contentWidth = Math.max (
+			list[0].offsetWidth,
+			button[0].offsetWidth
+		);
+	buttonPlaceholder
+		.width (contentWidth)
+		.height (button[0].offsetHeight);
+	if (list[0].offsetWidth > button[0].offsetWidth) {
+		buttonContainer
+			.css (
+				'margin-right',
+				(list[0].offsetWidth - button[0].offsetWidth) / 2
+			);
+	}
 }
 var swipe = {
 	aimIs: undefined,

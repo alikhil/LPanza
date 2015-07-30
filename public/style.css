@@ -77,6 +77,12 @@ html, body, .fullWrap {
 	right: 10px;
 	top: 10px;
 }
+#gameStatsOnlineButton_element {
+	right: 20px;
+	top: 20px;
+	position: fixed;
+	z-index: 100;
+}
 .gameOverlayBottomRight {
 	right: 10px;
 	bottom: 10px;

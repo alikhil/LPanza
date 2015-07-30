@@ -207,12 +207,8 @@
 
 		<div class='fullWrap' id='canvasWrap'>
 			<div class='gameOverlay gameOverlayBottomLeft'><span id='label_game_score'></span> <span id='gameStatsScore'></span></div>
-			<div class='gameOverlay gameOverlayTopRight'>
-				<div class='text-right'>
-					<div id='gameStatsOnlineButton_placeholder'></div>
-				</div>
-				<h5 class='text-center'><span id='label_game_room_id'></span> <span id='gameRoomIdText'></span></h5>
-				<h5 class='text-center' id='label_game_rating'></h5>
+			<div class='gameOverlay gameOverlayTopRight' id='gameStatsRating'>
+				<div id='gameStatsOnlineButton_placeholder'></div>
 				<ul class='list-group' id='gameStatsRatingList'>
 				</ul>
 			</div>
@@ -226,7 +222,7 @@
 				<g id='layer_joystick'></g>
 			</svg>
 			<div class='gameOverlay' id='gameTouchSurface'></div>
-			<div class='topMost gameOverlay gameOverlayTopRight' id='gameStatsOnlineButton_element'><button type='button' class='btn btn-primary' id='gameStatsOnlineButton'><span id='label_game_online'></span> <span class='badge' id='gameStatsOnlineCount'>?</span></button></div>
+			<div id='gameStatsOnlineButton_element'><button type='button' class='btn btn-default' id='gameStatsOnlineButton'><span id='label_game_room_id'></span> <span id='gameRoomIdText'></span> <span class='badge' id='gameStatsOnlineCount'>?</span></button></div>
 			<div id='containerContainer' class='hidden'>
 				<div id='model_tank_and_1_vector'>
 <svg height="96.556" width="67.207001" viewBox="0 0 67.206957 96.555938">

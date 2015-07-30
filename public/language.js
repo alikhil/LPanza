@@ -6,8 +6,6 @@ var language = {
 		'#label_score_score': 'game.score',
 		'#label_score_gameOver': 'game.game_over',
 		'#playAgainButton': 'game.play_again',
-		'#label_game_rating': 'game.rating',
-		'#label_game_online': 'game.online',
 		'#label_error_error': 'app.error',
 		'#label_error_dismiss': 'app.back',
 		'#feedbackShowButton': 'app.feedback',
