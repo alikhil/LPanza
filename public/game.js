@@ -329,13 +329,13 @@ var rating = {
 	},
 	uninit: function () {
 		this.users.splice(0, this.users.length);
+		language.off ('change');
 	},
 	refresh: function (packet) {
 		this.users.splice(0, this.users.length);
 		this.users = packet.users;
 		this.updateList ();
 		resizeOnlineButtonPadding ();
-		language.off ('change');
 	},
 	updateList: function () {
 		var element = $('#gameStatsRatingList')
@@ -1055,7 +1055,7 @@ var app = {
 		}
 	},
 	score: {
-		score: undefined,
+		score: 0,
 		init: function () {
 			this.hide();
 			$('#playAgainButton').on('click', this.hide);
@@ -1069,7 +1069,7 @@ var app = {
 				'http://lpanza.ru',
 				language.get ('share.score_title'),
 				language.get ('share.score_text')
-					.replace ('%score%', this.score),
+					.replace ('%score%', app.score.score),
 				'http://lpanza.ru/logo.opengraph.png'
 			);
 		},
