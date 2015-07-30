@@ -454,7 +454,6 @@ Object.values = function (obj) {
 function createRoom(){
     availableTotalPlayers += consts.roomMaxUserCount;
     var room = freeRoomIds.length > 0 ? freeRoomIds.shift() : ++curRoomId;
-    roomsTimers[room] = setInterval(roomTick, consts.serverTickDelay, room);
     roomList[room] = { used : 0, total : consts.roomMaxUserCount, id : room };
     roomsData[room] = {
         userIdScores : {},
@@ -465,8 +464,11 @@ function createRoom(){
         uids: {
             bullet: 0,
             tank: 0
-        }
+        },
+        nextTick : Date.now()
     };
+    roomsTimers[room] = setTimeout(roomTick, 1, room);
+    
     logger.info('Room[%d] created', curRoomId);
 }
 function deleteRoom(room){
@@ -482,139 +484,144 @@ function deleteRoom(room){
  * Игровой цикл
  */
 function roomTick(room){
-   
-    if(roomList[room].used === 0)
-        return;
-    var tickStart = Date.now();
- 
-    for (var i = roomsData[room].bullets.length - 1; i >= 0; i--) {
-        var inside = geom.rectangleInsideMap (
-                roomsData[room].bullets[i], {
-                    width: consts.mapWidth,
-                    height: consts.mapHeight,
-                }
-            );
-        if (!inside.in) {
-            roomsData[room].bullets.splice(i, 1);
-        }
-    }
-    var objects = Object.values(roomsData[room].tanks).concat(roomsData[room].bullets);
-    var objectGroups = groups.getCollideGroups(objects);
-    var moved = Array(objects.length);
-    //группы для проверки на коллизию
-    for (var i = 0; i < objects.length; i++) {
-        var group = objectGroups[i];
-        var groupNewPos = [];
-        
-        for (var j = 0; j < group.length; j++) {
-            var curObject = objects[group[j]];
-            if (moved[group[j]] !== 'moved') {
-                try {
-                    var newPos = geom.addToPos(curObject.position, curObject.moveVector, 1);
-                }
-            catch (e) {
-                    logger.error('Trying to move object: ' + e);
-                }
-                if (curObject.type === 'tank') {
-                    for (var h = 0; h < group.length; h++) {
-                        var cur = objects[group[h]];
-                        if (cur.type === 'tank') {
-                            var collision = geom.TDA_rectanglesIntersect(
-                                cur,
-							curObject
-                            );
-                            if (collision.collide) {
-                                pushTanksAway(
-                                    cur,
-								curObject,
-								collision.rotation,
-								collision.distance
-                                );
-                            }
-                        }
-                    }
-                    curObject.position.x = newPos.x;
-                    curObject.position.y = newPos.y;
-
-                    var inside = geom.rectangleInsideMap (
-                        curObject, {
+   roomsData[room].nextTick = Date.now();
+    if(roomList[room].used !== 0)
+       {
+            try{
+         
+            for (var i = roomsData[room].bullets.length - 1; i >= 0; i--) {
+                var inside = geom.rectangleInsideMap (
+                        roomsData[room].bullets[i], {
                             width: consts.mapWidth,
                             height: consts.mapHeight,
                         }
                     );
-                    if (!inside.in) {
-                        curObject.position.x += inside.delta.x;
-                        curObject.position.y += inside.delta.y;
-                    }
+                if (!inside.in) {
+                    roomsData[room].bullets.splice(i, 1);
                 }
+            }
+            var objects = Object.values(roomsData[room].tanks).concat(roomsData[room].bullets);
+            var objectGroups = groups.getCollideGroups(objects);
+            var moved = Array(objects.length);
+            //группы для проверки на коллизию
+            for (var i = 0; i < objects.length; i++) {
+                var group = objectGroups[i];
+                var groupNewPos = [];
                 
-                if (curObject.type === 'bullet') {
-                    curObject.position = newPos;
-                    for (var h = 0; h < group.length; h++) {
-                        var cur = objects[group[h]];
-                        if (cur.type === 'tank') {
-                            var collision = geom.TDA_rectanglesIntersect(
-                                cur,
-							curObject
+                for (var j = 0; j < group.length; j++) {
+                    var curObject = objects[group[j]];
+                    if (moved[group[j]] !== 'moved') {
+                        try {
+                            var newPos = geom.addToPos(curObject.position, curObject.moveVector, 1);
+                        }
+                    catch (e) {
+                            logger.error('Trying to move object: ' + e);
+                        }
+                        if (curObject.type === 'tank') {
+                            for (var h = 0; h < group.length; h++) {
+                                var cur = objects[group[h]];
+                                if (cur.type === 'tank') {
+                                    var collision = geom.TDA_rectanglesIntersect(
+                                        cur,
+        							curObject
+                                    );
+                                    if (collision.collide) {
+                                        pushTanksAway(
+                                            cur,
+        								curObject,
+        								collision.rotation,
+        								collision.distance
+                                        );
+                                    }
+                                }
+                            }
+                            curObject.position.x = newPos.x;
+                            curObject.position.y = newPos.y;
+        
+                            var inside = geom.rectangleInsideMap (
+                                curObject, {
+                                    width: consts.mapWidth,
+                                    height: consts.mapHeight,
+                                }
                             );
-                            if (collision.collide && cur.label.userId != curObject.owner) {
-                                bulletOnTankHit(cur, curObject);
-                                if (curObject.type === 'deleted-bullet') {
-                                    break;
+                            if (!inside.in) {
+                                curObject.position.x += inside.delta.x;
+                                curObject.position.y += inside.delta.y;
+                            }
+                        }
+                        
+                        if (curObject.type === 'bullet') {
+                            curObject.position = newPos;
+                            for (var h = 0; h < group.length; h++) {
+                                var cur = objects[group[h]];
+                                if (cur.type === 'tank') {
+                                    var collision = geom.TDA_rectanglesIntersect(
+                                        cur,
+        							curObject
+                                    );
+                                    if (collision.collide && cur.label.userId != curObject.owner) {
+                                        bulletOnTankHit(cur, curObject);
+                                        if (curObject.type === 'deleted-bullet') {
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        objects[group[j]] = curObject;
+                        moved[group[j]] = 'moved';
+                    }
+                
+                }
+            }
+            
+            //Выделяем группы для прорисовки
+            var repGroups = groups.getGroups(objects, consts.showAreaWidth + consts.maxWidthLength, consts.showAreaHeight + consts.maxWidthLength);
+            var repaintGroups = [];
+            var reloadData = []
+            for (var i = 0; i < repGroups.length; i++) {
+                var group = repGroups[i];
+                var iObj = objects[i];
+                if (iObj.type === 'tank') {
+                    var id = objects[i].label.userId;
+                    reloadData[id] = { reload : iObj.turret.gun.timeToReload, score : roomsData[room].userIdScores[id] };
+                    repaintGroups[id] = [];
+                    if (group !== undefined) {
+                        for (var j = 0; j < group.length; j++) {
+                            if (group[j] !== undefined) {
+                                var curOb = objects[group[j]];
+                                if (!curOb.type.startsWith('deleted')) {
+                                    
+                                    if (curOb.type === 'tank' && iObj.label.userId === curOb.label.userId)
+                                        repaintGroups[id].splice(0, 0, getPaintData(curOb));
+                                    else
+                                        repaintGroups[id].push(getPaintData(curOb));
+                                    
                                 }
                             }
                         }
                     }
                 }
-                objects[group[j]] = curObject;
-                moved[group[j]] = 'moved';
             }
-        
-        }
-    }
-    
-    //Выделяем группы для прорисовки
-    var repGroups = groups.getGroups(objects, consts.showAreaWidth + consts.maxWidthLength, consts.showAreaHeight + consts.maxWidthLength);
-    var repaintGroups = [];
-    var reloadData = []
-    for (var i = 0; i < repGroups.length; i++) {
-        var group = repGroups[i];
-        var iObj = objects[i];
-        if (iObj.type === 'tank') {
-            var id = objects[i].label.userId;
-            reloadData[id] = { reload : iObj.turret.gun.timeToReload, score : roomsData[room].userIdScores[id] };
-            repaintGroups[id] = [];
-            if (group !== undefined) {
-                for (var j = 0; j < group.length; j++) {
-                    if (group[j] !== undefined) {
-                        var curOb = objects[group[j]];
-                        if (!curOb.type.startsWith('deleted')) {
-                            
-                            if (curOb.type === 'tank' && iObj.label.userId === curOb.label.userId)
-                                repaintGroups[id].splice(0, 0, getPaintData(curOb));
-                            else
-                                repaintGroups[id].push(getPaintData(curOb));
-                            
-                        }
+            var clientsIds = Object.keys(io.engine.clients);
+            for (var i = 0; i < clientsIds.length; i++) {
+                var uid = util.getUserId(clientsIds[i]);
+                if (repaintGroups[uid] !== undefined) {
+                    if (roomsData[room].clients.hasOwnProperty(uid)) {
+                        roomsData[room].clients[uid].emit('game.paint', { user : reloadData[uid], objects : repaintGroups[uid] });
                     }
                 }
             }
-        }
+        } catch(e) {
+            logger.error('error on tick: %s', e);
+         }
+       }
+    roomsData[room].nextTick += 1000 / consts.framesPerSecond;
+    var timeToSleep = roomsData[room].nextTick - Date.now ();
+    if (timeToSleep < 0) {
+        timeToSleep = 0;
     }
-    var clientsIds = Object.keys(io.engine.clients);
-    for (var i = 0; i < clientsIds.length; i++) {
-        var uid = util.getUserId(clientsIds[i]);
-        if (repaintGroups[uid] !== undefined) {
-            if (roomsData[room].clients.hasOwnProperty(uid)) {
-                roomsData[room].clients[uid].emit('game.paint', { user : reloadData[uid], objects : repaintGroups[uid] });
-            }
-        }
-    }
-    var tickEnd = Date.now();
-    var serverTick = (tickEnd - tickStart) / 1000;
-    if (serverTicks.length > consts.saveServerTickCount)
-        serverTicks.shift();
-    serverTicks.push(serverTick);
+    setTimeout (roomTick, timeToSleep, room);
 }
 
 
