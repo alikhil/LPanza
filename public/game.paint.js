@@ -574,7 +574,12 @@ var paint = {
 		this.joystickDrawn = false;
 	},
 	drawScore: function (score) {
-		$('#gameStatsScore').text(score);
+		language.setDOM (
+			'#gameStatsScore',
+			'game.score', {
+				'%score%': score
+			}
+		);
 	},
 	addObject: function (id, object) {
 		models.addObject (id, object);

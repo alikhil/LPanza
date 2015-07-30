@@ -3,27 +3,29 @@ var language = {
 	defaultLanguageId: 'RU',
 	handlers: undefined,
 	DOM: {
-		'#label_score_score': 'game.score',
-		'#label_score_gameOver': 'game.game_over',
-		'#playAgainButton': 'game.play_again',
-		'#label_error_error': 'app.error',
-		'#label_error_dismiss': 'app.back',
-		'#feedbackShowButton': 'app.feedback',
-		'#label_feedback_title': 'feedback.title',
-		'#label_feedback_text': 'feedback.text',
-		'#feedbackBackButton': 'app.back',
-		'#label_menu_play': 'menu.play',
-		'#label_menu_name': 'menu.name',
-		'#label_game_score': 'game.score',
-		'#errorText': 'empty',
-		'#errorTitle': 'empty',
-		'#label_menu_room': 'menu.room',
-		'#label_game_room_id': 'menu.room',
-		'#label_online_list_title': 'game.online',
-		'#onlineListBackButton': 'app.back',
-		'#label_bad_browser_title': 'app.error',
-		'#label_bad_browser_text_1_line': 'bad_browser.text_1_line',
-		'#label_bad_browser_text_2_line': 'bad_browser.text_2_line',
+		'#label_score_score': {name: 'game.score_word', data: {'%score%': ''}},
+		'#label_score_gameOver': {name: 'game.game_over', data: {}},
+		'#playAgainButton': {name: 'game.play_again', data: {}},
+		'#label_error_error': {name: 'app.error', data: {}},
+		'#label_error_dismiss': {name: 'app.back', data: {}},
+		'#feedbackShowButton': {name: 'app.feedback', data: {}},
+		'#label_feedback_title': {name: 'feedback.title', data: {}},
+		'#label_feedback_text': {name: 'feedback.text', data: {}},
+		'#feedbackBackButton': {name: 'app.back', data: {}},
+		'#label_menu_play': {name: 'menu.play', data: {}},
+		'#label_menu_name': {name: 'menu.name', data: {}},
+		'#errorText': {name: 'empty', data: {}},
+		'#errorTitle': {name: 'empty', data: {}},
+		'#label_menu_room': {name: 'menu.room', data: {}},
+		'#label_game_room_id': {name: 'menu.room', data: {}},
+		'#label_online_list_title': {name: 'game.online', data: {}},
+		'#onlineListBackButton': {name: 'app.back', data: {}},
+		'#label_bad_browser_title': {name: 'app.error', data: {}},
+		'#label_bad_browser_text_1_line': {name: 'bad_browser.text_1_line', data: {}},
+		'#label_bad_browser_text_2_line': {name: 'bad_browser.text_2_line', data: {}},
+		'#gameRoomIdText': {name: 'game.room_id', data: {}},
+		'#gameStatsPing': {name: 'game.stats_ping', data: {'%time%': 0}},
+		'#gameStatsScore': {name: 'game.score', data: {'%score%': 0}}
 	},
 	init: function () {
 		this.setLanguageId(this.defaultLanguageId);
@@ -65,10 +67,24 @@ var language = {
 	},
 	updateDOM: function () {
 		for(var index in this.DOM) {
-			$(index).text(
-				this.get(this.DOM[index])
-			);
+			this.updateDOMSingle (index);
 		}
+	},
+	expand: function (name, data) {
+		var formated = this.get (name);
+		for (i in data) {
+			formated = formated.replace (i, data[i]);
+		}
+		return formated;
+	},
+	updateDOMSingle: function (id) {
+		var value = this.DOM[id];
+		$(id).text (
+			this.expand (
+				value.name,
+				value.data
+			)
+		);
 	},
 	setLanguageId: function (languageId) {
 		if(!this.strings.hasOwnProperty(languageId)) {
@@ -76,12 +92,13 @@ var language = {
 		}
 		this.languageId = languageId;
 	},
-	setDOM: function (id, name) {
+	setDOM: function (id, name, data) {
 		if(id in this.DOM) {
-			this.DOM[id] = name;
-			$(id).text(
-				this.get(name)
-			);
+			this.DOM[id] = {
+				name: name,
+				data: data !== undefined ? data : {}
+			};
+			this.updateDOMSingle (id);
 		}
 	},
 	get: function (name) {
@@ -96,7 +113,8 @@ var language = {
 			'language.invalid_name': 'Неправильное имя строки',
 			'empty': '',
 			'game.game_over': 'Игра окончена',
-			'game.score': 'Ваши очки',
+			'game.score': 'Ваши очки %score%',
+			'game.score_word': 'Ваши очки',
 			'game.play_again': 'Играть еще',
 			'game.rating': 'Рейтинг',
 			'game.online': 'Онлайн',
@@ -132,7 +150,8 @@ var language = {
 			'language.invalid_name': 'Invalid string name',
 			'empty': '',
 			'game.game_over': 'Game over',
-			'game.score': 'Your score',
+			'game.score': 'Your score %score%',
+			'game.score_word': 'Your score',
 			'game.play_again': 'Play again',
 			'game.rating': 'Rating',
 			'game.online': 'Online',
