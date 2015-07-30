@@ -71,6 +71,9 @@ function rectangleInsideMap (rect, mapSize) {
 		}
 		result.in &= result.delta[i] == 0;
 	}
+	if (!result.in) {
+		result = false;
+	}
 	return result;
 }
 function TDA_rectanglesIntersect (rect1, rect2) {
@@ -151,6 +154,8 @@ function TDA_rectanglesIntersect (rect1, rect2) {
 		if(projected2 > projected) {
 			result.distance *= -1;
 		}
+	} else {
+		result = false;
 	}
 	return result;
 }
