@@ -13,7 +13,7 @@
 	color: #f0f0f0;
 }
 #gameTouchSurface, #gameStatsOnlineButton_element {
-	background: none;
+	background: transparent;
 }
 
 #gameCanvas .tank, #gameCanvas .turret {

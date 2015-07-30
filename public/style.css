@@ -77,6 +77,12 @@ html, body, .fullWrap {
 	right: 10px;
 	top: 10px;
 }
+#gameStatsOnlineButton_element {
+	right: 20px;
+	top: 20px;
+	position: fixed;
+	z-index: 100;
+}
 .gameOverlayBottomRight {
 	right: 10px;
 	bottom: 10px;
@@ -103,6 +109,14 @@ html, body, .fullWrap {
 	float: left;
 	display: block;
 	margin: 1px;
+}
+.vk_btn16 {
+	width: 16px;
+	height: 16px;
+	background: url('share.png') -160px 0px no-repeat;
+	display: inline-block;
+	position: relative;
+	top: 3px;
 }
 
 #scoreShareButtons {

@@ -5,6 +5,8 @@ exports.debugPort = 1337;
 /* Максимальное кол-во игроков на сервере*/
 exports.serverMaxUsersCount = 200000;
 
+exports.framesPerSecond = 40;
+
 exports.texturesScale = 0.75;
 
 exports.saveServerTickCount = 20;
@@ -44,7 +46,7 @@ exports.tankTurretRadius = 9;
 exports.tankGunWidth = 3;
 exports.tankGunLength = 20;
 /*Скорость танка*/
-exports.tankSpeed = 5;
+exports.tankSpeed = 3;
 /*Очки за убийство*/
 exports.scoreForKill = 10;
 /*Очки за попадание*/
@@ -59,7 +61,7 @@ exports.ratingShowUsersCount = 5;
 exports.bulletDistanceFromGun = 1;
 exports.bulletWidth = 4;
 exports.bulletLength = 6;
-exports.bulletSpeed = 15;
+exports.bulletSpeed = 12;
 /*Размеры башни*/
 exports.turretLength = 25;
 exports.turretWidth = 50;

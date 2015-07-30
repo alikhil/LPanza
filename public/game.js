@@ -254,9 +254,11 @@ var game = {
 		this.backgroundColor = utils.RGBToCSS(packet.backgroundColor);
 		this.mapSize = packet.mapSize;
 		
-		$('#gameRoomIdText').text(
-			language.get('game.room_id')
-				.replace('%id%', app.roomId)
+		language.setDOM (
+			'#gameRoomIdText',
+			'game.room_id', {
+				'%id%': app.roomId
+			}
 		);
 		this.inProgress = true;
 		this.mayShot = false;
@@ -304,11 +306,11 @@ var ping = {
 			oldTime = packet.time;
 		for(var i = 0; i < this.requests.length; i ++) {
 			if(this.requests[i] == oldTime) {
-				$('#gameStatsPing').text(
-					language.get('game.stats_ping').replace(
-						'%time%',
-						'' + (curTime - oldTime)
-					)
+				language.setDOM (
+					'#gameStatsPing',
+					'game.stats_ping', {
+						'%time%': '' + (curTime - oldTime)
+					}
 				);
 				this.requests.splice(0, i + 1);
 			}
@@ -324,16 +326,18 @@ var rating = {
 		$('#gameStatsRatingList').empty();
 		language.on ('change', function () {
 			rating.updateList ();
+			resizeOnlineButtonPadding ();
 		});
 	},
 	uninit: function () {
 		this.users.splice(0, this.users.length);
+		language.off ('change');
 	},
 	refresh: function (packet) {
 		this.users.splice(0, this.users.length);
 		this.users = packet.users;
 		this.updateList ();
-		language.off ('change');
+		resizeOnlineButtonPadding ();
 	},
 	updateList: function () {
 		var element = $('#gameStatsRatingList')
@@ -342,10 +346,13 @@ var rating = {
 			element.append(
 				$('<li>')
 					.text(
-						language.get('game.rating_element')
-							.replace('%order%', '' + (i + 1))
-							.replace('%score%', '' + this.users[i].score)
-							.replace('%name%', this.users[i].userName)
+						language.expand (
+							'game.rating_element', {
+								'%order%': '' + (i + 1),
+								'%score%': '' + this.users[i].score,
+								'%name%': this.users[i].userName
+							}
+						)
 					)
 			);
 		}
@@ -385,8 +392,11 @@ var online = {
 			element.append (
 				$('<li>')
 					.text (
-						language.get ('game.online_element')
-							.replace ('%name%', this.users[i])
+						language.expand (
+							'game.online_element', {
+								'%name%': this.users[i]
+							}
+						)
 					)
 					.addClass ('list-group-item')
 			);
@@ -706,10 +716,25 @@ var controls = {
 	}
 };
 function resizeOnlineButtonPadding () {
-	var p = $('#gameStatsOnlineButton_placeholder'),
-		e = $('#gameStatsOnlineButton_element');
-	p.width(e.width());
-	p.height(e.height());
+	var button = $('#gameStatsOnlineButton'),
+		list = $('#gameStatsRatingList'),
+		listContainer = $('#gameStatsRating'),
+		buttonContainer = $('#gameStatsOnlineButton_element'),
+		buttonPlaceholder = $('#gameStatsOnlineButton_placeholder'),
+		contentWidth = Math.max (
+			list[0].offsetWidth,
+			button[0].offsetWidth
+		);
+	buttonPlaceholder
+		.width (contentWidth)
+		.height (button[0].offsetHeight);
+	if (list[0].offsetWidth > button[0].offsetWidth) {
+		buttonContainer
+			.css (
+				'margin-right',
+				(list[0].offsetWidth - button[0].offsetWidth) / 2
+			);
+	}
 }
 var swipe = {
 	aimIs: undefined,
@@ -900,10 +925,13 @@ var app = {
 			isFull = rooms[i].total <= rooms[i].used;
 			room = {
 				val: rooms[i].id,
-				text: language.get('menu.room_element')
-					.replace ('%id%', rooms[i].id)
-					.replace ('%total%', rooms[i].total)
-					.replace ('%used%', rooms[i].used)
+				text: language.expand (
+						'menu.room_element', {
+							'%id%': rooms[i].id,
+							'%total%': rooms[i].total,
+							'%used%': rooms[i].used
+						}
+					)
 			};
 			lastRoomStillPresent =
 				lastRoomStillPresent ||
@@ -935,15 +963,12 @@ var app = {
 	},
 	error: {
 		show: function (title, text) {
-			var error = language.get(text);
+			var data = {};
 			if(text === 'error.join_fail_text.name_too_long') {
-				error = error.replace(
-					'%count%',
-					'' + app.maxUserNameLength
-				);
+				data['%count%'] = '' + app.maxUserNameLength;
 			}
 			language.setDOM('#errorTitle', title);
-			language.setDOM('#errorText', text);
+			language.setDOM('#errorText', text, data);
 			$('#errorModal').modal('show');
 		}
 	},
@@ -1038,7 +1063,7 @@ var app = {
 		}
 	},
 	score: {
-		score: undefined,
+		score: 0,
 		init: function () {
 			this.hide();
 			$('#playAgainButton').on('click', this.hide);
@@ -1051,8 +1076,12 @@ var app = {
 				holder,
 				'http://lpanza.ru',
 				language.get ('share.score_title'),
-				language.get ('share.score_text'),
-				'http://lpanza.ru/logo.opengraph.jpg'
+				language.expand (
+					'share.score_text', {
+						'%score%': app.score.score
+					}
+				),
+				'http://lpanza.ru/logo.opengraph.png'
 			);
 		},
 		show: function (score) {
@@ -1103,13 +1132,13 @@ var app = {
 };
 $(document).ready(function () {
 	var canvas2DSupported = !!window.CanvasRenderingContext2D;
+	language.init ();
 	if(!canvas2DSupported) {
 		$('#bad_browser').show();
 	} else {
 		$('.gameOverlay').hide();
 		$('#canvasWrap').show();
 		$('#browser_check').hide();
-		language.init();
 		app.init();
 	}
 });

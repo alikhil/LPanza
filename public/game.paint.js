@@ -122,7 +122,8 @@ var models = {
 		element.append (code);
 	},
 	addLabel: function (id, object) {
-		var model = models.objects[object.type][object.subtype];
+		var model = models.objects[object.type][object.subtype],
+			scale = game.paintRect.width / canvas.renderSize.width;
 		canvas.layers.label.append (
 			$('<g>')
 				.attr ('id', 'label_' + id)
@@ -135,7 +136,13 @@ var models = {
 						.append (
 							$('<text>')
 								.attr ('x', 0)
-								.attr ('y', -utils.vectorLength (model.size.width, model.size.length) / 2)
+								.attr ('y',
+									-utils.vectorLength (
+										model.size.width,
+										model.size.length
+									) / 2 -
+										(paint.font.label * scale / 4 + 1)
+								)
 								.attr ('text-anchor', 'middle')
 								.append (
 									document.createTextNode (
@@ -284,8 +291,13 @@ var models = {
 			back = $('#label_' + id).find ('.label_back'),
 			size,
 			scale = game.paintRect.width / canvas.renderSize.width,
-			padding = paint.labelPadding * scale;
-		text
+			padding = paint.labelPadding * scale,
+			deltaTop = utils.vectorLength (
+				model.size.width,
+				model.size.length
+			) / 2 +
+				text[0].offsetHeight;
+		$('#label_' + id).find ('.label_')
 			.attr (
 				'transform',
 				transform.inParent (
@@ -296,6 +308,22 @@ var models = {
 					-object.rotation - 90,
 					utils.sizeWL (0, 0),
 					utils.point (0, 0)
+				) +
+				(object.position.y < deltaTop ?
+					' ' +
+					transform.relative (
+						utils.point (
+							0,
+							utils.vectorLength (
+								model.size.width,
+								model.size.length
+							) +
+								paint.font.label * scale -
+								padding
+						)
+					)
+				:
+					''
 				)
 			);
 		text[0].childNodes[0].data = object.label.userName + ' [' + object.label.hp + ' \u2764]';
@@ -305,19 +333,13 @@ var models = {
 		);
 		back
 			.attr (
-				'transform',
-				transform.inParent (
-					model.size,
-					utils.point (0, 0)
-				) + ' ' +
-				transform.rotate (
-					-object.rotation - 90,
-					utils.sizeWL (0, 0),
-					utils.point (0, 0)
-				)
+				'y',
+				-size.height / 2 +
+					parseInt (text.attr ('y')) -
+					(paint.font.label * scale / 4 + 1) -
+					padding
 			)
 			.attr ('x', -size.width / 2 - padding)
-			.attr ('y', -size.height + parseInt (text.attr ('y')))
 			.attr ('width', size.width + 2 * padding)
 			.attr ('height', size.height + 2 * padding);
 	},
@@ -552,7 +574,12 @@ var paint = {
 		this.joystickDrawn = false;
 	},
 	drawScore: function (score) {
-		$('#gameStatsScore').text(score);
+		language.setDOM (
+			'#gameStatsScore',
+			'game.score', {
+				'%score%': score
+			}
+		);
 	},
 	addObject: function (id, object) {
 		models.addObject (id, object);
@@ -609,6 +636,11 @@ var paint = {
 	deleteObject: function (id) {
 		console.log ('del', id);
 		$('#' + id).remove ();
+		if (id.substr (0, 4) === 'tank') {
+			$('#label_' + id).remove ();
+			$('#turret_' + id).remove ()
+		}
+
 	},
 	updateFonts: function (scale) {
 		$('#fontStyles')
