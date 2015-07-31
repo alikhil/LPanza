@@ -480,7 +480,34 @@ function deleteRoom(room){
     delete (roomList[room]);
     logger.info('Room[%d] deleted', curRoomId);
 }
+function handleOutOfMapObjects (objects, room) {
+    // check if objects moved out of the map
+    for (var i = 0; i < objects.length; i ++) {
+        var obj = objects[i],
+        // check if object moved out of map and get distance to move it back
+            outOfMap = geom.rectangleInsideMap (
+                obj, {
+                    width: consts.mapWidth,
+                    height: consts.mapHeight,
+                }
+            );
+        if (outOfMap) {
+            if (obj.type === 'bullet') {
+                obj.type = 'deleted-bullet';
+            } else if (obj.type === 'tank') {
+                obj.position = geom.addToPos (obj.position, outOfMap.delta,  1);
+            }
+        }
+    }
 
+    // delete deleted bullets
+    for (var i = roomsData[room].bullets.length - 1; i >= 0; i --) {
+        var obj = roomsData[room].bullets[i];
+        if (obj.type === 'deleted-bullet') {
+            roomsData[room].bullets.splice(i, 1);
+        }
+    }
+}
 /**
  * Игровой цикл
  */
@@ -501,7 +528,14 @@ function roomTick(room){
                     obj.position = geom.addToPos(obj.position, obj.moveVector, 1);
                 }
             }
-            
+
+            handleOutOfMapObjects (objects, room);
+            objects = Object.values(
+                    roomsData[room].tanks
+                ).concat (
+                    roomsData[room].bullets
+                );
+
             // get objects group for collision checking, far
             var collisionGroups = groups.getCollideGroups (objects);
             
@@ -535,7 +569,7 @@ function roomTick(room){
                                         collision
                                     );
                                 } else if (objB.type === 'bullet') {
-                                    if (objB.type !== 'deleted-bullet') {
+                                    if (objB.owner != objA.label.userId) {
                                         bulletOnTankHit (objA, objB);
                                     }
                                 } // else if (objB.type === 'obstacle') {pushTank (...)}
@@ -545,32 +579,13 @@ function roomTick(room){
                 }
             }
             
-            // check if objects moved out of the map
-            for (var i = 0; i < objects.length; i ++) {
-                var obj = objects[i],
-                // check if object moved out of map and get distance to move it back
-                    outOfMap = geom.rectangleInsideMap (
-                        obj, {
-                            width: consts.mapWidth,
-                            height: consts.mapHeight,
-                        }
-                    );
-                if (outOfMap) {
-                    if (obj.type === 'bullet') {
-                        obj.type = 'deleted-bullet';
-                    } else if (obj.type === 'tank') {
-                        obj.position = geom.addToPos (obj.position, outOfMap.delta,  1);
-                    }
-                }
-            }
+            handleOutOfMapObjects (objects, room);
+            objects = Object.values (
+                    roomsData[room].tanks
+                ).concat (
+                    roomsData[room].bullets
+                );
 
-            // delete deleted bullets
-            for (var i = roomsData[room].bullets.length - 1; i >= 0; i --) {
-                if (obj.type === 'deleted-bullet') {
-                    roomsData[room].bullets.splice(i, 1);
-                }
-            }
-            
             // send game.paint notification
             //Выделяем группы для прорисовки
             var repGroups = groups.getGroups(objects, consts.showAreaWidth + consts.maxWidthLength, consts.showAreaHeight + consts.maxWidthLength);
