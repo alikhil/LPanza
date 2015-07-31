@@ -541,7 +541,7 @@ var controls = {
 				.on('mousemove', function (event) {
 					controls.mouse.buttonDown =
 						controls.mouse.buttonDown ||
-						event.which != 0;
+						event.originalEvent.buttons != 0;
 					controls.mouse.onMove(
 						utils.point(
 							event.pageX,
