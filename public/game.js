@@ -65,6 +65,7 @@ var utils = {
 };
 var socket = {
 	io: undefined,
+	disconnected: false,
 	connect: function () {
 		this.io = io();
 		this.io.connect();
@@ -93,13 +94,39 @@ var socket = {
 			rating.refresh(packet);
 		});
 		this.io.on('disconnect', function () {
+			socket.disconnected = true;
 			if(game.inProgress) {
-				$('#errorDismissButton').hide();
+				if (online.visible) {
+					online.hide ();
+				}
+				app.error.allowDismiss (true);
+				app.error.onhide (function () {
+					app.error.onhide (function () {});
+					app.gameOver ({
+						score: paint.userScore
+					});
+					app.error.allowDismiss (false);
+				});
+			} else {
+				app.error.allowDismiss (false);
+				if (!app.score.visible) {
+					$('#menuModal').modal ('hide');
+				}
 			}
-			app.error.show(
-				'error.disconnect_title',
-				'error.disconnect_text'
-			);
+			if (!app.score.visible) {
+				app.error.show(
+					'error.disconnect_title',
+					'error.disconnect_text'
+				);
+			}
+		});
+		this.io.on ('connect', function () {
+			socket.disconnected = false;
+			if (!game.inProgress && !app.score.visible) {
+				app.error.hide ();
+				$('#menuModal').modal ('show');
+				app.error.allowDismiss (true);
+			}
 		});
 		this.io.on('room.list', function (packet) {
 			app.updateRooms (packet.rooms);
@@ -881,6 +908,13 @@ var app = {
 			if (!controls.touch.isAvailable ()) {
 				$('#userNameTextInput').focus();
 			}
+			if (socket.disconnected) {
+				$('#menuModal').modal ('hide');
+				app.error.show(
+					'error.disconnect_title',
+					'error.disconnect_text'
+				);
+			}
 		},
 		hide: function () {
 			$('#menuForm').hide ();
@@ -970,6 +1004,19 @@ var app = {
 			language.setDOM('#errorTitle', title);
 			language.setDOM('#errorText', text, data);
 			$('#errorModal').modal('show');
+		},
+		hide: function () {
+			$('#errorModal').modal ('hide');
+		},
+		allowDismiss: function (allow) {
+			if (allow) {
+				$('#errorDismissButton').show ();
+			} else {
+				$('#errorDismissButton').hide ();
+			}
+		},
+		onhide: function (callback) {
+			$('#errorModal').on ('hide.bs.modal', callback);
 		}
 	},
 	/*
@@ -1063,6 +1110,7 @@ var app = {
 		}
 	},
 	score: {
+		visible: false,
 		score: 0,
 		init: function () {
 			this.hide();
@@ -1090,11 +1138,13 @@ var app = {
 			$('#gameOverForm').show ();
 			$('#menuModal').modal('show');
 			this.addShareButtons ();
+			this.visible = true;
 		},
 		hide: function () {
 			$('#gameOverForm').hide ();
 			$('#menuModal').modal('hide');
 			app.menu.show();
+			app.score.visible = false;
 		}
 	},
 	init: function () {
@@ -1123,11 +1173,13 @@ var app = {
 	},
 	gameOver: function (packet) {
 /* log */	console.log('socket.on(\''+'game.over'+'\', '+JSON.stringify(packet)+')');
-		game.uninit();
-		if (online.visible) {
-			online.hide ();
+		if(game.inProgress) {
+			game.uninit ();
+			if (online.visible) {
+				online.hide ();
+			}
+			this.score.show (packet.score);
 		}
-		this.score.show(packet.score);
 	}
 };
 $(document).ready(function () {
