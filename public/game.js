@@ -155,6 +155,14 @@ var canvas = {
 		NaN,
 		NaN
 	),
+	renderVisibleSize: utils.sizeWH(
+		NaN,
+		NaN
+	),
+	renderCropSize: utils.sizeWH(
+		NaN,
+		NaN
+	),
 	init: function () {
 		this.element = $('#gameCanvas');
 		for (var i in this.layers) {
@@ -231,6 +239,16 @@ var canvas = {
 			'top': this.renderOffset.y
 		});
 		paint.updateFonts (this.scale);
+		this.renderVisibleSize =
+			utils.sizeWH (
+				canvas.screenSize.width / canvas.scale,
+				canvas.screenSize.height / canvas.scale
+			);
+		this.renderCropSize =
+			utils.sizeWH (
+				game.paintRect.width - canvas.renderVisibleSize.width,
+				game.paintRect.height - canvas.renderVisibleSize.height
+			);
 	},
 	pointScreenToRender: function (x, y) {
 		return utils.point(

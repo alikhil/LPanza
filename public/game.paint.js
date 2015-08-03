@@ -422,24 +422,26 @@ var paint = {
 		objects = packet.objects;
 
 		if (objects[0].position.x +
-				game.paintRect.width / 2 >
+				canvas.renderVisibleSize.width / 2 >
 				game.mapSize.width) {
 			game.tankCenter.x = objects[0].position.x +
 				game.paintRect.width -
+				canvas.renderCropSize.width / 2 -
 				game.mapSize.width;
-		} else if (objects[0].position.x < game.paintRect.width / 2) {
-			game.tankCenter.x = objects[0].position.x;
+		} else if (objects[0].position.x < canvas.renderVisibleSize.width / 2) {
+			game.tankCenter.x = canvas.renderCropSize.width / 2 + objects[0].position.x;
 		} else {
 			game.tankCenter.x = game.paintRect.width / 2;
 		}
 		if (objects[0].position.y +
-				game.paintRect.height / 2 >
+				canvas.renderVisibleSize.height / 2 >
 				game.mapSize.height) {
 			game.tankCenter.y = objects[0].position.y +
 				game.paintRect.height -
+				canvas.renderCropSize.height / 2 -
 				game.mapSize.height;
-		} else if (objects[0].position.y < game.paintRect.height / 2) {
-			game.tankCenter.y = objects[0].position.y;
+		} else if (objects[0].position.y < canvas.renderVisibleSize.height / 2) {
+			game.tankCenter.y = canvas.renderCropSize.height / 2 + objects[0].position.y;
 		} else {
 			game.tankCenter.y = game.paintRect.height / 2;
 		}
