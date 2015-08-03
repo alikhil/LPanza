@@ -188,39 +188,39 @@ var canvas = {
 		this.screenSize.width = parent.offsetWidth;
 		this.screenSize.height = parent.offsetHeight;
 		
-		this.renderSize.width = this.screenSize.width;
-		this.renderSize.height = this.renderSize.width*(
-			game.paintRect.height/
-			game.paintRect.width
-		);
-		if(this.renderSize.height > this.screenSize.height) {
-			this.renderSize.height = this.screenSize.height;
-			this.renderSize.width = this.renderSize.height*(
-				game.paintRect.width/
-				game.paintRect.height
-			);
+		this.renderSize.width = game.paintRect.width;
+		this.renderSize.height = game.paintRect.width;
+		if (this.screenSize.width / this.screenSize.height >
+				this.renderSize.width / this.renderSize.height) {
+			this.scale = this.renderSize.width / this.screenSize.width;
+			this.renderOffset.x = 0;
+			this.renderOffset.y = (
+				this.screenSize.height -
+				this.renderSize.height / this.scale
+			)/2;
+		} else {
+			this.scale = this.renderSize.height / this.screenSize.height;
+			this.renderOffset.x = (
+				this.screenSize.width -
+				this.renderSize.width / this.scale
+			)/2;
+			this.renderOffset.y = 0;
 		}
+			this.scale = 1/this.scale;
 		this.element
-			.attr('width', game.paintRect.width)
-			.attr('height', game.paintRect.height)
+			.attr('width', this.renderSize.width)
+			.attr('height', this.renderSize.height)
+		$('#gameTouchSurface').add (this.element)
 			.css (utils.CSSPrefixes (
 				'transform',
 				'scale' + '(' +
-					this.renderSize.width / game.paintRect.width + ',' +
-					this.renderSize.height / game.paintRect.height + ')'
+					this.scale + ',' +
+					this.scale + ')'
 			))
 			.css (utils.CSSPrefixes (
 				'transform-origin',
 				'0px 0px'
 			));
-		this.renderOffset.x = (
-			this.screenSize.width -
-			this.renderSize.width
-		)/2;
-		this.renderOffset.y = (
-			this.screenSize.height -
-			this.renderSize.height
-		)/2;
 		this.element
 			.css ('margin-top', this.renderOffset.y)
 			.css ('margin-left', this.renderOffset.x);
@@ -230,7 +230,13 @@ var canvas = {
 			'left': this.renderOffset.x,
 			'top': this.renderOffset.y
 		});
-		paint.updateFonts (game.paintRect.width / this.renderSize.width);
+		paint.updateFonts (this.scale);
+	},
+	pointScreenToRender: function (x, y) {
+		return utils.point(
+			x - this.renderOffset.x,
+			y - this.renderOffset.y
+		);
 	}
 };
 function scrollToTop () {
@@ -262,10 +268,10 @@ var game = {
 		}
 	},
 	pointScreenToMap: function (point) {
-		var ratio = this.paintRect.width/canvas.renderSize.width;
+		var scale = 1 / canvas.scale;
 		return utils.point(
-			point.x * ratio,
-			point.y * ratio
+			point.x * scale,
+			point.y * scale
 		);
 	},
 	paintRect: undefined,
@@ -559,7 +565,7 @@ var controls = {
 				.on('mousedown', function (event) {
 					controls.mouse.buttonDown = true;
 					controls.mouse.onMove(
-						utils.point(
+						canvas.pointScreenToRender (
 							event.pageX,
 							event.pageY
 						)
@@ -570,7 +576,7 @@ var controls = {
 						controls.mouse.buttonDown ||
 						event.originalEvent.buttons != 0;
 					controls.mouse.onMove(
-						utils.point(
+						canvas.pointScreenToRender (
 							event.pageX,
 							event.pageY
 						)
@@ -579,7 +585,7 @@ var controls = {
 				.on('mouseup mouseleave', function (event) {
 					controls.mouse.buttonDown = false;
 					controls.mouse.onMove(
-						utils.point(
+						canvas.pointScreenToRender (
 							event.pageX,
 							event.pageY
 						)
@@ -607,8 +613,8 @@ var controls = {
 		},
 		onRotate: function (point) {
 			var renderPoint = utils.point(
-					point.x - canvas.renderOffset.x,
-					point.y - canvas.renderOffset.y
+					point.x,
+					point.y
 				),
 				mapPoint = game.pointScreenToMap(renderPoint),
 				newRotation = utils.angleRadToDeg(
@@ -624,10 +630,7 @@ var controls = {
 		}
 	},
 	pointInRenderRect: function (point) {
-		return canvas.renderOffset.x <= point.x &&
-			point.x <= canvas.renderOffset.x + canvas.renderSize.width &&
-			canvas.renderOffset.y <= point.y &&
-			point.y <= canvas.renderOffset.y + canvas.renderSize.height;
+		return true;
 	},
 	touch: {
 		touches: {current: {}, first: {}, length: 0},
@@ -645,14 +648,16 @@ var controls = {
 						t = changed[i];
 						id = t.identifier;
 						if (controls.touch.touches.length < 2) {
-							controls.touch.touches.current[id] = {
-								x: t.pageX,
-								y: t.pageY
-							};
-							controls.touch.touches.first[id] = {
-								x: t.pageX,
-								y: t.pageY
-							}
+							controls.touch.touches.current[id] =
+								canvas.pointScreenToRender (
+									t.pageX,
+									t.pageY
+								);
+							controls.touch.touches.first[id] =
+								canvas.pointScreenToRender (
+									t.pageX,
+									t.pageY
+								);
 							controls.touch.touches.length ++;
 							swipe.on.newDown (id);
 						}
@@ -667,10 +672,11 @@ var controls = {
 						t = changed[i];
 						id = t.identifier;
 						if (id in controls.touch.touches.current) {
-							controls.touch.touches.current[id] = {
-								x: t.pageX,
-								y: t.pageY
-							};
+							controls.touch.touches.current[id] =
+								canvas.pointScreenToRender (
+									t.pageX,
+									t.pageY
+								);
 							swipe.on.move (id);
 						}
 					}

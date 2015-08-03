@@ -123,7 +123,7 @@ var models = {
 	},
 	addLabel: function (id, object) {
 		var model = models.objects[object.type][object.subtype],
-			scale = game.paintRect.width / canvas.renderSize.width;
+			scale = canvas.scale;
 		canvas.layers.label.append (
 			$('<g>')
 				.attr ('id', 'label_' + id)
@@ -290,7 +290,7 @@ var models = {
 			text = $('#label_' + id).find ('.label_front'),
 			back = $('#label_' + id).find ('.label_back'),
 			size,
-			scale = game.paintRect.width / canvas.renderSize.width,
+			scale = canvas.scale,
 			padding = paint.labelPadding * scale,
 			deltaTop = utils.vectorLength (
 				model.size.width,
@@ -345,7 +345,7 @@ var models = {
 	},
 	addJoystick: function () {
 		var code = $('<g>'),
-			scale = game.paintRect.width / canvas.renderSize.width,
+			scale = canvas.scale,
 			center = controls.touch.touches.first[swipe.joy];
 		center = utils.point (
 			(center.x - canvas.renderOffset.x) * scale,
@@ -375,7 +375,7 @@ var models = {
 	updateJoystick: function () {
 		var a = controls.touch.touches.first[swipe.joy],
 			b = controls.touch.touches.current[swipe.joy],
-			scale = game.paintRect.width / canvas.renderSize.width,
+			scale = canvas.scale,
 			d = utils.vectorLength (b.x - a.x, b.y - a.y) * scale,
 			al = paint.joystick.length * scale;
 		$('#joystick')

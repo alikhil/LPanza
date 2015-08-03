@@ -24,8 +24,8 @@ exports.tanksHP = 10;
 /*Урон наносимый танку одним выстеролом*/
 exports.damagePerShot = 1;
 /*Размеры показываемой части карты*/
-exports.showAreaWidth = 850;
-exports.showAreaHeight = 400;
+exports.showAreaWidth = 600;
+exports.showAreaHeight = 600;
 
 /*Размеры карты*/
 exports.mapWidth = 1000;
