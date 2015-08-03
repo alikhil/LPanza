@@ -140,8 +140,7 @@ var models = {
 									-utils.vectorLength (
 										model.size.width,
 										model.size.length
-									) / 2 -
-										(paint.font.label * scale / 4 + 1)
+									) / 2
 								)
 								.attr ('text-anchor', 'middle')
 								.append (
@@ -291,13 +290,14 @@ var models = {
 			back = $('#label_' + id).find ('.label_back'),
 			size,
 			scale = canvas.scale,
-			padding = paint.labelPadding * scale,
+			padding = paint.labelPadding / scale,
 			deltaTop = utils.vectorLength (
 				model.size.width,
 				model.size.length
 			) / 2 +
 				text[0].offsetHeight +
 				canvas.renderCropSize.height / 2;
+		size = text[0].getBBox ();
 		$('#label_' + id).find ('.label_')
 			.attr (
 				'transform',
@@ -319,7 +319,7 @@ var models = {
 								model.size.width,
 								model.size.length
 							) +
-								paint.font.label * scale -
+								size.height -
 								padding
 						)
 					)
@@ -350,7 +350,7 @@ var models = {
 				$('<circle>')
 					.attr ('cx', 0)
 					.attr ('cy', 0)
-					.attr ('r', swipe.threshold * scale)
+					.attr ('r', swipe.threshold / scale)
 			)
 			.append (
 				$('<path>')
@@ -368,8 +368,8 @@ var models = {
 		var a = controls.touch.touches.first[swipe.joy],
 			b = controls.touch.touches.current[swipe.joy],
 			scale = canvas.scale,
-			d = utils.vectorLength (b.x - a.x, b.y - a.y) * scale,
-			al = paint.joystick.length * scale;
+			d = utils.vectorLength (b.x - a.x, b.y - a.y) / scale,
+			al = paint.joystick.length / scale;
 		$('#joystick')
 			.find ('path')
 			.attr ('d', 'M0,0 L0,' + d + ' l-' + al + ',-' + al + ' m' + al + ',' + al + ' l' + al + ',-' + al + ' z')
@@ -641,12 +641,12 @@ var paint = {
 			.html (
 				'#gameCanvas .label_front {' +
 					'font-size:' +
-						(this.font.label * scale) + 'px' +
+						(this.font.label / scale) + 'px' +
 						';' +
 				'}' + ' ' +
 				'#gameCanvas .joystick {' +
 					'stroke-width:' +
-						(this.joystick.width * scale) +
+						(this.joystick.width / scale) +
 						';' +
 				'}'
 			);
