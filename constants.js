@@ -5,7 +5,7 @@ exports.debugPort = 1337;
 /* Максимальное кол-во игроков на сервере*/
 exports.serverMaxUsersCount = 200000;
 
-exports.texturesScale = 0.75;
+exports.texturesScale = 0.75*0.75;
 
 exports.saveServerTickCount = 20;
 
