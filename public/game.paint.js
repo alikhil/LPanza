@@ -348,8 +348,8 @@ var models = {
 			scale = canvas.scale,
 			center = controls.touch.touches.first[swipe.joy];
 		center = utils.point (
-			(center.x - canvas.renderOffset.x) * scale,
-			(center.y - canvas.renderOffset.y) * scale
+			center.x / scale,
+			center.y / scale
 		);
 		code
 			.attr ('id', 'joystick')
