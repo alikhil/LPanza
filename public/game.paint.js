@@ -296,7 +296,8 @@ var models = {
 				model.size.width,
 				model.size.length
 			) / 2 +
-				text[0].offsetHeight;
+				text[0].offsetHeight +
+				canvas.renderCropSize.height / 2;
 		$('#label_' + id).find ('.label_')
 			.attr (
 				'transform',
