@@ -328,18 +328,9 @@ var models = {
 				)
 			);
 		text[0].childNodes[0].data = object.label.userName + ' [' + object.label.hp + ' \u2764]';
-		size = utils.sizeWH (
-			text[0].offsetWidth,
-			text[0].offsetHeight
-		);
+		size = text[0].getBBox ();
 		back
-			.attr (
-				'y',
-				-size.height / 2 +
-					parseInt (text.attr ('y')) -
-					(paint.font.label * scale / 4 + 1) -
-					padding
-			)
+			.attr ('y', size.y - padding)
 			.attr ('x', -size.width / 2 - padding)
 			.attr ('width', size.width + 2 * padding)
 			.attr ('height', size.height + 2 * padding);
