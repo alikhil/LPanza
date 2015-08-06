@@ -412,6 +412,15 @@ var paint = {
 	drawRect: undefined,
 	userScore: NaN,
 	joystickDrawn: undefined,
+	animation: {
+		gun_shot: function (tankId) {
+			$('#turret_' + tankId)
+				.find ('.gun_shot_animation')
+				.each (function () {
+					this.beginElement ();
+				});
+		}
+	},
 	onPaint: function (packet) {
 		var objects = [],
 			offset,
@@ -531,7 +540,8 @@ var paint = {
 		var newDrawn = {},
 			objects = this.objects,
 			orphanObjects = {},
-			id;
+			id,
+			events = [];
 		if (swipe.joyIs) {
 			if (!this.joystickDrawn) {
 				models.addJoystick ();
@@ -553,14 +563,25 @@ var paint = {
 			orphanObjects[i] = 0;
 		}
 		for (var i = 0; i < objects.length; i ++) {
-			id = objects[i].type + objects[i].uid;
-			if (this.drawn.hasOwnProperty (id)) {
-				delete orphanObjects[id];
+			if (objects[i].type === 'event') {
+				events.push (objects[i]);
 			} else {
-				this.addObject (id, objects[i]);
+				id = objects[i].type + objects[i].uid;
+				if (this.drawn.hasOwnProperty (id)) {
+					delete orphanObjects[id];
+				} else {
+					this.addObject (id, objects[i]);
+				}
+				this.updateObject (id, objects[i]);
+				newDrawn[id] = objects[i];
 			}
-			this.updateObject (id, objects[i]);
-			newDrawn[id] = objects[i];
+		}
+		for (var i = 0; i < events.length; i ++) {
+			var event = events[i];
+			if (event.subtype === 'gun_shot') {
+				// play shot sound
+				this.animation.gun_shot ('tank' + event.uid);
+			}
 		}
 		for (var i in orphanObjects) {
 			this.deleteObject (i);
