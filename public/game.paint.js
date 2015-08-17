@@ -611,6 +611,7 @@ var paint = {
 				soundObject.audio.muted = sound.muted;
 				sound.objects['gunShot_' + id] = soundObject;
 				soundObject.audio.play ();
+				this.animation.gun_shot ('tank' + event.uid);
 			}
 		}
 		for (var i in orphanObjects) {
