@@ -595,19 +595,25 @@ function roomTick(room){
                         type: 'event',
                         subtype: 'gun_shot',
                         uid: object.uid,
-                        position: object.position
+                        position: object.position,
+                        size: {
+                            width: 0,
+                            length: 0
+                        },
+                        rotation: 0
                     });
                     object.shotMadeEventFlag = false;
                 }
             }
-            objects = objects.concat (events);
             
             handleOutOfMapObjects (objects, room);
-            objects = Object.values (
+            objects = events.concat (
+                Object.values (
                     roomsData[room].tanks
                 ).concat (
                     roomsData[room].bullets
-                );
+                )
+            );
 
             // send game.paint notification
             //Выделяем группы для прорисовки
