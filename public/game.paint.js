@@ -123,7 +123,7 @@ var models = {
 	},
 	addLabel: function (id, object) {
 		var model = models.objects[object.type][object.subtype],
-			scale = game.paintRect.width / canvas.renderSize.width;
+			scale = canvas.scale;
 		canvas.layers.label.append (
 			$('<g>')
 				.attr ('id', 'label_' + id)
@@ -140,8 +140,7 @@ var models = {
 									-utils.vectorLength (
 										model.size.width,
 										model.size.length
-									) / 2 -
-										(paint.font.label * scale / 4 + 1)
+									) / 2
 								)
 								.attr ('text-anchor', 'middle')
 								.append (
@@ -290,13 +289,15 @@ var models = {
 			text = $('#label_' + id).find ('.label_front'),
 			back = $('#label_' + id).find ('.label_back'),
 			size,
-			scale = game.paintRect.width / canvas.renderSize.width,
-			padding = paint.labelPadding * scale,
+			scale = canvas.scale,
+			padding = paint.labelPadding / scale,
 			deltaTop = utils.vectorLength (
 				model.size.width,
 				model.size.length
 			) / 2 +
-				text[0].offsetHeight;
+				text[0].offsetHeight +
+				canvas.renderCropSize.height / 2;
+		size = text[0].getBBox ();
 		$('#label_' + id).find ('.label_')
 			.attr (
 				'transform',
@@ -318,7 +319,7 @@ var models = {
 								model.size.width,
 								model.size.length
 							) +
-								paint.font.label * scale -
+								size.height -
 								padding
 						)
 					)
@@ -327,29 +328,20 @@ var models = {
 				)
 			);
 		text[0].childNodes[0].data = object.label.userName + ' [' + object.label.hp + ' \u2764]';
-		size = utils.sizeWH (
-			text[0].offsetWidth,
-			text[0].offsetHeight
-		);
+		size = text[0].getBBox ();
 		back
-			.attr (
-				'y',
-				-size.height / 2 +
-					parseInt (text.attr ('y')) -
-					(paint.font.label * scale / 4 + 1) -
-					padding
-			)
+			.attr ('y', size.y - padding)
 			.attr ('x', -size.width / 2 - padding)
 			.attr ('width', size.width + 2 * padding)
 			.attr ('height', size.height + 2 * padding);
 	},
 	addJoystick: function () {
 		var code = $('<g>'),
-			scale = game.paintRect.width / canvas.renderSize.width,
+			scale = canvas.scale,
 			center = controls.touch.touches.first[swipe.joy];
 		center = utils.point (
-			(center.x - canvas.renderOffset.x) * scale,
-			(center.y - canvas.renderOffset.y) * scale
+			center.x / scale,
+			center.y / scale
 		);
 		code
 			.attr ('id', 'joystick')
@@ -358,7 +350,7 @@ var models = {
 				$('<circle>')
 					.attr ('cx', 0)
 					.attr ('cy', 0)
-					.attr ('r', swipe.threshold * scale)
+					.attr ('r', swipe.threshold / scale)
 			)
 			.append (
 				$('<path>')
@@ -375,9 +367,9 @@ var models = {
 	updateJoystick: function () {
 		var a = controls.touch.touches.first[swipe.joy],
 			b = controls.touch.touches.current[swipe.joy],
-			scale = game.paintRect.width / canvas.renderSize.width,
-			d = utils.vectorLength (b.x - a.x, b.y - a.y) * scale,
-			al = paint.joystick.length * scale;
+			scale = canvas.scale,
+			d = utils.vectorLength (b.x - a.x, b.y - a.y) / scale,
+			al = paint.joystick.length / scale;
 		$('#joystick')
 			.find ('path')
 			.attr ('d', 'M0,0 L0,' + d + ' l-' + al + ',-' + al + ' m' + al + ',' + al + ' l' + al + ',-' + al + ' z')
@@ -422,24 +414,26 @@ var paint = {
 		objects = packet.objects;
 
 		if (objects[0].position.x +
-				game.paintRect.width / 2 >
+				canvas.renderVisibleSize.width / 2 >
 				game.mapSize.width) {
 			game.tankCenter.x = objects[0].position.x +
 				game.paintRect.width -
+				canvas.renderCropSize.width / 2 -
 				game.mapSize.width;
-		} else if (objects[0].position.x < game.paintRect.width / 2) {
-			game.tankCenter.x = objects[0].position.x;
+		} else if (objects[0].position.x < canvas.renderVisibleSize.width / 2) {
+			game.tankCenter.x = canvas.renderCropSize.width / 2 + objects[0].position.x;
 		} else {
 			game.tankCenter.x = game.paintRect.width / 2;
 		}
 		if (objects[0].position.y +
-				game.paintRect.height / 2 >
+				canvas.renderVisibleSize.height / 2 >
 				game.mapSize.height) {
 			game.tankCenter.y = objects[0].position.y +
 				game.paintRect.height -
+				canvas.renderCropSize.height / 2 -
 				game.mapSize.height;
-		} else if (objects[0].position.y < game.paintRect.height / 2) {
-			game.tankCenter.y = objects[0].position.y;
+		} else if (objects[0].position.y < canvas.renderVisibleSize.height / 2) {
+			game.tankCenter.y = canvas.renderCropSize.height / 2 + objects[0].position.y;
 		} else {
 			game.tankCenter.y = game.paintRect.height / 2;
 		}
@@ -647,12 +641,12 @@ var paint = {
 			.html (
 				'#gameCanvas .label_front {' +
 					'font-size:' +
-						(this.font.label * scale) + 'px' +
+						(this.font.label / scale) + 'px' +
 						';' +
 				'}' + ' ' +
 				'#gameCanvas .joystick {' +
 					'stroke-width:' +
-						(this.joystick.width * scale) +
+						(this.joystick.width / scale) +
 						';' +
 				'}'
 			);
