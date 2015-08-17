@@ -204,6 +204,9 @@ function userJoin(user) {
         tank.turret = turret;
         tank.label = label;
         tank.moveVector = point_(0, 0);
+
+        tank.shotMadeEventFlag = false;
+        tank.drivingFlag = false;
         
         roomsData[room].tanks[userId] = tank;
         
@@ -253,6 +256,7 @@ function gameControl(control){
         tank.rotation = Math.ceil(tank.rotation);
         tank.rotation -= tank.rotation % 45;            
         tank.moveVector = geom.moveVector(tank.rotation, tank.speed);
+        tank.drivingFlag = tank.speed != 0;
     }
 	
 }
@@ -364,6 +368,7 @@ function doShot(tank){
                 clearTimeout(updateTankReload);
             }
         }, 50);
+    tank.shotMadeEventFlag = true;
 }
  
  function pushTanksAway (tank1, tank2, collision) {
@@ -578,6 +583,24 @@ function roomTick(room){
                     }
                 }
             }
+
+            // Добавление обьектов типа `event`.
+            // Т.к. переменная `objects` локальная,
+            // то такие обьекты удалятся при выходе из функции.
+            var events = [];
+            for (var i = 0; i < objects.length; i ++) {
+                var object = objects[i];
+                if (object.type === 'tank' && object.shotMadeEventFlag) {
+                    events.push ({
+                        type: 'event',
+                        subtype: 'gun_shot',
+                        uid: object.uid,
+                        position: object.position
+                    });
+                    object.shotMadeEventFlag = false;
+                }
+            }
+            objects = objects.concat (events);
             
             handleOutOfMapObjects (objects, room);
             objects = Object.values (
