@@ -1155,6 +1155,11 @@ var app = {
 		online.init ();
 		this.menu.show();
 		tabActiveMonitor.init();
+		sound.load ();
+		sound.mute (true);
+		$('#mute_checkbox').on ('change', function () {
+			sound.mute (this.checked);
+		});
 	},
 	gameJoin: {
 		ok: function (packet) {

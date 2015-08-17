@@ -9,6 +9,38 @@
 	}
 }) ();
 
+var sound = {
+	load: function () {
+		for (var i in this.audio) {
+			try {
+				this.audio[i] = new Audio (this.audio[i]);
+			} catch (e) {
+				this.audio[i] = {
+					play: function () {},
+					pause: function () {},
+					load: function () {},
+					cloneNode: function () {
+						return this;
+					},
+					loop: false,
+					muted: false
+				};
+			}
+		}
+	},
+	audio: {
+		tankDriving: 'tankDriving.mp3',
+		gunShot: 'gunShot.mp3'
+	},
+	objects: {},
+	muted: false,
+	mute: function (mute) {
+		for (var i in this.objects) {
+			this.objects[i].audio.muted = mute;
+		}
+		this.muted = mute;
+	}
+};
 var transform = {
 	rotate: function (angle, size, center) {
 		return '' +
@@ -579,8 +611,12 @@ var paint = {
 		for (var i = 0; i < events.length; i ++) {
 			var event = events[i];
 			if (event.subtype === 'gun_shot') {
-				// play shot sound
-				this.animation.gun_shot ('tank' + event.uid);
+				var soundObject = {},
+					id = Math.floor (Math.random () * 100000);
+				soundObject.audio = sound.audio.gunShot.cloneNode ();
+				soundObject.audio.muted = sound.muted;
+				sound.objects['gunShot_' + id] = soundObject;
+				soundObject.audio.play ();
 			}
 		}
 		for (var i in orphanObjects) {
@@ -604,12 +640,29 @@ var paint = {
 	},
 	addObject: function (id, object) {
 		models.addObject (id, object);
+		if (object.type === 'tank') {
+			var soundObject = {};
+			soundObject.active = false;
+			soundObject.audio = sound.audio.tankDriving.cloneNode ();
+			soundObject.audio.loop = true;
+			soundObject.audio.muted = sound.muted;
+			sound.objects['drivingTank_' + id] = soundObject;
+		}
 	},
 	updateObject: function (id, object) {
 		var element = $('#' + id),
 			model = models.objects[object.type][object.subtype];
 		//console.log ('upd', id, object);
 		if (object.type === 'tank') {
+			var soundObject = sound.objects['drivingTank_' + id];
+			if (soundObject.active != object.drivingFlag) {
+				if (object.drivingFlag) {
+					soundObject.audio.play ();
+				} else {
+					soundObject.audio.pause ();
+				}
+				soundObject.active = object.drivingFlag;
+			}
 			element = element
 				.add ($('#label_' + id))
 				.add ($('#turret_' + id));
@@ -660,8 +713,9 @@ var paint = {
 		if (id.substr (0, 4) === 'tank') {
 			$('#label_' + id).remove ();
 			$('#turret_' + id).remove ()
+			sound.objects['drivingTank_' + id].audio.pause ();
+			delete sound.objects['drivingTank_' + id];
 		}
-
 	},
 	updateFonts: function (scale) {
 		$('#fontStyles')

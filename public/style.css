@@ -77,6 +77,13 @@ html, body, .fullWrap {
 	right: 10px;
 	top: 10px;
 }
+.gameOverlayTopLeft {
+	left: 10px;
+	top: 10px;
+	padding: 5px;
+	padding-bottom: 0px;
+	z-index: 200;
+}
 #gameStatsOnlineButton_element {
 	right: 20px;
 	top: 20px;
@@ -128,6 +135,21 @@ html, body, .fullWrap {
 
 .hidden {
 	display: none;
+}
+
+#mute_checkbox ~ label {
+	width: 32px;
+	height: 32px;
+	font-size: 32px;
+	text-align: center;
+}
+/* .glyphicon-volume-up:before */
+#mute_checkbox ~ label:before {
+    content: '\e038';
+}
+/* .glyphicon-volume-off:before */
+#mute_checkbox:checked ~ label:before {
+    content: '\e036';
 }
 
 /* pure css tabs */

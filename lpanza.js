@@ -206,6 +206,7 @@ function userJoin(user) {
         tank.moveVector = point_(0, 0);
 
         tank.shotMadeEventFlag = false;
+        tank.drivingFlag = false;
         
         roomsData[room].tanks[userId] = tank;
         
@@ -255,6 +256,7 @@ function gameControl(control){
         tank.rotation = Math.ceil(tank.rotation);
         tank.rotation -= tank.rotation % 45;            
         tank.moveVector = geom.moveVector(tank.rotation, tank.speed);
+        tank.drivingFlag = tank.speed != 0;
     }
 	
 }
