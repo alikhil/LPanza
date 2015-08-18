@@ -136,7 +136,7 @@ var models = {
 		);
 	},
 	addObject: function (id, object) {
-		var element = $('#layer_' + this.layers[object.type]),
+		var element = canvas.layers[this.layers[object.type]],
 			code = $('<g>');
 		code.attr ('id', id);
 		if (object.type === 'tank') {
@@ -152,20 +152,25 @@ var models = {
 			this.addLabel (id, object);
 		}
 		element.append (code);
+		object.dom.self = code;
 	},
 	addLabel: function (id, object) {
 		var model = models.objects[object.type][object.subtype],
 			scale = canvas.scale;
 		canvas.layers.label.append (
+			object.dom.label_placeholder =
 			$('<g>')
 				.attr ('id', 'label_' + id)
 				.append (
+					object.dom.label_ =
 					$('<g>')
 						.append (
+							object.dom.label_back =
 							$('<rect>')
 								.attr ('class', 'label_back')
 						)
 						.append (
+							object.dom.label_front =
 							$('<text>')
 								.attr ('x', 0)
 								.attr ('y',
@@ -187,15 +192,17 @@ var models = {
 		);
 	},
 	addTexture: function (object) {
-		return $('#' + 'model_' + object.type + '_' + object.subtype + '_vector')[0]
+		return this.objects[object.type][object.subtype].container[0]
 			.children[0]
 			.cloneNode (true);
 	},
 	addTurret: function (id, object) {
 		canvas.layers.turret.append (
+			object.dom.turret_placeholder =
 			$('<g>')
 				.attr ('id', 'turret_' + id)
 				.append (
+					object.dom.turret =
 					$('<g>')
 						.append (
 							this.addReload (object)
@@ -225,6 +232,7 @@ var models = {
 					.attr ('class', 'hp_back')
 			)
 			.append (
+				object.dom.hp_front =
 				this.addRectangle (
 						utils.sizeWL (
 							model.hp.size.width * object.label.hp/10,
@@ -263,14 +271,7 @@ var models = {
 	},
 	addReload: function (object) {
 		var model = models.objects['turret'][object.subtype],
-			radius = model.reload.radius,
-			angleA = 270,
-			angleB = angleA + 360 * object.label.reload,
-			longArc = (Math.abs (angleA - angleB) <= 180) ? 0 : 1,
-			xa = radius*(1+Math.cos(utils.angleDegToRad(angleA))),
-			ya = radius*(1+Math.sin(utils.angleDegToRad(angleA))),
-			xb = radius*(1+Math.cos(utils.angleDegToRad(angleB))),
-			yb = radius*(1+Math.sin(utils.angleDegToRad(angleB)));
+			radius = model.reload.radius;
 		return $('<g>')
 			.append (
 				$('<circle>')
@@ -280,9 +281,9 @@ var models = {
 					.attr ('r', radius)
 			)
 			.append (
+				object.dom.reload_front =
 				$('<path>')
 					.attr ('class', 'reload_front')
-					.attr ('d', "M" + radius + "," + radius + " L" + xa + "," + ya + ", A" + radius + "," + radius + " 0 " + longArc + ",1 " + xb + "," + yb + " z")
 			)
 			.attr (
 				'transform',
@@ -304,22 +305,31 @@ var models = {
 			.attr ('class', 'reload');
 	},
 	updateReload: function (id, object) {
-		$('#turret_' + id)
-			.find ('.reload')
-			.replaceWith (
-				this.addReload (object)
-			);
+		if (object.old.label.reload != object.label.reload) {
+			var model = models.objects['turret'][object.subtype],
+				radius = model.reload.radius,
+				angleA = 270,
+				angleB = angleA + 360 * object.label.reload,
+				longArc = (Math.abs (angleA - angleB) <= 180) ? 0 : 1,
+				xa = radius * (1 + Math.cos (utils.angleDegToRad (angleA))),
+				ya = radius * (1 + Math.sin (utils.angleDegToRad (angleA))),
+				xb = radius * (1 + Math.cos (utils.angleDegToRad (angleB))),
+				yb = radius * (1 + Math.sin (utils.angleDegToRad (angleB)));
+			object.dom.reload_front
+				.attr ('d', 'M' + radius + ',' + radius + ' L' + xa + ',' + ya + ', A' + radius + ',' + radius + ' 0 ' + longArc + ',1 ' + xb + ',' + yb + ' z');
+			object.old.label.reload = object.label.reload;
+		}
 	},
 	updateHP: function (id, object) {
 		var model = models.objects[object.type][object.subtype];
-		$('#' + id)
-			.find ('.hp_front')
+		// if object.old.hp != object.label.hp
+		object.dom.hp_front
 			.attr ('width', model.hp.size.width * object.label.hp/10);
 	},
 	updateLabel: function (id, object) {
 		var model = models.objects[object.type][object.subtype],
-			text = $('#label_' + id).find ('.label_front'),
-			back = $('#label_' + id).find ('.label_back'),
+			text = object.dom.label_front,
+			back = object.dom.label_back,
 			size,
 			scale = canvas.scale,
 			padding = paint.labelPadding / scale,
@@ -330,7 +340,10 @@ var models = {
 				text[0].offsetHeight +
 				canvas.renderCropSize.height / 2;
 		size = text[0].getBBox ();
-		$('#label_' + id).find ('.label_')
+		object.dom.label_
+			//	if object.old.rotation != object.rotation
+			//		|| object.old.top != object.top
+			//		|| scale_changed
 			.attr (
 				'transform',
 				transform.inParent (
@@ -359,8 +372,11 @@ var models = {
 					''
 				)
 			);
+		// if object.old.hp != object.label.hp
 		text[0].childNodes[0].data = object.label.userName + ' [' + object.label.hp + ' \u2764]';
 		size = text[0].getBBox ();
+		//	if object.old.hp != object.label.hp
+		//		|| scale_changed
 		back
 			.attr ('y', size.y - padding)
 			.attr ('x', -size.width / 2 - padding)
@@ -385,16 +401,18 @@ var models = {
 					.attr ('r', swipe.threshold / scale)
 			)
 			.append (
+				paint.dom.joystick_arrow =
 				$('<path>')
 			)
 			.attr (
 				'transform',
 				transform.relative (center)
 			);
+		paint.dom.joystick = code;
 		canvas.layers.joystick.append (code);
 	},
 	removeJoystick: function () {
-		$('#joystick').remove ();
+		paint.dom.joystick.remove ();
 	},
 	updateJoystick: function () {
 		var a = controls.touch.touches.first[swipe.joy],
@@ -402,8 +420,9 @@ var models = {
 			scale = canvas.scale,
 			d = utils.vectorLength (b.x - a.x, b.y - a.y) / scale,
 			al = paint.joystick.length / scale;
-		$('#joystick')
-			.find ('path')
+		//	if old.length != d.length
+		//		|| old.rotation != rotation
+		paint.dom.joystick_arrow
 			.attr ('d', 'M0,0 L0,' + d + ' l-' + al + ',-' + al + ' m' + al + ',' + al + ' l' + al + ',-' + al + ' z')
 			.attr (
 				'transform',
@@ -422,6 +441,7 @@ var models = {
 	}
 };
 var paint = {
+	dom: {},
 	objects: [],
 	drawn: {},
 	font: {
@@ -439,10 +459,8 @@ var paint = {
 	animation: {
 		gun_shot: function (tankId) {
 			$('#turret_' + tankId)
-				.find ('.gun_shot_animation')
-				.each (function () {
-					this.beginElement ();
-				});
+				.find ('.gun_shot_animation')[0]
+				.beginElement ();
 		}
 	},
 	onPaint: function (packet) {
@@ -580,6 +598,8 @@ var paint = {
 			}
 			this.joystickDrawn = false;
 		}
+		//	if old.mapOffset.x != mapOffset.x
+		//		|| old.mapOffset.y != mapOffset.y
 		canvas.element.css (
 			'background-position',
 			(-this.mapOffset.x) + 'px' + ' ' +
@@ -592,12 +612,19 @@ var paint = {
 			if (objects[i].type === 'event') {
 				events.push (objects[i]);
 			} else {
+				var keep;
 				id = objects[i].type + objects[i].uid;
 				if (this.drawn.hasOwnProperty (id)) {
 					delete orphanObjects[id];
+					keep = this.drawn[id];
 				} else {
+					keep = {old: {label: {reload: NaN}}, dom: {}};
+					objects[i].old = keep.old;
+					objects[i].dom = keep.dom;
 					this.addObject (id, objects[i]);
 				}
+				objects[i].old = keep.old;
+				objects[i].dom = keep.dom;
 				this.updateObject (id, objects[i]);
 				newDrawn[id] = objects[i];
 			}
@@ -615,7 +642,7 @@ var paint = {
 			}
 		}
 		for (var i in orphanObjects) {
-			this.deleteObject (i);
+			this.deleteObject (i, this.drawn[i]);
 		}
 		this.drawn = newDrawn;
 		this.drawScore(this.userScore);
@@ -626,6 +653,7 @@ var paint = {
 		this.joystickDrawn = false;
 	},
 	drawScore: function (score) {
+		// if old.score != score
 		language.setDOM (
 			'#gameStatsScore',
 			'game.score', {
@@ -645,7 +673,7 @@ var paint = {
 		}
 	},
 	updateObject: function (id, object) {
-		var element = $('#' + id),
+		var element = object.dom.self,
 			model = models.objects[object.type][object.subtype];
 		//console.log ('upd', id, object);
 		if (object.type === 'tank') {
@@ -659,9 +687,12 @@ var paint = {
 				soundObject.active = object.drivingFlag;
 			}
 			element = element
-				.add ($('#label_' + id))
-				.add ($('#turret_' + id));
+				.add (object.dom.label_placeholder)
+				.add (object.dom.turret_placeholder);
 		}
+		//	if object.old.rotation != object.rotation
+		//		|| object.old.position.x != object.position.x
+		//		|| object.old.position.y != object.position.y
 		element
 			.attr (
 				'transform',
@@ -683,7 +714,8 @@ var paint = {
 			models.updateReload (id, object);
 			models.updateHP (id, object);
 			models.updateLabel (id, object);
-			$('#turret_' + id).find ('.turret')
+			//	if object.old.turret_rotation != object.turret.rotation
+			object.dom.turret
 				.attr (
 					'transform',
 					transform.inParent (
@@ -702,12 +734,12 @@ var paint = {
 				);
 		}
 	},
-	deleteObject: function (id) {
+	deleteObject: function (id, object) {
 		console.log ('del', id);
-		$('#' + id).remove ();
+		object.dom.self.remove ();
 		if (id.substr (0, 4) === 'tank') {
-			$('#label_' + id).remove ();
-			$('#turret_' + id).remove ()
+			object.dom.label_placeholder.remove ();
+			object.dom.turret_placeholder.remove ();
 			sound.objects['drivingTank_' + id].audio.pause ();
 			delete sound.objects['drivingTank_' + id];
 		}
