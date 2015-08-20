@@ -317,71 +317,74 @@ var models = {
 				yb = radius * (1 + Math.sin (utils.angleDegToRad (angleB)));
 			object.dom.reload_front
 				.attr ('d', 'M' + radius + ',' + radius + ' L' + xa + ',' + ya + ', A' + radius + ',' + radius + ' 0 ' + longArc + ',1 ' + xb + ',' + yb + ' z');
-			object.old.label.reload = object.label.reload;
 		}
 	},
 	updateHP: function (id, object) {
 		var model = models.objects[object.type][object.subtype];
-		// if object.old.hp != object.label.hp
-		object.dom.hp_front
-			.attr ('width', model.hp.size.width * object.label.hp/10);
+		if (object.old.label.hp != object.label.hp) {
+			object.dom.hp_front
+				.attr ('width', model.hp.size.width * object.label.hp/10);
+		}
 	},
 	updateLabel: function (id, object) {
 		var model = models.objects[object.type][object.subtype],
 			text = object.dom.label_front,
 			back = object.dom.label_back,
-			size,
+			size = text[0].getBBox (),
 			scale = canvas.scale,
 			padding = paint.labelPadding / scale,
 			deltaTop = utils.vectorLength (
 				model.size.width,
 				model.size.length
 			) / 2 +
-				text[0].offsetHeight +
+				size.height +
 				canvas.renderCropSize.height / 2;
-		size = text[0].getBBox ();
-		object.dom.label_
-			//	if object.old.rotation != object.rotation
-			//		|| object.old.top != object.top
-			//		|| scale_changed
-			.attr (
-				'transform',
-				transform.inParent (
-					model.size,
-					utils.point (0, 0)
-				) + ' ' +
-				transform.rotate (
-					-object.rotation - 90,
-					utils.sizeWL (0, 0),
-					utils.point (0, 0)
-				) +
-				(object.position.y < deltaTop ?
-					' ' +
-					transform.relative (
-						utils.point (
-							0,
-							utils.vectorLength (
-								model.size.width,
-								model.size.length
-							) +
-								size.height -
-								padding
+		object.top = object.position.y < deltaTop;
+		if (object.old.rotation != object.rotation
+				|| object.old.top != object.top
+				|| paint.old.scale != paint.scale) {
+			object.dom.label_
+				.attr (
+					'transform',
+					transform.inParent (
+						model.size,
+						utils.point (0, 0)
+					) + ' ' +
+					transform.rotate (
+						-object.rotation - 90,
+						utils.sizeWL (0, 0),
+						utils.point (0, 0)
+					) +
+					(object.top ?
+						' ' +
+						transform.relative (
+							utils.point (
+								0,
+								utils.vectorLength (
+									model.size.width,
+									model.size.length
+								) +
+									size.height -
+									padding
+							)
 						)
+					:
+						''
 					)
-				:
-					''
-				)
-			);
-		// if object.old.hp != object.label.hp
-		text[0].childNodes[0].data = object.label.userName + ' [' + object.label.hp + ' \u2764]';
+				);
+		}
+		if (object.old.label.hp != object.label.hp) {
+			text[0].childNodes[0].data = object.label.userName + ' [' + object.label.hp + ' \u2764]';
+		}
 		size = text[0].getBBox ();
-		//	if object.old.hp != object.label.hp
-		//		|| scale_changed
-		back
-			.attr ('y', size.y - padding)
-			.attr ('x', -size.width / 2 - padding)
-			.attr ('width', size.width + 2 * padding)
-			.attr ('height', size.height + 2 * padding);
+		if (object.old.label.hp != object.label.hp
+				|| paint.old.scale != paint.scale) {
+			back
+				.attr ('y', size.y - padding)
+				.attr ('x', -size.width / 2 - padding)
+				.attr ('width', size.width + 2 * padding)
+				.attr ('height', size.height + 2 * padding);
+		}
 	},
 	addJoystick: function () {
 		var code = $('<g>'),
@@ -409,6 +412,10 @@ var models = {
 				transform.relative (center)
 			);
 		paint.dom.joystick = code;
+		paint.old.joystick = {
+			d: NaN,
+			rotation: NaN
+		};
 		canvas.layers.joystick.append (code);
 	},
 	removeJoystick: function () {
@@ -420,28 +427,45 @@ var models = {
 			scale = canvas.scale,
 			d = utils.vectorLength (b.x - a.x, b.y - a.y) / scale,
 			al = paint.joystick.length / scale;
-		//	if old.length != d.length
-		//		|| old.rotation != rotation
-		paint.dom.joystick_arrow
-			.attr ('d', 'M0,0 L0,' + d + ' l-' + al + ',-' + al + ' m' + al + ',' + al + ' l' + al + ',-' + al + ' z')
-			.attr (
-				'transform',
-				transform.rotate (
-					controls.acceleration.rotation-90,
-					utils.sizeWL (
-						0,
-						0
-					),
-					utils.point (
-						0,
-						0
+		if (paint.old.joystick.d != d
+				|| paint.old.scale != paint.scale) {
+			paint.old.joystick.d = d;
+			paint.dom.joystick_arrow
+				.attr ('d', 'M0,0 L0,' + d + ' l-' + al + ',-' + al + ' m' + al + ',' + al + ' l' + al + ',-' + al + ' z');
+		}
+		if (paint.old.joystick.rotation != controls.acceleration.rotation) {
+			paint.old.joystick.rotation = controls.acceleration.rotation;
+			paint.dom.joystick_arrow
+				.attr (
+					'transform',
+					transform.rotate (
+						controls.acceleration.rotation-90,
+						utils.sizeWL (
+							0,
+							0
+						),
+						utils.point (
+							0,
+							0
+						)
 					)
-				)
-			);
+				);
+		}
 	}
 };
 var paint = {
-	dom: {},
+	init: function () {
+		this.dom = {};
+		this.old = {
+			mapOffset: utils.point (NaN, NaN),
+			score: NaN,
+			joystick: undefined,
+			scale: NaN
+		};
+	},
+	scale: NaN,
+	dom: undefined,
+	old: undefined,
 	objects: [],
 	drawn: {},
 	font: {
@@ -598,13 +622,16 @@ var paint = {
 			}
 			this.joystickDrawn = false;
 		}
-		//	if old.mapOffset.x != mapOffset.x
-		//		|| old.mapOffset.y != mapOffset.y
-		canvas.element.css (
-			'background-position',
-			(-this.mapOffset.x) + 'px' + ' ' +
-			(-this.mapOffset.y) + 'px'
-		);
+		if (paint.old.mapOffset.x != this.mapOffset.x
+				|| paint.old.mapOffset.y != this.mapOffset.y) {
+			canvas.element.css (
+				'background-position',
+				(-this.mapOffset.x) + 'px' + ' ' +
+				(-this.mapOffset.y) + 'px'
+			);
+			paint.old.mapOffset.x = this.mapOffset.x;
+			paint.old.mapOffset.y = this.mapOffset.y;
+		}
 		for (var i in this.drawn) {
 			orphanObjects[i] = 0;
 		}
@@ -616,10 +643,44 @@ var paint = {
 				id = objects[i].type + objects[i].uid;
 				if (this.drawn.hasOwnProperty (id)) {
 					delete orphanObjects[id];
-					keep = this.drawn[id];
+					keep = {
+						dom: this.drawn[id].dom,
+						old: {
+							position: utils.point (
+								this.drawn[id].position.x,
+								this.drawn[id].position.y
+							),
+							rotation: this.drawn[id].rotation
+						}
+					};
+					if (objects[i].type == 'tank') {
+						keep.old.label = {
+							reload: this.drawn[id].label.reload,
+							hp: this.drawn[id].label.hp
+						};
+						keep.old.turret = {
+							rotation: this.drawn[id].turret.rotation
+						};
+						keep.old.top = this.drawn[id].top;
+					}
 				} else {
-					keep = {old: {label: {reload: NaN}}, dom: {}};
-					objects[i].old = keep.old;
+					keep = {
+						dom: {},
+						old: {
+							rotation: NaN,
+							position: utils.point (NaN, NaN)
+						}
+					};
+					if (objects[i].type == 'tank') {
+						keep.old.label = {
+							reload: NaN,
+							hp: NaN
+						};
+						keep.old.turret = {
+							rotation: NaN
+						};
+						keep.old.top = undefined;
+					}
 					objects[i].dom = keep.dom;
 					this.addObject (id, objects[i]);
 				}
@@ -646,6 +707,9 @@ var paint = {
 		}
 		this.drawn = newDrawn;
 		this.drawScore(this.userScore);
+		if (paint.old.scale != paint.scale) {
+			paint.old.scale = paint.scale;
+		}
 	},
 	reset: function () {
 		this.objects = [];
@@ -653,13 +717,15 @@ var paint = {
 		this.joystickDrawn = false;
 	},
 	drawScore: function (score) {
-		// if old.score != score
-		language.setDOM (
-			'#gameStatsScore',
-			'game.score', {
-				'%score%': score
-			}
-		);
+		if (paint.old.score != score) {
+			language.setDOM (
+				'#gameStatsScore',
+				'game.score', {
+					'%score%': score
+				}
+			);
+			paint.old.score = score;
+		}
 	},
 	addObject: function (id, object) {
 		models.addObject (id, object);
@@ -690,48 +756,51 @@ var paint = {
 				.add (object.dom.label_placeholder)
 				.add (object.dom.turret_placeholder);
 		}
-		//	if object.old.rotation != object.rotation
-		//		|| object.old.position.x != object.position.x
-		//		|| object.old.position.y != object.position.y
-		element
-			.attr (
-				'transform',
-				transform.toCenter (
-					model.size,
-					model.center
-				) + ' ' +
-				transform.relative (
-					object.position
-				) + ' ' +
-				transform.rotate (
-					object.rotation + 90,
-					model.size,
-					model.center
-				)
-			);
+		if (object.old.rotation != object.rotation
+				|| object.old.position.x != object.position.x
+				|| object.old.position.y != object.position.y) {
+			element
+				.attr (
+					'transform',
+					transform.toCenter (
+						model.size,
+						model.center
+					) + ' ' +
+					transform.relative (
+						object.position
+					) + ' ' +
+					transform.rotate (
+						object.rotation + 90,
+						model.size,
+						model.center
+					)
+				);
+		}
 		if (object.type === 'tank') {
 			var model2 = models.objects['turret'][object.subtype];
 			models.updateReload (id, object);
 			models.updateHP (id, object);
 			models.updateLabel (id, object);
-			//	if object.old.turret_rotation != object.turret.rotation
-			object.dom.turret
-				.attr (
-					'transform',
-					transform.inParent (
-						model.size,
-						model.turretCenter
-					) + ' ' +
-					transform.toCenter (
-						model2.size,
-						model2.center
-					) + ' ' +
-					transform.rotate (
-						object.turret.rotation-object.rotation,
-						model2.size,
-						model2.center
-					)
-				);
+			if (object.old.turret.rotation != object.turret.rotation
+					|| object.old.rotation != object.rotation) {
+				object.dom.turret
+					.attr (
+						'transform',
+						transform.inParent (
+							model.size,
+							model.turretCenter
+						) + ' ' +
+						transform.toCenter (
+							model2.size,
+							model2.center
+						) + ' ' +
+						transform.rotate (
+							object.turret.rotation-object.rotation,
+							model2.size,
+							model2.center
+						)
+					);
+				}
 		}
 	},
 	deleteObject: function (id, object) {
@@ -745,6 +814,7 @@ var paint = {
 		}
 	},
 	updateFonts: function (scale) {
+		paint.scale = scale;
 		$('#fontStyles')
 			.html (
 				'#gameCanvas .label_front {' +

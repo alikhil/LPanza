@@ -314,6 +314,7 @@ var game = {
 		this.inProgress = true;
 		this.mayShot = false;
 		this.paint = paint;
+		paint.init ();
 		paint.joystickDrawn = false;
 		canvas.init();
 		controls.bind();
