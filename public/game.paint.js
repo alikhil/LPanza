@@ -462,6 +462,7 @@ var paint = {
 			joystick: undefined,
 			scale: NaN
 		};
+		paint.dom.xmen = $('#xmen');
 	},
 	scale: NaN,
 	dom: undefined,
@@ -624,10 +625,14 @@ var paint = {
 		}
 		if (paint.old.mapOffset.x != this.mapOffset.x
 				|| paint.old.mapOffset.y != this.mapOffset.y) {
-			canvas.element.css (
-				'background-position',
-				(-this.mapOffset.x) + 'px' + ' ' +
-				(-this.mapOffset.y) + 'px'
+			paint.dom.xmen.attr (
+				'transform',
+				transform.relative (
+					utils.point (
+						-this.mapOffset.x-100,
+						-this.mapOffset.y-100
+					)
+				)
 			);
 			paint.old.mapOffset.x = this.mapOffset.x;
 			paint.old.mapOffset.y = this.mapOffset.y;
