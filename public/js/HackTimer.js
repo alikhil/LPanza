@@ -3,7 +3,7 @@ var hackTimer = {
 	fakeIdToCallback: {},
 	init: function () {
 		if(typeof(Worker) !== 'undefined') {
-			hackTimer.worker = new Worker('HackTimerWorker.js');
+			hackTimer.worker = new Worker('./js/HackTimerWorker.js');
 			function getFakeId (prefix) {
 				return prefix + Math.floor(
 					Math.random() *
