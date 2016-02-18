@@ -3,7 +3,6 @@ var express = require('express');
 var app = express();
 
 var lpanza = require('./lpanza');
-//var feedback = require('./feedback');
 
 var port = 3228;
 
@@ -64,7 +63,6 @@ logger.info('Server started on port ' + port);
 
 io.on('connection', function(socket){
 	lpanza.initGame(io, socket);
-	//feedback.init(socket);
 });
 
 
