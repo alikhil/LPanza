@@ -1,2 +1,0 @@
-E:\GitFiles\LPanza\obj\Debug\NodejsApp1.njsprojResolveAssemblyReference.cache
-E:\GitFiles\LPanza\bin\Microsoft.NodejsTools.WebRole.dll
