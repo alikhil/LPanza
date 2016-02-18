@@ -1076,7 +1076,7 @@ var app = {
 						'%score%': app.score.score
 					}
 				),
-				'http://lpanza.ru/logo.opengraph.png'
+				'http://lpanza.ru/images/logo.opengraph.png'
 			);
 		},
 		show: function (score) {

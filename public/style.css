@@ -16,13 +16,13 @@ html, body, .fullWrap {
 	margin-right: auto;
 	position: relative;
 	overflow: hidden;
-	background: url('background.texture.png');
+	background: url('./images/background.texture.png');
 }
 .absolute_position {
 	position: absolute;
 }
 #gameTouchSurface {
-	cursor: url('cursor.png') 15 15, crosshair;
+	cursor: url('./images/cursor.png') 15 15, crosshair;
 }
 .languageSelect {
 	display: none;
@@ -112,7 +112,7 @@ html, body, .fullWrap {
 .share_btn {
 	width: 32px;
 	height: 32px;
-	background: url('share.png') no-repeat;
+	background: url('./images/share.png') no-repeat;
 	float: left;
 	display: block;
 	margin: 1px;
@@ -120,7 +120,7 @@ html, body, .fullWrap {
 .vk_btn16 {
 	width: 16px;
 	height: 16px;
-	background: url('share.png') -160px 0px no-repeat;
+	background: url('./images/share.png') -160px 0px no-repeat;
 	display: inline-block;
 	position: relative;
 	top: 3px;
